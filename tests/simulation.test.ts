@@ -26,13 +26,13 @@ test('an unassisted village gathers, transports resources and completes three ha
   const sim = new Simulation(generateWorld(73129));
   const start = sim.state.residents.map(r => ({ ...r.position }));
   const edits = advance(sim, 380);
-  assert.equal(sim.state.huts.filter(h => h.status === 'complete').length, 3, diagnostic(sim));
+  assert.equal(sim.state.huts.filter(h => h.kind === 'hut' && h.status === 'complete').length, 3, diagnostic(sim));
   assert.equal(sim.state.residents.filter(r => r.home).length, 5);
   assert.ok(edits.length > 100);
   assert.ok(sim.state.events.some(e => e.text.includes('届けました')));
   assert.ok(sim.state.events.some(e => e.text.includes('完成')));
   assert.ok(sim.state.residents.some((r, i) => r.position.x !== start[i].x || r.position.z !== start[i].z));
-  for (const hut of sim.state.huts) {
+  for (const hut of sim.state.huts.filter(h => h.kind === 'hut')) {
     assert.equal(hut.progress, hut.total); assert.ok(hut.materialsReserved);
     for (const block of hutBlocks(hut)) assert.equal(getBlock(sim.data, block.x, block.y, block.z), block.block);
     assert.ok(sim.nav.path(sim.state.camp, { x: hut.x + 1.5, y: hut.y + 1, z: hut.z + 2.5 }), JSON.stringify({hut, camp: sim.state.camp, bedHeight: sim.nav.height(hut.x + 1, hut.z + 2), doorHeight: sim.nav.height(hut.x + 1, hut.z + 3), outsideHeight: sim.nav.height(hut.x + 1, hut.z + 4)}));

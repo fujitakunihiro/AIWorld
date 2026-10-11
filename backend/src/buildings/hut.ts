@@ -16,7 +16,8 @@ export function hutBlocks(hut: Pick<Hut, 'x' | 'y' | 'z'>): Edit[] {
   return blocks;
 }
 export function inHut(edit: Pick<Edit, 'x' | 'y' | 'z'>, hut: Hut) {
-  return edit.x >= hut.x && edit.x < hut.x + 4 && edit.z >= hut.z && edit.z < hut.z + 4 && edit.y >= hut.y - 1 && edit.y <= hut.y + 4;
+  return (edit.x >= hut.x && edit.x < hut.x + 4 && edit.z >= hut.z && edit.z < hut.z + 4 && edit.y >= hut.y - 1 && edit.y <= hut.y + 4) ||
+    (hut.entranceStep && edit.x === hut.x + 1 && edit.z === hut.z + 4 && edit.y >= hut.y - 2 && edit.y <= hut.y + 1);
 }
 export function siteClear(data: Uint8Array, x: number, y: number, z: number) {
   for (let dz = 0; dz < 4; dz++) for (let dx = 0; dx < 4; dx++) {

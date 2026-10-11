@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { WorldStore } from '../backend/src/database/store';
-import { Block, getBlock } from '../shared/world';
+import { Block, getBlock, SAVE_VERSION } from '../shared/world';
 import { Simulation } from '../backend/src/simulation/engine';
 import { hutBlocks } from '../backend/src/buildings/hut';
 test('edits, original seed, version, revision and clock survive reopening SQLite', () => {
@@ -61,7 +61,7 @@ test('Phase 1 save migration preserves seed, edited terrain, time and speed', ()
       CREATE TABLE edits (x INTEGER,y INTEGER,z INTEGER,block INTEGER,PRIMARY KEY(x,y,z));
       INSERT INTO edits VALUES(32,11,40,5);`); db.close();
     const store = new WorldStore(path, 1);
-    assert.equal(store.snapshot().version, 2); assert.equal(store.seed, 73129); assert.equal(store.time, 2000); assert.equal(store.speed, 5);
+    assert.equal(store.snapshot().version, SAVE_VERSION); assert.equal(store.seed, 73129); assert.equal(store.time, 2000); assert.equal(store.speed, 5);
     assert.equal(getBlock(store.data, 32, 11, 40), Block.Wood); assert.equal(store.edits().length, 1);
     const sim = new Simulation(store.data); store.saveVillage(sim.state); store.close();
     const restored = new WorldStore(path, 1); assert.equal(restored.village!.residents.length, 5); restored.close();

@@ -2,10 +2,10 @@ import type { InstructionRecord, ResidentOrder } from './instructions';
 export interface Position { x: number; y: number; z: number }
 export type Resource = 'food' | 'wood' | 'stone';
 export type Resources = Record<Resource, number>;
-export type Action = 'idle' | 'moving' | 'gathering' | 'delivering' | 'building' | 'eating' | 'resting' | 'socializing';
+export type Action = 'idle' | 'moving' | 'gathering' | 'delivering' | 'building' | 'farming' | 'eating' | 'resting' | 'socializing';
 export const ACTION_LABELS: Record<Action, string> = {
   idle: '周囲を見ています', moving: '移動中', gathering: '採集中', delivering: '資源を運んでいます',
-  building: '小屋を建てています', eating: '食事中', resting: '休息中', socializing: '交流中'
+  building: '建築中', farming: '畑仕事をしています', eating: '食事中', resting: '休息中', socializing: '交流中'
 };
 export const RESOURCE_LABELS: Record<Resource, string> = { food: '食料', wood: '木材', stone: '石材' };
 export interface Resident {
@@ -13,19 +13,43 @@ export interface Resident {
   health: number; energy: number; hunger: number; inventory: Resources; position: Position;
   action: Action; reason: string; goal: string; relationships: Record<string, number>;
   memories: string[]; memorySummary: string;
-  task: { kind: 'gather' | 'deliver' | 'build' | 'wander' | 'rest'; targetId: string | null; destination: Position } | null;
+  task: { kind: 'gather' | 'deliver' | 'build' | 'farm' | 'wander' | 'rest'; targetId: string | null; destination: Position } | null;
   path: Position[]; work: number; decisionIn: number; home: string | null; order: ResidentOrder | null;
 }
 export interface ResourceNode {
   id: string; kind: Resource; position: Position; remaining: number; capacity: number; regeneration: number;
 }
 export interface Hut {
-  id: string; name: string; x: number; y: number; z: number;
+  id: string; name: string; kind: BuildingKind; x: number; y: number; z: number;
   status: 'planned' | 'building' | 'complete'; progress: number; total: number;
   cost: Resources; builder: string | null; materialsReserved: boolean;
+  entranceStep: boolean;
+  upgrading: boolean;
+  crop: { stage: 'fallow' | 'growing' | 'ripe'; growth: number; harvests: number; remaining: number } | null;
 }
-export interface VillageEvent { id: number; time: number; text: string }
+export type BuildingKind = 'hut' | 'house' | 'farm' | 'warehouse';
+export const BUILDING_LABELS: Record<BuildingKind, string> = { hut: '小屋', house: '住宅', farm: '畑', warehouse: '倉庫' };
+export const MAX_POPULATION = 20;
+export const MAX_BUILDINGS = 20;
+export interface Civilization {
+  level: 1 | 2; nextArrival: number; nextEventAt: number; eventSequence: number; arrivals: number; harvests: number;
+}
+export interface VillageEvent { id: number; time: number; text: string; kind: 'life' | 'harvest' | 'arrival' | 'growth' | 'weather' | 'festival' | 'trade' }
 export interface VillageState {
-  version: 1; residents: Resident[]; resources: Resources; nodes: ResourceNode[]; huts: Hut[];
+  version: 2; residents: Resident[]; resources: Resources; nodes: ResourceNode[]; huts: Hut[]; civilization: Civilization;
   camp: Position; events: VillageEvent[]; nextEvent: number; elapsed: number; nextPlan: number; instructions: InstructionRecord[];
+}
+export function beds(state: VillageState) {
+  return state.huts.filter(h => h.status === 'complete').reduce((sum, h) => sum + (h.kind === 'hut' ? 2 : h.kind === 'house' ? 4 : 0), 0);
+}
+export function growthRequirements(state: VillageState) {
+  const complete = (kind: BuildingKind) => state.huts.some(h => h.kind === kind && h.status === 'complete');
+  return [
+    { label: '人口 5人', met: state.residents.length >= 5 },
+    { label: '畑と初めての収穫', met: complete('farm') && state.civilization.harvests > 0 },
+    { label: '住宅 1軒', met: complete('house') },
+    { label: '倉庫 1棟', met: complete('warehouse') },
+    { label: '食料 20', met: state.resources.food >= 20 },
+    { label: '農家がいる', met: state.residents.some(r => r.job === '農家') }
+  ];
 }

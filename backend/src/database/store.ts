@@ -24,8 +24,7 @@ export class WorldStore {
       CREATE TABLE IF NOT EXISTS simulation (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL);`);
     this.db.prepare('INSERT OR IGNORE INTO world VALUES (?, ?, ?, 0, 480, 1)').run('island-1', SAVE_VERSION, seed);
     const row = this.db.prepare('SELECT * FROM world WHERE id=?').get('island-1')!;
-    if (row.version === 1) this.db.prepare('UPDATE world SET version=? WHERE id=?').run(SAVE_VERSION, 'island-1');
-    if (row.version !== 1 && row.version !== SAVE_VERSION) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
+    if (![1, 2, SAVE_VERSION].includes(Number(row.version))) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
     this.seed = Number(row.seed); this.revision = Number(row.revision); this.time = Number(row.time); this.speed = Number(row.speed);
     this.base = generateWorld(this.seed); this.data = this.base.slice();
     for (const edit of this.edits()) this.data[index(edit.x, edit.y, edit.z)] = edit.block;
@@ -34,6 +33,7 @@ export class WorldStore {
       try { this.village = villageSchema.parse(JSON.parse(String(saved.state))); }
       catch (error) { this.db.close(); throw new Error('住民の保存データが不正です。データを保護するため起動を停止しました。', { cause: error }); }
     }
+    if (row.version !== SAVE_VERSION) this.db.prepare('UPDATE world SET version=? WHERE id=?').run(SAVE_VERSION, 'island-1');
   }
   edits(): Edit[] { return this.db.prepare('SELECT x,y,z,block FROM edits ORDER BY y,z,x').all() as unknown as Edit[]; }
   snapshot(): WorldSnapshot {
@@ -45,7 +45,7 @@ export class WorldStore {
     const i = index(x, y, z), current = this.data[i];
     if (current !== expected) throw new Error('別の操作でこのブロックが変わりました。もう一度選んでください。');
     if (y === 0) throw new Error('島の基盤（高さ0）は編集できません。');
-    if (this.village?.huts.some(h => inHut({ x, y, z }, h))) throw new Error('住民の小屋と建築敷地は保護されています。周りの地形を編集してください。');
+    if (this.village?.huts.some(h => inHut({ x, y, z }, h))) throw new Error('住民の建物・畑と建築敷地は保護されています。周りの地形を編集してください。');
     if (this.village?.residents.some(r => Math.floor(r.position.x) === x && Math.floor(r.position.z) === z && y >= r.position.y - 1 && y < r.position.y + 2)) throw new Error('住民の足場や体と重なる位置は編集できません。');
     if (block === current) throw new Error('同じブロックです。');
     const restoringWater = block === Block.Water && this.base[i] === Block.Water;

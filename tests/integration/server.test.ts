@@ -7,6 +7,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'node:crypto';
+import { WorldStore } from '../../backend/src/database/store';
+import { Simulation } from '../../backend/src/simulation/engine';
 import { type ServerMessage, type WorldSnapshot } from '../../shared/world';
 async function start(path: string) {
   const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], { env: { ...process.env, OPENAI_API_KEY: '', DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -125,5 +127,30 @@ test('natural-language instructions synchronize, reject safely, deduplicate and 
     assert.equal(snapshot.village!.instructions.length, 1); assert.equal(snapshot.village!.huts.length, 2); assert.equal(snapshot.speed, 0); assert.equal(snapshot.village!.residents[1].order?.kind, 'wood');
     c.send(request); const duplicate = await c.wait('instruction-result'); if (duplicate.type === 'instruction-result') assert.ok(duplicate.ok);
     c.send({ type: 'speed', speed: 20 }); const resumed = await c.wait('village'); if (resumed.type === 'village') assert.ok(resumed.village.elapsed > snapshot.village!.elapsed);
+  } finally { for (const client of clients) client.ws.close(); if (running && running.child.exitCode === null) await stop(running.child); rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('developed village, crops, immigration timers and newcomer instructions synchronize and survive real server restart', { timeout: 25000 }, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ai-world-civilization-ws-')), path = join(dir, 'world.sqlite');
+  let running: Awaited<ReturnType<typeof start>> | undefined; const clients: Client[] = [];
+  try {
+    const store = new WorldStore(path, 73129), simulation = new Simulation(store.data); const edits = [];
+    for (let i = 0; i < 6400; i++) edits.push(...simulation.step(.25, 480 + i / 4));
+    store.time = 2080; store.speed = 0; store.saveVillage(simulation.state, edits); store.close();
+    running = await start(path); const a = new Client(running.port); clients.push(a);
+    const initial = await a.wait('snapshot') as WorldSnapshot;
+    assert.equal(initial.village!.civilization.level, 2); assert.ok(initial.village!.residents.length > 5);
+    const newcomer = initial.village!.residents.find(r => r.id === 'new-1')!;
+    a.send({ type: 'instruction', id: randomUUID(), text: `${newcomer.name}に農業を優先させて` });
+    const accepted = await a.wait('instruction-result'); if (accepted.type === 'instruction-result') assert.ok(accepted.ok);
+    a.send({ type: 'edit', x: simulation.state.huts.find(h => h.kind === 'farm')!.x, y: simulation.state.huts.find(h => h.kind === 'farm')!.y, z: simulation.state.huts.find(h => h.kind === 'farm')!.z, block: 0, expected: 5 });
+    await a.wait('error');
+    const b = new Client(running.port); clients.push(b); const before = await b.wait('snapshot') as WorldSnapshot;
+    assert.equal(before.village!.residents.find(r => r.id === newcomer.id)!.order?.kind, 'farm');
+    for (const client of clients) client.ws.close(); await stop(running.child); running = await start(path);
+    const c = new Client(running.port); clients.push(c); const after = await c.wait('snapshot') as WorldSnapshot;
+    assert.deepEqual(after.village, before.village); assert.deepEqual(after.edits, before.edits);
+    c.send({ type: 'speed', speed: 20 }); const resumed = await c.wait('village');
+    if (resumed.type === 'village') assert.ok(resumed.village.elapsed > after.village!.elapsed);
   } finally { for (const client of clients) client.ws.close(); if (running && running.child.exitCode === null) await stop(running.child); rmSync(dir, { recursive: true, force: true }); }
 });

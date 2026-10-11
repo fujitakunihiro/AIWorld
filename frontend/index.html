@@ -21,14 +21,15 @@
       <p>ここから、世界が育っていく。</p>
       <div class="world-tags"><span>64 × 64</span><span>温帯の島</span><span id="day">1日目</span></div>
       <div class="resource-bar" aria-label="村の人口と共有資源"><span id="population">住民 —</span><span id="resource-food">食料 —</span><span id="resource-wood">木材 —</span><span id="resource-stone">石材 —</span></div>
+      <button id="civilization" class="civilization-badge" aria-label="村の発展を開く"><span id="civilization-label">Lv.1 集落</span><span>村の発展 ↗</span></button>
     </section>
     <section class="creation-card village-card">
       <div class="eyebrow">LIFE ON THE ISLAND</div>
-      <h2>5人の、小さな暮らし。</h2>
+      <h2 id="village-title">5人の、小さな暮らし。</h2>
       <div id="resident-list"></div>
       <div class="hut-summary"><strong id="homes">小屋 0 / 3</strong><p id="hut-status">敷地を探しています</p><progress id="hut-progress" value="0" max="1" aria-label="小屋の建築進捗"></progress><small id="hut-materials">必要資源を確認中</small></div>
       <button id="start-building">村を近くで見る <span>↗</span></button>
-      <div class="phase-note"><span class="live-dot"></span> PHASE 03 · ことばで育つ世界</div>
+      <div class="phase-note"><span class="live-dot"></span> PHASE 04 · 文明が芽吹く島</div>
     </section>
     <div class="view-controls" aria-label="カメラ操作">
       <button id="zoom-in" aria-label="ズームイン">＋</button>
@@ -40,7 +41,7 @@
     <section class="dock">
       <form id="quick-instruction" class="instruction-strip">
         <label for="quick-instruction-text"><span>✦</span><span class="sr-only">世界への指示</span></label>
-        <input id="quick-instruction-text" maxlength="500" placeholder="小屋を1軒建てて、など…" autocomplete="off" required />
+        <input id="quick-instruction-text" maxlength="500" placeholder="畑を1面作って、など…" autocomplete="off" required />
         <button class="instruction-send" type="submit" disabled>指示する ↗</button>
         <button id="open-instructions" class="instruction-history-button" type="button" aria-label="AI指示と履歴を開く">履歴</button>
       </form>
@@ -65,7 +66,7 @@
   </main>
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="loading"><span class="loading-cube">◈</span><h2>世界をひらいています</h2><p id="loading-message">島の地形と保存データを読み込み中…</p></div>
-  <dialog id="guide"><button id="close-guide" class="icon-button" aria-label="ガイドを閉じる">×</button><div class="eyebrow">FIELD GUIDE</div><h2>あなたの島の歩き方</h2><p><b>PC</b><br>左ドラッグ：回転 ／ 右ドラッグ・Shift＋左ドラッグ：移動<br>ホイール：ズーム</p><p><b>スマートフォン</b><br>1本指ドラッグ：移動<br>2本指：ピンチでズーム、ひねって回転<br>長押し：ブロック配置ツールを開く</p><p><b>島を編集</b><br>「置く」→素材を選ぶ→地形をタップ。<br>「消す」→固体ブロックをタップ。↶で直前の編集を戻せます。<br>住民の足場・小屋・確保済みの建築敷地は保護されています。</p><p><b>住民を観察</b><br>「住民」または「ながめる」で住民をタップすると、行動と理由・所持品・体調が見えます。住民が採集して運んだ資源は上部に表示します。小屋には木材24・石材8が必要で、2人分の寝床になります。5×・20×で発展を早送りできます。</p><p class="guide-note">Phase 3では下部の入力欄から住民に指示できます。「履歴」で指示の例、変換したJSON、進み具合を確認できます。API未設定時や接続失敗時も日本語のルール解析で動きます。畑・倉庫・文明発展は次のフェーズです。</p></dialog>
+  <dialog id="guide"><button id="close-guide" class="icon-button" aria-label="ガイドを閉じる">×</button><div class="eyebrow">FIELD GUIDE</div><h2>あなたの島の歩き方</h2><p><b>PC</b><br>左ドラッグ：回転 ／ 右ドラッグ・Shift＋左ドラッグ：移動<br>ホイール：ズーム</p><p><b>スマートフォン</b><br>1本指ドラッグ：移動<br>2本指：ピンチでズーム、ひねって回転<br>長押し：ブロック配置ツールを開く</p><p><b>島を編集</b><br>「置く」→素材を選ぶ→地形をタップ。<br>「消す」→固体ブロックをタップ。↶で直前の編集を戻せます。<br>住民の足場・建物・畑・確保済みの建築敷地は保護されています。</p><p><b>住民を観察</b><br>「住民」または「ながめる」で住民をタップすると、行動と理由・所持品・体調が見えます。住民が採集して運んだ資源は上部に表示します。小屋には木材24・石材8が必要で、2人分の寝床になります。5×・20×で発展を早送りできます。</p><p class="guide-note">下部の入力欄から住民に指示できます。「履歴」で指示の例、変換したJSON、進み具合を確認できます。API未設定時や接続失敗時も日本語のルール解析で動きます。「村の発展」で農業・住宅・移住・職業・イベントを確認できます。5×・20×で発展を早送りできます。</p></dialog>
   <dialog id="residents-dialog" class="resident-dialog">
     <button id="close-residents" class="icon-button" aria-label="住民の詳細を閉じる">×</button>
     <div class="eyebrow">PEOPLE OF YOUR WORLD</div><div id="resident-roster"></div>
@@ -86,12 +87,25 @@
   <dialog id="instructions-dialog" class="instructions-dialog">
     <button id="close-instructions" class="icon-button" aria-label="AI指示を閉じる">×</button>
     <div class="eyebrow">A WORD TO YOUR WORLD</div><h2>ことばから、次の暮らし。</h2>
-    <p>小屋の建築、採集、休息を住民に伝えられます。体調を整え、資源を運んでから順に実行します。</p>
+    <p>小屋・住宅・畑・倉庫の建築、農業、採集、休息を住民に伝えられます。体調を整え、資源を運んでから順に実行します。</p>
     <form id="instruction-form"><label for="instruction-text">世界への指示</label><textarea id="instruction-text" rows="3" maxlength="500" placeholder="川の近くに小屋を1軒建てて" required></textarea><button class="instruction-send" type="submit" disabled>村に指示を届ける ↗</button></form>
-    <div class="instruction-presets" aria-label="指示の例"><button type="button" data-instruction="小屋を1軒建てて">小屋を追加</button><button type="button" data-instruction="ミオに木材を集めてほしい">ミオに木材採集</button><button type="button" data-instruction="みんな休んで">みんな休息</button><button type="button" data-instruction="みんな自律行動に戻って">自律行動へ</button></div>
+    <div class="instruction-presets" aria-label="指示の例"><button type="button" data-instruction="畑を1面作って">畑をつくる</button><button type="button" data-instruction="住宅を1軒建てて">住宅を追加</button><button type="button" data-instruction="倉庫を1棟建てて">倉庫を建てる</button><button type="button" data-instruction="みんな農業を優先して">農業を優先</button><button type="button" data-instruction="ミオに木材を集めてほしい">ミオに木材採集</button><button type="button" data-instruction="みんな自律行動に戻って">自律行動へ</button></div>
     <p id="instruction-dialog-feedback" role="status" aria-live="polite"></p>
-    <p class="instruction-note">小屋は1回1〜5軒、世界全体で10軒まで。1軒につき木材24・石材8。採集の優先はゲーム内4時間、休息は1時間続きます。建築場所は村・川・森の近くを指定できます。</p>
+    <p class="instruction-note">1回1〜5棟、世界全体で20棟まで（小屋は10軒）。木材/石材：小屋24/8、住宅48/20、畑12/4、倉庫32/16。採集・農業の優先はゲーム内4時間、休息は1時間。建築場所は村・川・森の近くを指定できます。</p>
     <h3>指示の履歴と進み具合</h3><div id="instruction-history"><p>まだ指示はありません。最初のひとことをどうぞ。</p></div>
+  </dialog>
+  <dialog id="civilization-dialog" class="civilization-dialog">
+    <button id="close-civilization" class="icon-button" aria-label="村の発展を閉じる">×</button>
+    <div class="eyebrow">A VILLAGE TAKES ROOT</div><h2 id="growth-title">集落から、村へ。</h2>
+    <p id="growth-description">住民が仕事を分担し、島の暮らしを育てます。</p>
+    <div class="growth-metrics"><div><small>人口 / 寝床</small><strong id="growth-population">—</strong></div><div><small>収穫した回数</small><strong id="growth-harvests">—</strong></div><div><small>完成した建物</small><strong id="growth-buildings">—</strong></div></div>
+    <h3 id="growth-requirements-title">Level 2「村」への条件</h3><div id="growth-requirements" class="growth-requirements"></div>
+    <h3>次の移住</h3><p id="growth-arrival" class="arrival-note"></p>
+    <h3>村の仕事</h3><div id="growth-jobs" class="growth-jobs"></div>
+    <h3>建物と畑</h3><div id="growth-sites"></div>
+    <button id="focus-development" class="focus-button">育っている村を近くで見る ↗</button>
+    <h3>村のイベント</h3><ul id="growth-events" class="growth-events"></ul>
+    <p class="growth-note">指示がなくても、小屋 → 畑 → 倉庫 → 住宅を整えます。空き地がないときは木材24・石材12で小屋を住宅へ改築します。空き住宅と食料があれば12時間ごとに1人が移住し、人口に合わせて畑と住宅を増やします。建築には歩ける道と平地が必要です。人口は最大20人。時間を止めると成長・移住・イベントも止まります。</p>
   </dialog>
   <script type="module" src="/src/main.ts"></script>
 </body>

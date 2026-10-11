@@ -6,6 +6,7 @@ export class VillageRenderer {
   private figures = new Map<string, Figure>();
   private sites = new Map<string, THREE.Group>();
   private nodes = new Map<string, THREE.Group>();
+  private fields = new Map<string, { group: THREE.Group; crops: THREE.Group[] }>();
   private cube = new THREE.BoxGeometry(1, 1, 1);
   private materials = new Map<string, THREE.MeshLambertMaterial>();
   private selection = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.72, 24), new THREE.MeshBasicMaterial({ color: '#ffe4a1', side: THREE.DoubleSide, depthWrite: false }));
@@ -46,11 +47,35 @@ export class VillageRenderer {
     for (const hut of state.huts) {
       if (this.sites.has(hut.id)) continue;
       const group = new THREE.Group(); group.userData.hutId = hut.id;
-      const geometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(4.1, 4.8, 4.1));
+      const height = hut.kind === 'farm' ? 0.8 : 4.8;
+      const geometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(4.1, height, 4.1));
       const edges = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: '#a8ae77', transparent: true, opacity: 0.4 }));
-      edges.position.set(2, 2.4, 2); group.add(edges); group.position.set(hut.x, hut.y, hut.z); this.root.add(group); this.sites.set(hut.id, group);
+      edges.position.set(2, height / 2, 2); group.add(edges); group.position.set(hut.x, hut.y, hut.z); this.root.add(group); this.sites.set(hut.id, group);
     }
     for (const hut of state.huts) this.sites.get(hut.id)!.visible = hut.status !== 'complete';
+    for (const farm of state.huts.filter(h => h.kind === 'farm')) {
+      let field = this.fields.get(farm.id);
+      if (!field) {
+        const group = new THREE.Group(); group.position.set(farm.x, farm.y, farm.z);
+        this.box(group, '#76583d', [3.8, 0.07, 3.8], [2, 0.015, 2]);
+        for (let z = 0; z < 3; z++) this.box(group, '#503c2d', [3.4, 0.04, 0.12], [2, 0.07, 0.8 + z * 1.15]);
+        const crops: THREE.Group[] = [];
+        for (let z = 0; z < 3; z++) for (let x = 0; x < 3; x++) {
+          const crop = new THREE.Group(); crop.position.set(1 + x, 0.07, 1 + z);
+          this.box(crop, '#83a24d', [0.12, 0.7, 0.12], [0, 0.35, 0]);
+          this.box(crop, '#c7bc62', [0.33, 0.24, 0.25], [0, 0.7, 0]);
+          this.box(crop, '#8caa52', [0.5, 0.09, 0.14], [0, 0.27, 0]); group.add(crop); crops.push(crop);
+        }
+        this.root.add(group); field = { group, crops }; this.fields.set(farm.id, field);
+      }
+      field.group.visible = farm.status === 'complete';
+      const crop = farm.crop;
+      field.crops.forEach((plant, i) => {
+        plant.visible = !!crop && crop.stage !== 'fallow' && (crop.stage !== 'ripe' || i < Math.ceil(crop.remaining / 32 * 9));
+        plant.scale.y = 0.2 + (crop?.growth ?? 0) * 0.8;
+        (plant.children[1] as THREE.Mesh).material = this.material(crop?.stage === 'ripe' ? '#dec075' : '#8aa45b');
+      });
+    }
     for (const node of state.nodes) {
       if (node.kind === 'wood') continue; // Existing voxel trees are the wood gathering sites.
       let group = this.nodes.get(node.id);
@@ -81,7 +106,7 @@ export class VillageRenderer {
       if (Math.hypot(d.x, d.z) > 0.015) figure.group.rotation.y = Math.atan2(d.x, d.z);
       figure.group.position.lerp(figure.target, 1 - Math.exp(-delta * 16));
       const moving = !paused && figure.resident.action === 'moving';
-      const working = !paused && (figure.resident.action === 'gathering' || figure.resident.action === 'building');
+      const working = !paused && (figure.resident.action === 'gathering' || figure.resident.action === 'building' || figure.resident.action === 'farming');
       for (let i = 0; i < 2; i++) {
         figure.legs[i].rotation.x = moving ? Math.sin(now / 120 + i * Math.PI) * 0.5 : 0;
         figure.arms[i].rotation.x = working ? -0.7 + Math.sin(now / 180) * 0.55 : moving ? Math.sin(now / 120 + (1 - i) * Math.PI) * 0.35 : 0;
