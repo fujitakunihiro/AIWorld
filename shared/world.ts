@@ -3,6 +3,7 @@ export const HEIGHT = 32;
 export const CHUNK = 16;
 export const SEA = 5;
 import type { VillageState } from './village';
+import type { InstructionResult } from './instructions';
 export const SAVE_VERSION = 2;
 export const Block = { Air: 0, Grass: 1, Dirt: 2, Stone: 3, Sand: 4, Wood: 5, Leaves: 6, Water: 7, Brick: 8 } as const;
 export type BlockId = typeof Block[keyof typeof Block];
@@ -11,7 +12,7 @@ export interface WorldSnapshot {
   type: 'snapshot'; id: string; name: string; version: number; seed: number;
   revision: number; edits: Edit[]; time: number; speed: number; village: VillageState | null;
 }
-export type ServerMessage = WorldSnapshot | { type: 'edit'; edit: Edit; revision: number } |
+export type ServerMessage = WorldSnapshot | InstructionResult | { type: 'instruction-config'; mode: 'llm' | 'rules' } | { type: 'edit'; edit: Edit; revision: number } |
   { type: 'terrain'; edits: Edit[]; revision: number } |
   { type: 'village'; village: VillageState; time: number; speed: number } |
   { type: 'clock'; time: number; speed: number } | { type: 'error'; message: string };

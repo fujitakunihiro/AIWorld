@@ -1,3 +1,4 @@
+import type { InstructionRecord, ResidentOrder } from './instructions';
 export interface Position { x: number; y: number; z: number }
 export type Resource = 'food' | 'wood' | 'stone';
 export type Resources = Record<Resource, number>;
@@ -13,7 +14,7 @@ export interface Resident {
   action: Action; reason: string; goal: string; relationships: Record<string, number>;
   memories: string[]; memorySummary: string;
   task: { kind: 'gather' | 'deliver' | 'build' | 'wander' | 'rest'; targetId: string | null; destination: Position } | null;
-  path: Position[]; work: number; decisionIn: number; home: string | null;
+  path: Position[]; work: number; decisionIn: number; home: string | null; order: ResidentOrder | null;
 }
 export interface ResourceNode {
   id: string; kind: Resource; position: Position; remaining: number; capacity: number; regeneration: number;
@@ -26,5 +27,5 @@ export interface Hut {
 export interface VillageEvent { id: number; time: number; text: string }
 export interface VillageState {
   version: 1; residents: Resident[]; resources: Resources; nodes: ResourceNode[]; huts: Hut[];
-  camp: Position; events: VillageEvent[]; nextEvent: number; elapsed: number; nextPlan: number;
+  camp: Position; events: VillageEvent[]; nextEvent: number; elapsed: number; nextPlan: number; instructions: InstructionRecord[];
 }

@@ -6,9 +6,10 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
+import { randomUUID } from 'node:crypto';
 import { type ServerMessage, type WorldSnapshot } from '../../shared/world';
 async function start(path: string) {
-  const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], { env: { ...process.env, DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], { env: { ...process.env, OPENAI_API_KEY: '', DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
   const port = await new Promise<number>((resolve, reject) => {
     let output = ''; const timer = setTimeout(() => { child.kill(); reject(new Error(`Server startup timeout: ${output}`)); }, 10000);
     child.stdout!.on('data', chunk => { output += String(chunk); const match = output.match(/backend :(\d+)/); if (match) { clearTimeout(timer); resolve(Number(match[1])); } });
@@ -101,4 +102,28 @@ test('live residents gather and build; paused village and in-progress hut surviv
     for (const client of clients) client.ws.close(); if (running && running.child.exitCode === null) await stop(running.child);
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('natural-language instructions synchronize, reject safely, deduplicate and survive a process restart', { timeout: 25000 }, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ai-world-instructions-')), path = join(dir, 'world.sqlite');
+  let running: Awaited<ReturnType<typeof start>> | undefined; const clients: Client[] = [];
+  try {
+    running = await start(path); const a = new Client(running.port), b = new Client(running.port); clients.push(a, b);
+    await a.wait('snapshot'); await b.wait('snapshot');
+    assert.deepEqual(await a.wait('instruction-config'), { type: 'instruction-config', mode: 'rules' });
+    a.send({ type: 'speed', speed: 0 });
+    let clock = await a.wait('clock'); while (clock.type !== 'clock' || clock.speed !== 0) clock = await a.wait('clock');
+    const id = randomUUID(), request = { type: 'instruction', id, text: '小屋を1軒建てて。ミオに木材を集めてほしい' };
+    a.send(request); a.send(request);
+    for (let i = 0; i < 2; i++) { const result = await a.wait('instruction-result'); assert.equal(result.type, 'instruction-result'); if (result.type === 'instruction-result') { assert.ok(result.ok); assert.equal(result.record?.source, 'rules'); assert.equal(result.record?.jobs.length, 2); } }
+    let synced = await b.wait('village'); while (synced.type !== 'village' || !synced.village.instructions.length) synced = await b.wait('village');
+    assert.equal(synced.village.instructions.length, 1); assert.equal(synced.village.huts.length, 2); assert.equal(synced.village.residents[1].order?.kind, 'wood');
+    a.send({ type: 'instruction', id: randomUUID(), text: '小屋を99軒建てて' });
+    const rejected = await a.wait('instruction-result'); assert.equal(rejected.type, 'instruction-result'); if (rejected.type === 'instruction-result') assert.equal(rejected.ok, false);
+    for (const client of clients) client.ws.close(); await stop(running.child); running = await start(path);
+    const c = new Client(running.port); clients.push(c); const snapshot = await c.wait('snapshot') as WorldSnapshot;
+    assert.equal(snapshot.village!.instructions.length, 1); assert.equal(snapshot.village!.huts.length, 2); assert.equal(snapshot.speed, 0); assert.equal(snapshot.village!.residents[1].order?.kind, 'wood');
+    c.send(request); const duplicate = await c.wait('instruction-result'); if (duplicate.type === 'instruction-result') assert.ok(duplicate.ok);
+    c.send({ type: 'speed', speed: 20 }); const resumed = await c.wait('village'); if (resumed.type === 'village') assert.ok(resumed.village.elapsed > snapshot.village!.elapsed);
+  } finally { for (const client of clients) client.ws.close(); if (running && running.child.exitCode === null) await stop(running.child); rmSync(dir, { recursive: true, force: true }); }
 });

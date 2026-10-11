@@ -4,11 +4,43 @@ import { WorldStore } from './database/store';
 import { commandSchema } from '../../shared/schema';
 import { SAVE_VERSION } from '../../shared/world';
 import { Simulation } from './simulation/engine';
+import { InstructionInterpreter } from './llm/interpreter';
+import type { InstructionResult } from '../../shared/instructions';
 const seed = Number(process.env.WORLD_SEED ?? 73129);
 if (!Number.isSafeInteger(seed) || seed < 0 || seed > 2147483647) throw new Error('WORLD_SEEDは0〜2147483647の整数で指定してください。');
 const store = new WorldStore(process.env.DB_PATH ?? '/data/world.sqlite', seed);
 const simulation = new Simulation(store.data, store.village);
 store.saveVillage(simulation.state);
+const interpreter = new InstructionInterpreter({ apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL });
+let closing = false;
+let instructionTimes: number[] = [];
+const inFlight = new Map<string, { text: string; result: Promise<InstructionResult> }>();
+async function handleInstruction(id: string, text: string): Promise<InstructionResult> {
+  const previous = simulation.state.instructions.find(r => r.id === id);
+  if (previous) return previous.text === text ? { type: 'instruction-result', id, ok: true, message: '受け付け済みの指示です。', record: previous } : { type: 'instruction-result', id, ok: false, message: 'この指示IDは使用済みです。' };
+  const pending = inFlight.get(id);
+  if (pending) return pending.text === text ? pending.result : { type: 'instruction-result', id, ok: false, message: 'この指示IDは使用中です。' };
+  const now = Date.now(); instructionTimes = instructionTimes.filter(t => now - t < 60_000);
+  if (instructionTimes.length >= 12) return { type: 'instruction-result', id, ok: false, message: '指示が多いため、少し待ってから送信してください。' };
+  instructionTimes.push(now);
+  const result = (async (): Promise<InstructionResult> => {
+    try {
+      const interpretation = await interpreter.interpret(text, simulation.state);
+      if (closing) throw new Error('サーバーを再起動しています。');
+      // Recheck current terrain and village after the asynchronous API response.
+      const backup = structuredClone(simulation.state);
+      let record;
+      try { record = simulation.acceptInstruction(id, text, interpretation); store.saveVillage(simulation.state); }
+      catch (error) { Object.assign(simulation.state, backup); throw error; }
+      broadcast({ type: 'village', village: simulation.state, time: store.time, speed: store.speed });
+      return { type: 'instruction-result', id, ok: true, message: store.speed === 0 ? '指示を保存しました。時間を進めると住民が実行します。' : '指示を保存しました。住民が順に実行します。', record };
+    } catch (error) {
+      return { type: 'instruction-result', id, ok: false, message: error instanceof Error && error.name !== 'ZodError' ? error.message : '指示のJSONが不正です。' };
+    } finally { inFlight.delete(id); }
+  })();
+  inFlight.set(id, { text, result });
+  return result;
+}
 const server = createServer((req, res) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
@@ -30,6 +62,7 @@ function broadcast(message: unknown) {
 }
 wss.on('connection', ws => {
   ws.send(JSON.stringify(store.snapshot()));
+  ws.send(JSON.stringify({ type: 'instruction-config', mode: interpreter.mode }));
   let windowStart = Date.now(), count = 0;
   ws.on('error', console.error);
   ws.on('message', raw => {
@@ -37,7 +70,9 @@ wss.on('connection', ws => {
     if (++count > 20) { ws.send(JSON.stringify({ type: 'error', message: '操作が速すぎます。少し待ってください。' })); return; }
     try {
       const command = commandSchema.parse(JSON.parse(raw.toString()));
-      if (command.type === 'edit') {
+      if (command.type === 'instruction') {
+        void handleInstruction(command.id, command.text).then(result => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(result)); });
+      } else if (command.type === 'edit') {
         const edit = store.edit(command);
         simulation.terrainChanged(edit);
         broadcast({ type: 'edit', edit, revision: store.revision });
@@ -72,6 +107,7 @@ server.listen(Number(process.env.PORT ?? 3001), '0.0.0.0', () => {
   console.log(`AI WORLD backend :${address && typeof address === 'object' ? address.port : 3001}`);
 });
 function shutdown() {
+  closing = true;
   clearInterval(tick); clearInterval(sync); clearInterval(save);
   for (const ws of wss.clients) ws.close(1001, 'Server restarting');
   wss.close(); server.close(); store.close();

@@ -25,7 +25,7 @@ export class VillageUI {
     this.state = state;
     $('population').textContent = `住民 ${state.residents.length}`;
     for (const kind of ['food', 'wood', 'stone'] as const) $(`resource-${kind}`).textContent = `${RESOURCE_LABELS[kind]} ${state.resources[kind]}`;
-    $('homes').textContent = `小屋 ${state.huts.filter(h => h.status === 'complete').length} / 3`;
+    $('homes').textContent = `小屋 ${state.huts.filter(h => h.status === 'complete').length} / ${Math.max(3, state.huts.length)}`;
     for (const r of state.residents) {
       let row = this.rows.get(r.id);
       if (!row) {

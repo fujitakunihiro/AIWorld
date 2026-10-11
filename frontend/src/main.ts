@@ -2,6 +2,7 @@ import './style.css';
 import { WorldRenderer } from './renderer/world-renderer';
 import { Block, SAVE_VERSION, generateWorld, getBlock, index, type BlockId, type Edit, type ServerMessage } from '../../shared/world';
 import { VillageUI } from './ui/village-ui';
+import { InstructionUI } from './ui/instruction-ui';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 type Mode = 'observe' | 'place' | 'remove';
 let mode: Mode = 'observe', material: BlockId = Block.Grass;
@@ -11,6 +12,8 @@ let history: { before: Edit; after: Edit }[] = [];
 let pending: { before: Edit; after: Edit; undo: boolean; timer: ReturnType<typeof setTimeout> } | undefined;
 let renderer: WorldRenderer;
 const villageUI = new VillageUI();
+const instructionUI = new InstructionUI();
+instructionUI.onSend = (id, text) => { if (ready && socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'instruction', id, text })); };
 const materials: { id: BlockId; name: string; color: string }[] = [
   { id: Block.Grass, name: '草', color: '#85ae62' }, { id: Block.Dirt, name: '土', color: '#a47a50' },
   { id: Block.Stone, name: '石', color: '#909a9e' }, { id: Block.Sand, name: '砂', color: '#e9d39c' },
@@ -32,6 +35,7 @@ function setMode(next: Mode) {
   renderer?.highlight(null); updateHint();
 }
 function setConnection(connected: boolean) {
+  instructionUI.setConnected(connected);
   $('connection').textContent = connected ? '世界に接続中' : '再接続中';
   $('status-dot').classList.toggle('online', connected);
   document.querySelectorAll<HTMLButtonElement>('[data-speed]').forEach(button => button.disabled = !connected);
@@ -49,6 +53,7 @@ function sendEdit(edit: Edit, undo = false) {
   socket.send(JSON.stringify({ type: 'edit', ...edit, expected: before.block }));
 }
 function clock(time: number, speed: number) {
+  instructionUI.clock(speed === 0);
   renderer.time = time;
   renderer.paused = speed === 0;
   const minute = Math.floor(time % 1440), hour = Math.floor(minute / 60);
@@ -67,7 +72,7 @@ function connect() {
         for (const edit of message.edits) world[index(edit.x, edit.y, edit.z)] = edit.block;
         renderer.setWorld(world); ready = true; history = []; clearPending(); setConnection(true); reconnectDelay = 1000;
         clock(message.time, message.speed); $('loading').classList.add('hidden');
-        if (message.village) { villageUI.update(message.village); renderer.village.update(message.village, true); }
+        if (message.village) { villageUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village, true); }
         $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
       } else if (message.type === 'edit' && world) {
         const { edit } = message;
@@ -81,8 +86,10 @@ function connect() {
         for (const edit of message.edits) world[index(edit.x, edit.y, edit.z)] = edit.block;
         renderer.changedBatch(message.edits); $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
       } else if (message.type === 'village') {
-        villageUI.update(message.village); renderer.village.update(message.village); clock(message.time, message.speed);
-      } else if (message.type === 'clock') clock(message.time, message.speed);
+        villageUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village); clock(message.time, message.speed);
+      } else if (message.type === 'instruction-result') instructionUI.result(message);
+      else if (message.type === 'instruction-config') instructionUI.configure(message.mode);
+      else if (message.type === 'clock') clock(message.time, message.speed);
       else if (message.type === 'error') { clearPending(); $('save-state').textContent = '操作は適用されませんでした'; toast(message.message); }
     } catch (error) { toast(error instanceof Error ? error.message : 'データを読み込めませんでした。'); }
   };

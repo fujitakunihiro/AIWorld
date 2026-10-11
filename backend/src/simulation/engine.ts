@@ -1,8 +1,10 @@
 import { Block, HEIGHT, SIZE, getBlock, index, type Edit } from '../../../shared/world';
 import type { Hut, Position, Resident, Resource, Resources, VillageState } from '../../../shared/village';
 import { RESOURCE_LABELS } from '../../../shared/village';
+import { interpretationSchema } from '../../../shared/instruction-schema';
 import { Navigation } from '../agents/navigation';
 import { HUT_COST, hutBlocks, siteClear } from '../buildings/hut';
+import { describeCommand, MAX_HUTS, type Interpretation, type InstructionRecord } from '../../../shared/instructions';
 const empty = (): Resources => ({ food: 0, wood: 0, stone: 0 });
 const distance = (a: Position, b: Position) => Math.hypot(a.x - b.x, a.z - b.z);
 const carried = (r: Resident) => r.inventory.food + r.inventory.wood + r.inventory.stone;
@@ -34,9 +36,9 @@ export class Simulation {
       action: 'idle', reason: 'この島に、みんなで暮らせる村をつくりたい。', goal: '5人全員が安心して眠れる小屋をつくる',
       relationships: Object.fromEntries(profiles.filter(other => other[0] !== p[0]).map(other => [other[0], 50])),
       memories: ['仲間5人と、はじまりの島で暮らし始めた。'], memorySummary: '',
-      task: null, path: [], work: 0, decisionIn: i * 0.5, home: null
+      task: null, path: [], work: 0, decisionIn: i * 0.5, home: null, order: null
     })), resources: { food: 12, wood: 0, stone: 0 }, nodes: [], huts: [], camp,
-      events: [{ id: 1, time: 0, text: '5人の住民が島に到着しました。まずは小屋の材料を集めます。' }], nextEvent: 2, elapsed: 0, nextPlan: 0 };
+      events: [{ id: 1, time: 0, text: '5人の住民が島に到着しました。まずは小屋の材料を集めます。' }], nextEvent: 2, elapsed: 0, nextPlan: 0, instructions: [] };
     // Natural trees remain standing: these are renewable gathering sites, not infinite inventory.
     for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) {
       if (this.state.nodes.filter(n => n.kind === 'wood').length >= 36) break;
@@ -74,28 +76,106 @@ export class Simulation {
   }
   private planHut() {
     if (this.state.huts.length >= 3 || this.state.huts.some(h => h.status !== 'complete')) return;
+    const hut = this.findHut('village', []);
+    if (hut) { this.state.huts.push(hut); this.event(`${hut.name}の敷地を確保しました。木材24・石材8を集めます。`); }
+  }
+  private findHut(location: 'village' | 'river' | 'forest', extra: Hut[]): Hut | null {
     const search = this.nav.search(this.state.camp);
+    const river: Position[] = [];
+    if (location === 'river') for (let z = 8; z < SIZE - 8; z++) for (let x = 18; x <= 29; x++) if (getBlock(this.data, x, 5, z) === Block.Water) river.push({ x, y: 5, z });
+    const trees = this.state.nodes.filter(n => n.kind === 'wood' && this.nodeValid(n)).map(n => n.position);
+    const landmarks = location === 'river' ? river : location === 'forest' ? trees : [this.state.camp];
+    const proximity = (p: { x: number; z: number }) => Math.min(...landmarks.map(n => Math.hypot(n.x - p.x - 2, n.z - p.z - 2)));
     const preferred = [{ x: 29, z: 35 }, { x: 35, z: 35 }, { x: 29, z: 41 }];
     const score = (p: { x: number; z: number }) => {
+      if (location !== 'village') return proximity(p);
       const priority = preferred.findIndex(site => site.x === p.x && site.z === p.z);
       return priority >= 0 ? priority : 10 + Math.hypot(p.x - 33, p.z - 39);
     };
     const sites = search.queue.map(id => ({ x: id % SIZE, z: Math.floor(id / SIZE) })).sort((a, b) => score(a) - score(b));
     for (const { x, z } of sites) {
+      if (proximity({ x, z }) > (location === 'village' ? 24 : 10)) continue;
       const y = this.nav.height(x, z);
       if (y < 1 || !siteClear(this.data, x, y, z)) continue;
-      if (this.state.huts.some(h => x < h.x + 5 && x + 5 > h.x && z < h.z + 5 && z + 5 > h.z)) continue;
+      if ([...this.state.huts, ...extra].some(h => x < h.x + 5 && x + 5 > h.x && z < h.z + 5 && z + 5 > h.z)) continue;
       if (this.state.camp.x >= x - 1 && this.state.camp.x < x + 5 && this.state.camp.z >= z - 1 && this.state.camp.z < z + 5) continue;
       if (this.state.nodes.some(n => n.position.x >= x && n.position.x < x + 4 && n.position.z >= z && n.position.z < z + 4)) continue;
       const stand = this.nav.position(x + 1, z + 4);
       if (!stand || stand.y !== y || this.nav.pathFrom(search, stand) === null) continue;
-      const hut: Hut = { id: `hut-${this.state.huts.length + 1}`, name: `小屋 ${this.state.huts.length + 1}`, x, y, z,
+      const number = this.state.huts.length + extra.length + 1;
+      const hut: Hut = { id: `hut-${number}`, name: `小屋 ${number}`, x, y, z,
         status: 'planned', progress: 0, total: 0, cost: { ...HUT_COST }, builder: null, materialsReserved: false };
-      hut.total = hutBlocks(hut).length; this.state.huts.push(hut);
-      this.event(`${hut.name}の敷地を確保しました。木材24・石材8を集めます。`); return;
+      hut.total = hutBlocks(hut).length; return hut;
     }
+    return null;
   }
-  private finish(r: Resident) { r.task = null; r.path = []; r.work = 0; r.action = 'idle'; r.decisionIn = 0.5; }
+  acceptInstruction(id: string, text: string, interpretation: Interpretation): InstructionRecord {
+    const existing = this.state.instructions.find(r => r.id === id);
+    if (existing) { if (existing.text !== text) throw new Error('この指示IDは使用済みです。'); return existing; }
+    const commands = interpretationSchema.parse({ commands: interpretation.commands, message: '' }).commands;
+    if (!commands.length) throw new Error('実行するコマンドがありません。');
+    if (this.state.instructions.length >= 20 && this.state.instructions.every(r => r.jobs.some(j => j.status === 'running'))) throw new Error('指示の上限に達しました。実行中の仕事が完了するのを待ってください。');
+    if (this.terrainDirty) this.revalidate();
+    const additions: Hut[] = [];
+    const jobs = commands.map(command => {
+      const hutIds: string[] = [];
+      if (command.action === 'build') {
+        if (this.state.huts.length + additions.length + command.count > MAX_HUTS) throw new Error(`小屋は世界全体で${MAX_HUTS}軒までです。`);
+        for (let i = 0; i < command.count; i++) {
+          const hut = this.findHut(command.location, additions);
+          if (!hut) throw new Error('指定場所に、届く道と平らな4×4の敷地が足りません。建築数を減らすか、別の場所を指定してください。');
+          additions.push(hut); hutIds.push(hut.id);
+        }
+      }
+      return { command, hutIds, until: this.state.elapsed + (command.action === 'rest' ? 60 : command.action === 'gather' ? 240 : 0), status: command.action === 'auto' ? 'complete' as const : 'running' as const, detail: describeCommand(command) };
+    });
+    // All feasibility checks precede mutations: a batch either registers in full or changes nothing.
+    const record: InstructionRecord = { id, text, source: interpretation.source, notice: interpretation.notice, time: this.state.elapsed, jobs };
+    this.state.huts.push(...additions);
+    if (this.state.instructions.length >= 20) this.state.instructions.splice(this.state.instructions.findIndex(r => r.jobs.every(j => j.status !== 'running')), 1);
+    this.state.instructions.push(record);
+    jobs.forEach((job, i) => {
+      if (job.command.action === 'build') return;
+      const command = job.command;
+      for (const r of this.state.residents.filter(r => command.target === 'all' || r.id === command.target)) {
+        r.order = command.action === 'auto' ? null : { requestId: `${id}:${i}`, kind: command.action === 'rest' ? 'rest' : command.resource, until: job.until };
+        this.finish(r); r.decisionIn = 0; r.reason = `プレイヤーからの指示：${describeCommand(command)}。`; this.remember(r, r.reason);
+      }
+    });
+    this.event(`指示を受け付けました：${jobs.map(j => describeCommand(j.command)).join(' ／ ')}。`);
+    this.refreshInstructions();
+    return record;
+  }
+  private refreshInstructions() {
+    for (const r of this.state.residents) if (r.order && r.order.until <= this.state.elapsed) { r.order = null; this.finish(r); this.economicChange = true; }
+    for (const record of this.state.instructions) record.jobs.forEach((job, i) => {
+      if (job.status !== 'running') return;
+      const before = `${job.status}:${job.detail}`;
+      if (job.command.action === 'build') {
+        const huts = this.state.huts.filter(h => job.hutIds.includes(h.id));
+        const done = huts.filter(h => h.status === 'complete').length;
+        const active = huts.find(h => h.status !== 'complete');
+        if (done === job.hutIds.length) { job.status = 'complete'; job.detail = `${done}軒の小屋が完成しました。`; }
+        else if (active?.materialsReserved) job.detail = `${done}/${huts.length}軒完成 · ${active.name}を建築中 ${active.progress}/${active.total}`;
+        else {
+          const wood = Math.max(0, HUT_COST.wood - this.state.resources.wood), stone = Math.max(0, HUT_COST.stone - this.state.resources.stone);
+          job.detail = `${done}/${huts.length}軒完成 · ${wood || stone ? `材料を準備中（木材${wood}・石材${stone}不足）` : '材料が揃い、着工待ち'}。住民の食事・休息後、既存の建築から順に着工します。`;
+        }
+      } else {
+        const remaining = this.state.residents.filter(r => r.order?.requestId === `${record.id}:${i}`);
+        if (!remaining.length) { job.status = this.state.elapsed >= job.until ? 'complete' : 'superseded'; job.detail = job.status === 'complete' ? '指示の時間が終了し、自律行動に戻りました。' : '新しい行動指示に切り替えました。'; }
+        else job.detail = `${describeCommand(job.command)} · 残り${Math.ceil(job.until - this.state.elapsed)}分（ゲーム内）`;
+      }
+      if (before !== `${job.status}:${job.detail}`) this.economicChange = true;
+    });
+  }
+  private finish(r: Resident) {
+    // A new order can interrupt a step between two floor heights. Settle onto the
+    // current cell before removing its route, otherwise it appears permanently unsafe.
+    const floor = this.nav.height(Math.floor(r.position.x), Math.floor(r.position.z));
+    if (floor >= 0 && Math.abs(floor - r.position.y) <= 1) r.position.y = floor;
+    r.task = null; r.path = []; r.work = 0; r.action = 'idle'; r.decisionIn = 0.5;
+  }
   private go(r: Resident, kind: NonNullable<Resident['task']>['kind'], destination: Position, targetId: string | null, reason: string, path?: Position[]) {
     const route = path ?? this.nav.path(r.position, destination); if (!route) return false;
     r.task = { kind, destination, targetId }; r.path = route; r.work = 0;
@@ -112,6 +192,7 @@ export class Simulation {
       r.action = 'eating'; r.reason = 'お腹が空いたので、共有の食料を食べて元気を取り戻す。'; r.work = 0; return;
     }
     const night = time % 1440 >= 1200 || time % 1440 < 360;
+    if (r.order?.kind === 'rest') { r.action = 'resting'; r.reason = 'プレイヤーの休息指示で、1時間ゆっくり体を休める。空腹時は食事を先に済ませる。'; r.work = 0; return; }
     if (r.energy < 22 || (night && r.energy < 75)) {
       const home = this.state.huts.find(h => h.id === r.home && h.status === 'complete');
       const bed = home ? this.nav.position(home.x + 1, home.z + 2) : null;
@@ -119,7 +200,7 @@ export class Simulation {
       r.action = 'resting'; r.reason = r.home ? '完成した小屋があるので、安心して休息する。' : '疲れがたまったので、ここでひと休みする。'; r.work = 0; return;
     }
     const hut = this.state.huts.find(h => h.status !== 'complete');
-    if (hut && (!hut.builder || hut.builder === r.id) && (r.job === '建築家' || !this.state.residents.some(other => other.job === '建築家' && other.energy > 20))) {
+    if (!r.order && hut && (!hut.builder || hut.builder === r.id) && (r.job === '建築家' || !this.state.residents.some(other => other.job === '建築家' && other.energy > 20))) {
       if (!hut.materialsReserved && this.state.resources.wood >= hut.cost.wood && this.state.resources.stone >= hut.cost.stone) {
         this.state.resources.wood -= hut.cost.wood; this.state.resources.stone -= hut.cost.stone;
         hut.materialsReserved = true; hut.status = 'building'; hut.builder = r.id;
@@ -127,7 +208,8 @@ export class Simulation {
       }
       if (hut.materialsReserved) {
         const stand = this.nav.position(hut.x + 1, hut.z + 4);
-        if (stand && this.go(r, 'build', stand, hut.id, 'みんなの寝床が足りない。材料が揃ったので小屋を建てる。')) return;
+        const requested = this.state.instructions.some(record => record.jobs.some(job => job.hutIds.includes(hut.id)));
+        if (stand && this.go(r, 'build', stand, hut.id, requested ? 'プレイヤーからの建築指示。材料が揃ったので、確保した敷地に小屋を建てる。' : 'みんなの寝床が足りない。材料が揃ったので小屋を建てる。')) return;
       }
     }
     const search = this.nav.search(r.position);
@@ -138,6 +220,7 @@ export class Simulation {
       wood: needWood ? 70 : this.state.resources.wood < 24 ? 20 : 0,
       stone: needStone ? 70 : this.state.resources.stone < 8 ? 20 : 0
     };
+    if (r.order) { priorities.food = r.hunger > 70 ? 160 : 0; priorities.wood = 0; priorities.stone = 0; priorities[r.order.kind] += 140; }
     if (r.job === '木こり' && priorities.wood > 0) priorities.wood += 30;
     if (r.job === '採掘師' && priorities.stone > 0) priorities.stone += 30;
     if (r.job === '採集家' && priorities.food > 0) priorities.food += 30;
@@ -153,12 +236,13 @@ export class Simulation {
     choices.sort((a, b) => b.score - a.score);
     const choice = choices[0];
     if (choice) {
-      const reason = choice.node.kind === 'food' ? '食料の備蓄を増やして、仲間が空腹にならないようにする。' :
+      const reason = r.order?.kind === choice.node.kind ? `プレイヤーの指示で、${RESOURCE_LABELS[choice.node.kind]}の採集を優先する。集めた資源は拠点へ運ぶ。` : choice.node.kind === 'food' ? '食料の備蓄を増やして、仲間が空腹にならないようにする。' :
         choice.node.kind === 'wood' ? (needWood ? '小屋を建てる木材が足りないので、森で集める。' : '次の暮らしに備えて、木材を補充する。') :
           (needStone ? '小屋の土台に使う石材が足りないので、採掘する。' : '修繕に備えて、石材を補充する。');
       this.go(r, 'gather', choice.stand, choice.node.id, reason, choice.path); return;
     }
     if (r.hunger >= 75) { r.action = 'resting'; r.reason = '食料に届く道がない。体力を温存しながら待つ。'; r.work = 0; return; }
+    if (r.order) { r.action = 'resting'; r.reason = '指示された資源が枯渇しているか、道が塞がっている。再生や地形の変化を待つ。'; r.work = 0; return; }
     const id = search.queue[(Math.floor(this.state.elapsed / 8) + this.state.residents.indexOf(r) * 13) % Math.max(1, search.queue.length)];
     const p = id === undefined ? null : this.nav.position(id % SIZE, Math.floor(id / SIZE));
     if (p && distance(p, r.position) < 20 && !this.isReserved(Math.floor(p.x), Math.floor(p.z))) {
@@ -195,6 +279,7 @@ export class Simulation {
   private fixedStep(dt: number, time: number, edits: Edit[]) {
     if (this.terrainDirty) this.revalidate();
     this.state.elapsed += dt; this.state.nextPlan -= dt;
+    this.refreshInstructions();
     if (this.state.nextPlan <= 0) { this.planHut(); this.state.nextPlan = 20; }
     for (const node of this.state.nodes) {
       node.regeneration += dt;
@@ -265,7 +350,7 @@ export class Simulation {
         if (r.work >= 2) { if (this.state.resources.food > 0) { this.state.resources.food--; r.hunger = Math.max(0, r.hunger - 45); this.economicChange = true; } this.finish(r); }
       } else if (r.action === 'resting') {
         r.work += dt; r.energy = Math.min(100, r.energy + dt * (r.home ? 1.6 : 0.8));
-        if ((r.energy >= 85 && r.work >= 4) || r.work >= 100 || (r.hunger >= 60 && this.state.resources.food > 0)) this.finish(r);
+        if ((r.order?.kind !== 'rest' && r.energy >= 85 && r.work >= 4) || r.work >= 100 || (r.hunger >= 60 && this.state.resources.food > 0)) this.finish(r);
       } else {
         r.decisionIn -= dt;
         if (r.decisionIn <= 0) this.choose(r, time);
