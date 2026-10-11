@@ -1,6 +1,7 @@
 import './style.css';
 import { WorldRenderer } from './renderer/world-renderer';
 import { Block, SAVE_VERSION, generateWorld, getBlock, index, type BlockId, type Edit, type ServerMessage } from '../../shared/world';
+import { VillageUI } from './ui/village-ui';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 type Mode = 'observe' | 'place' | 'remove';
 let mode: Mode = 'observe', material: BlockId = Block.Grass;
@@ -9,6 +10,7 @@ let reconnectDelay = 1000, toastTimer: ReturnType<typeof setTimeout>;
 let history: { before: Edit; after: Edit }[] = [];
 let pending: { before: Edit; after: Edit; undo: boolean; timer: ReturnType<typeof setTimeout> } | undefined;
 let renderer: WorldRenderer;
+const villageUI = new VillageUI();
 const materials: { id: BlockId; name: string; color: string }[] = [
   { id: Block.Grass, name: '草', color: '#85ae62' }, { id: Block.Dirt, name: '土', color: '#a47a50' },
   { id: Block.Stone, name: '石', color: '#909a9e' }, { id: Block.Sand, name: '砂', color: '#e9d39c' },
@@ -21,7 +23,7 @@ function toast(message: string) {
 }
 function updateHint() {
   const touch = matchMedia('(pointer: coarse)').matches;
-  $('hint').textContent = mode === 'observe' ? (touch ? '1本指で移動 · 2本指でズーム・回転' : 'ドラッグで回転 · 右ドラッグで移動 · スクロールでズーム') :
+  $('hint').textContent = mode === 'observe' ? (touch ? '住民をタップで詳細 · 1本指で移動 · 2本指でズーム' : '住民をクリックで詳細 · ドラッグで回転 · 右ドラッグで移動') :
     mode === 'place' ? `${materials.find(m => m.id === material)!.name}を置く場所をタップ · ドラッグでカメラ操作` : '消したいブロックをタップ · 高さ0の基盤は保護されています';
 }
 function setMode(next: Mode) {
@@ -48,6 +50,7 @@ function sendEdit(edit: Edit, undo = false) {
 }
 function clock(time: number, speed: number) {
   renderer.time = time;
+  renderer.paused = speed === 0;
   const minute = Math.floor(time % 1440), hour = Math.floor(minute / 60);
   $('day').textContent = `${Math.floor(time / 1440) + 1}日目`;
   $('clock').textContent = `${hour >= 6 && hour < 18 ? '☀' : '☾'} ${String(hour).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
@@ -64,6 +67,7 @@ function connect() {
         for (const edit of message.edits) world[index(edit.x, edit.y, edit.z)] = edit.block;
         renderer.setWorld(world); ready = true; history = []; clearPending(); setConnection(true); reconnectDelay = 1000;
         clock(message.time, message.speed); $('loading').classList.add('hidden');
+        if (message.village) { villageUI.update(message.village); renderer.village.update(message.village, true); }
         $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
       } else if (message.type === 'edit' && world) {
         const { edit } = message;
@@ -73,6 +77,11 @@ function connect() {
           clearPending();
         }
         $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
+      } else if (message.type === 'terrain' && world) {
+        for (const edit of message.edits) world[index(edit.x, edit.y, edit.z)] = edit.block;
+        renderer.changedBatch(message.edits); $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
+      } else if (message.type === 'village') {
+        villageUI.update(message.village); renderer.village.update(message.village); clock(message.time, message.speed);
       } else if (message.type === 'clock') clock(message.time, message.speed);
       else if (message.type === 'error') { clearPending(); $('save-state').textContent = '操作は適用されませんでした'; toast(message.message); }
     } catch (error) { toast(error instanceof Error ? error.message : 'データを読み込めませんでした。'); }
@@ -95,7 +104,6 @@ for (const m of materials) {
 }
 document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(button => button.onclick = () => setMode(button.dataset.mode as Mode));
 document.querySelectorAll<HTMLButtonElement>('[data-speed]').forEach(button => button.onclick = () => { if (ready) socket?.send(JSON.stringify({ type: 'speed', speed: Number(button.dataset.speed) })); });
-$('start-building').onclick = () => { setMode('place'); toast('素材を選んで、島をタップしてみよう。'); };
 const guide = $('guide') as HTMLDialogElement;
 $('help').onclick = () => guide.showModal(); $('close-guide').onclick = () => guide.close();
 guide.addEventListener('click', e => { if (e.target === guide) { const r = guide.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) guide.close(); } });
@@ -106,9 +114,11 @@ $('undo').onclick = () => {
 };
 try {
   renderer = new WorldRenderer($('world'));
+  villageUI.onFocus = (state, id) => { setMode('observe'); renderer.focusVillage(state, id); };
+  villageUI.onSelect = id => renderer.village.select(id);
   renderer.onFps = fps => $('fps').textContent = `${fps} FPS`;
   renderer.controls.onTap = (x, y) => {
-    if (mode === 'observe') return;
+    if (mode === 'observe') { const id = renderer.pickResident(x, y); if (id) villageUI.open(id); return; }
     const picked = renderer.pick(x, y, mode === 'place');
     if (!picked) { toast('編集できる地形を選んでください。'); return; }
     sendEdit({ ...picked, block: mode === 'place' ? material : Block.Air });

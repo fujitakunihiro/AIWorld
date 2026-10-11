@@ -2,13 +2,17 @@ import { createServer } from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { WorldStore } from './database/store';
 import { commandSchema } from '../../shared/schema';
+import { SAVE_VERSION } from '../../shared/world';
+import { Simulation } from './simulation/engine';
 const seed = Number(process.env.WORLD_SEED ?? 73129);
 if (!Number.isSafeInteger(seed) || seed < 0 || seed > 2147483647) throw new Error('WORLD_SEEDは0〜2147483647の整数で指定してください。');
 const store = new WorldStore(process.env.DB_PATH ?? '/data/world.sqlite', seed);
+const simulation = new Simulation(store.data, store.village);
+store.saveVillage(simulation.state);
 const server = createServer((req, res) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
-  if (req.method === 'GET' && req.url === '/api/health') res.end(JSON.stringify({ ok: true, version: 1, revision: store.revision }));
+  if (req.method === 'GET' && req.url === '/api/health') res.end(JSON.stringify({ ok: true, version: SAVE_VERSION, revision: store.revision, residents: simulation.state.residents.length }));
   else { res.statusCode = 404; res.end(JSON.stringify({ error: 'Not found' })); }
 });
 const wss = new WebSocketServer({ noServer: true, maxPayload: 2048 });
@@ -35,17 +39,34 @@ wss.on('connection', ws => {
       const command = commandSchema.parse(JSON.parse(raw.toString()));
       if (command.type === 'edit') {
         const edit = store.edit(command);
+        simulation.terrainChanged(edit);
         broadcast({ type: 'edit', edit, revision: store.revision });
-      } else { store.speed = command.speed; store.saveClock(); broadcast({ type: 'clock', time: store.time, speed: store.speed }); }
+      } else { store.speed = command.speed; store.saveVillage(simulation.state); broadcast({ type: 'clock', time: store.time, speed: store.speed }); }
     } catch (error) {
       ws.send(JSON.stringify({ type: 'error', message: error instanceof Error && error.name !== 'ZodError' ? error.message : '操作データが不正です。' }));
     }
   });
 });
 // Fixed-step world clock: one real second advances one game minute at 1×.
-const tick = setInterval(() => { store.time += store.speed / 4; }, 250);
+const tick = setInterval(() => {
+  if (store.speed === 0) return;
+  try {
+    const edits = simulation.step(store.speed / 4, store.time);
+    store.time += store.speed / 4;
+    if (edits.length || simulation.economicChange) store.saveVillage(simulation.state, edits);
+    if (edits.length) broadcast({ type: 'terrain', edits, revision: store.revision });
+    broadcast({ type: 'village', village: simulation.state, time: store.time, speed: store.speed });
+  } catch (error) {
+    console.error('Simulation halted to protect save data', error);
+    store.speed = 0; broadcast({ type: 'clock', time: store.time, speed: 0 });
+    broadcast({ type: 'error', message: 'シミュレーションを停止しました。サーバーログを確認してください。' });
+    clearInterval(tick); clearInterval(save);
+    // Discard the failed in-memory step; Docker restores the last atomic SQLite snapshot.
+    setTimeout(() => process.exit(1), 100);
+  }
+}, 250);
 const sync = setInterval(() => broadcast({ type: 'clock', time: store.time, speed: store.speed }), 1000);
-const save = setInterval(() => store.saveClock(), 5000);
+const save = setInterval(() => store.saveVillage(simulation.state), 5000);
 server.listen(Number(process.env.PORT ?? 3001), '0.0.0.0', () => {
   const address = server.address();
   console.log(`AI WORLD backend :${address && typeof address === 'object' ? address.port : 3001}`);

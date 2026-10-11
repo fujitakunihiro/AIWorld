@@ -1,0 +1,95 @@
+import * as THREE from 'three';
+import type { Resident, VillageState } from '../../../shared/village';
+interface Figure { group: THREE.Group; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident }
+export class VillageRenderer {
+  private root = new THREE.Group();
+  private figures = new Map<string, Figure>();
+  private sites = new Map<string, THREE.Group>();
+  private nodes = new Map<string, THREE.Group>();
+  private cube = new THREE.BoxGeometry(1, 1, 1);
+  private materials = new Map<string, THREE.MeshLambertMaterial>();
+  private selection = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.72, 24), new THREE.MeshBasicMaterial({ color: '#ffe4a1', side: THREE.DoubleSide, depthWrite: false }));
+  private selected: string | null = null;
+  constructor(scene: THREE.Scene) { scene.add(this.root); this.root.add(this.selection); this.selection.rotation.x = -Math.PI / 2; this.selection.visible = false; }
+  private material(color: string) {
+    let material = this.materials.get(color);
+    if (!material) { material = new THREE.MeshLambertMaterial({ color }); this.materials.set(color, material); } return material;
+  }
+  private box(parent: THREE.Object3D, color: string, size: number[], p: number[]) {
+    const mesh = new THREE.Mesh(this.cube, this.material(color)); mesh.scale.set(size[0], size[1], size[2]); mesh.position.set(p[0], p[1], p[2]); parent.add(mesh); return mesh;
+  }
+  private figure(r: Resident): Figure {
+    const group = new THREE.Group(); group.userData.residentId = r.id;
+    const legs = [-1, 1].map(side => this.box(group, '#334b50', [0.18, 0.52, 0.23], [side * 0.13, 0.27, 0]));
+    this.box(group, r.color, [0.48, 0.59, 0.3], [0, 0.82, 0]);
+    const arms = [-1, 1].map(side => this.box(group, r.color, [0.17, 0.55, 0.22], [side * 0.34, 0.84, 0]));
+    this.box(group, '#efcc9f', [0.44, 0.43, 0.42], [0, 1.34, 0]);
+    this.box(group, r.id === 'ren' ? '#5a5148' : '#5b4233', [0.46, 0.14, 0.44], [0, 1.57, 0]);
+    for (const side of [-1, 1]) this.box(group, '#324443', [0.055, 0.07, 0.015], [side * 0.095, 1.36, 0.217]);
+    const cargo = this.box(group, '#c5a36e', [0.5, 0.45, 0.42], [0, 0.9, 0.43]);
+    cargo.visible = false;
+    const handle = this.box(arms[1], '#826244', [0.12, 0.7, 0.12], [0, -0.65, 0.5]);
+    // Child coordinates use the arm's scaled frame, keeping the tool compact.
+    this.box(handle, '#9aa6a5', [2.5, 0.3, 1.3], [0, -0.4, 0]);
+    group.position.set(r.position.x, r.position.y, r.position.z); this.root.add(group);
+    return { group, legs, arms, cargo, resident: r, target: group.position.clone() };
+  }
+  update(state: VillageState, snap = false) {
+    for (const r of state.residents) {
+      let figure = this.figures.get(r.id);
+      if (!figure) { figure = this.figure(r); this.figures.set(r.id, figure); }
+      figure.resident = r; figure.target.set(r.position.x, r.position.y, r.position.z);
+      if (snap || figure.group.position.distanceTo(figure.target) > 6) figure.group.position.copy(figure.target);
+      figure.cargo.visible = r.inventory.food + r.inventory.wood + r.inventory.stone > 0;
+      figure.cargo.material = this.material(r.inventory.food ? '#cba56c' : r.inventory.stone ? '#8b9a9d' : '#ab7955');
+    }
+    for (const hut of state.huts) {
+      if (this.sites.has(hut.id)) continue;
+      const group = new THREE.Group(); group.userData.hutId = hut.id;
+      const geometry = new THREE.EdgesGeometry(new THREE.BoxGeometry(4.1, 4.8, 4.1));
+      const edges = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: '#a8ae77', transparent: true, opacity: 0.4 }));
+      edges.position.set(2, 2.4, 2); group.add(edges); group.position.set(hut.x, hut.y, hut.z); this.root.add(group); this.sites.set(hut.id, group);
+    }
+    for (const hut of state.huts) this.sites.get(hut.id)!.visible = hut.status !== 'complete';
+    for (const node of state.nodes) {
+      if (node.kind === 'wood') continue; // Existing voxel trees are the wood gathering sites.
+      let group = this.nodes.get(node.id);
+      if (!group) {
+        group = new THREE.Group(); group.position.set(node.position.x, node.position.y, node.position.z);
+        if (node.kind === 'stone') {
+          this.box(group, '#93a0a0', [0.8, 0.5, 0.65], [0, 0.25, 0]); this.box(group, '#a6b0ac', [0.5, 0.4, 0.6], [0.2, 0.6, 0.05]);
+        } else {
+          this.box(group, '#609251', [0.8, 0.65, 0.7], [0, 0.33, 0]);
+          for (let i = 0; i < 3; i++) this.box(group, '#dca47c', [0.17, 0.17, 0.17], [(i - 1) * 0.22, 0.5, 0.36]);
+        }
+        this.nodes.set(node.id, group); this.root.add(group);
+      }
+      group.visible = node.remaining > 0; group.scale.setScalar(node.remaining > 0 ? 0.65 + 0.35 * node.remaining / node.capacity : 1);
+    }
+  }
+  select(id: string | null) { this.selected = id; }
+  pick(raycaster: THREE.Raycaster, terrainDistance: number) {
+    const hit = raycaster.intersectObjects([...this.figures.values()].map(f => f.group), true)[0];
+    if (!hit || hit.distance > terrainDistance + 0.1) return null;
+    let object: THREE.Object3D | null = hit.object;
+    while (object && !object.userData.residentId) object = object.parent;
+    return object?.userData.residentId as string | null;
+  }
+  frame(now: number, delta: number, paused: boolean) {
+    for (const figure of this.figures.values()) {
+      const d = figure.target.clone().sub(figure.group.position);
+      if (Math.hypot(d.x, d.z) > 0.015) figure.group.rotation.y = Math.atan2(d.x, d.z);
+      figure.group.position.lerp(figure.target, 1 - Math.exp(-delta * 16));
+      const moving = !paused && figure.resident.action === 'moving';
+      const working = !paused && (figure.resident.action === 'gathering' || figure.resident.action === 'building');
+      for (let i = 0; i < 2; i++) {
+        figure.legs[i].rotation.x = moving ? Math.sin(now / 120 + i * Math.PI) * 0.5 : 0;
+        figure.arms[i].rotation.x = working ? -0.7 + Math.sin(now / 180) * 0.55 : moving ? Math.sin(now / 120 + (1 - i) * Math.PI) * 0.35 : 0;
+      }
+      if (figure.resident.action === 'resting') figure.group.scale.y = 0.75; else figure.group.scale.y = 1;
+    }
+    const selected = this.selected ? this.figures.get(this.selected) : null;
+    this.selection.visible = !!selected;
+    if (selected) this.selection.position.copy(selected.group.position).add(new THREE.Vector3(0, 0.03, 0));
+  }
+}

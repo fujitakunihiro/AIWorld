@@ -2,12 +2,17 @@ import * as THREE from 'three';
 import { WorldCamera } from '../camera/controls';
 import { Block, CHUNK, SIZE, getBlock, inside, type Edit } from '../../../shared/world';
 import { meshChunk, type MeshData } from '../../../shared/mesher';
+import type { VillageState } from '../../../shared/village';
+import { VillageRenderer } from './village-renderer';
 const palette: Record<number, string> = { 1: '#85ae62', 2: '#a47a50', 3: '#909a9e', 4: '#e9d39c', 5: '#aa8057', 6: '#548b54', 7: '#77bec7', 8: '#c6886b' };
 export class WorldRenderer {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
   readonly renderer: THREE.WebGLRenderer;
   readonly controls: WorldCamera;
+  readonly village: VillageRenderer;
+  paused = false;
+  private lastFrame = performance.now();
   private chunks = new Map<string, THREE.Group>();
   private solid = new THREE.MeshLambertMaterial({ vertexColors: true });
   private water = new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0.72, depthWrite: false });
@@ -27,6 +32,7 @@ export class WorldRenderer {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(this.renderer.domElement);
     this.controls = new WorldCamera(this.camera, this.renderer.domElement); this.controls.home();
+    this.village = new VillageRenderer(this.scene);
     this.scene.background = new THREE.Color('#dfeef0'); this.scene.fog = new THREE.Fog('#dfeef0', 190, 360);
     this.scene.add(this.sun, this.ambient); this.sun.position.set(45, 75, 20);
     this.scene.add(this.outline); this.outline.visible = false;
@@ -81,11 +87,40 @@ export class WorldRenderer {
     if (edit.z % CHUNK === 0) this.rebuild(cx, cz - 1);
     if (edit.z % CHUNK === CHUNK - 1) this.rebuild(cx, cz + 1);
   }
+  changedBatch(edits: Edit[]) {
+    const chunks = new Set<string>();
+    for (const edit of edits) {
+      const cx = Math.floor(edit.x / CHUNK), cz = Math.floor(edit.z / CHUNK); chunks.add(`${cx},${cz}`);
+      if (edit.x % CHUNK === 0) chunks.add(`${cx - 1},${cz}`);
+      if (edit.x % CHUNK === CHUNK - 1) chunks.add(`${cx + 1},${cz}`);
+      if (edit.z % CHUNK === 0) chunks.add(`${cx},${cz - 1}`);
+      if (edit.z % CHUNK === CHUNK - 1) chunks.add(`${cx},${cz + 1}`);
+    }
+    for (const key of chunks) { const [x, z] = key.split(',').map(Number); this.rebuild(x, z); }
+  }
+  focusVillage(state: VillageState, residentId?: string) {
+    const p = state.residents.find(r => r.id === residentId)?.position ?? state.camp;
+    this.controls.target.set(p.x, p.y, p.z);
+    if (!residentId && state.huts.length) {
+      const points = [state.camp, ...state.huts.map(h => ({ x: h.x + 2, y: h.y + 1, z: h.z + 2 }))];
+      this.controls.target.set((Math.min(...points.map(p => p.x)) + Math.max(...points.map(p => p.x))) / 2,
+        Math.max(...points.map(p => p.y)), (Math.min(...points.map(p => p.z)) + Math.max(...points.map(p => p.z))) / 2);
+    }
+    this.controls.orbit.radius = residentId ? (window.innerWidth < 700 ? 43 : 28) : (window.innerWidth < 700 ? 68 : 48);
+    this.controls.update();
+  }
+  pickResident(clientX: number, clientY: number) {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.raycaster.setFromCamera(new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -(clientY - rect.top) / rect.height * 2 + 1), this.camera);
+    const meshes = [...this.chunks.values()].filter(group => group.visible).flatMap(group => group.children.filter(mesh => mesh.userData.solid));
+    const terrain = this.raycaster.intersectObjects(meshes, false)[0];
+    return this.village.pick(this.raycaster, terrain?.distance ?? Infinity);
+  }
   pick(clientX: number, clientY: number, place: boolean) {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.raycaster.setFromCamera(new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -(clientY - rect.top) / rect.height * 2 + 1), this.camera);
     const meshes: THREE.Object3D[] = [];
-    for (const group of this.chunks.values()) for (const mesh of group.children) if (mesh.userData.solid) meshes.push(mesh);
+    for (const group of this.chunks.values()) if (group.visible) for (const mesh of group.children) if (mesh.userData.solid) meshes.push(mesh);
     const hit = this.raycaster.intersectObjects(meshes, false)[0];
     if (!hit?.face || !this.data) return null;
     const p = hit.point.clone().addScaledVector(hit.face.normal, place ? 0.01 : -0.01);
@@ -105,6 +140,7 @@ export class WorldRenderer {
   }
   private frame() {
     const now = performance.now(), hour = (this.time % 1440) / 60;
+    this.village.frame(now, Math.min(0.1, (now - this.lastFrame) / 1000), this.paused); this.lastFrame = now;
     const light = Math.max(0.12, Math.sin((hour - 6) / 24 * Math.PI * 2));
     this.sun.intensity = light * 2.1; this.ambient.intensity = 0.6 + light * 1.4;
     const sky = new THREE.Color('#152c48').lerp(new THREE.Color('#dfeef0'), light);

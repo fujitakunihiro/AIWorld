@@ -6,7 +6,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
-import type { ServerMessage, WorldSnapshot } from '../../shared/world';
+import { type ServerMessage, type WorldSnapshot } from '../../shared/world';
 async function start(path: string) {
   const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], { env: { ...process.env, DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
   const port = await new Promise<number>((resolve, reject) => {
@@ -43,7 +43,8 @@ test('HTTP + WebSocket: snapshots, two-client edits, rejection, clock and real p
     running = await start(path);
     assert.equal((await fetch(`http://localhost:${running.port}/api/health`)).status, 200);
     const a = new Client(running.port), b = new Client(running.port); clients.push(a, b);
-    assert.equal((await a.wait('snapshot') as WorldSnapshot).seed, 73129); await b.wait('snapshot');
+    const initial = await a.wait('snapshot') as WorldSnapshot;
+    assert.equal(initial.seed, 73129); assert.equal(initial.village!.residents.length, 5); await b.wait('snapshot');
     a.send({ type: 'edit', x: 32, y: 11, z: 40, block: 5, expected: 0 });
     for (const client of [a, b]) { const message = await client.wait('edit'); assert.equal(message.type, 'edit'); if (message.type === 'edit') assert.equal(message.revision, 1); }
     b.send({ type: 'edit', x: 32, y: 11, z: 40, block: 3, expected: 0 }); assert.equal((await b.wait('error')).type, 'error');
@@ -61,6 +62,43 @@ test('HTTP + WebSocket: snapshots, two-client edits, rejection, clock and real p
   } finally {
     for (const client of clients) client.ws.close();
     if (running && running.child.exitCode === null) await stop(running.child);
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+test('live residents gather and build; paused village and in-progress hut survive a process restart', { timeout: 25000 }, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ai-world-village-ws-')), path = join(dir, 'world.sqlite');
+  let running: Awaited<ReturnType<typeof start>> | undefined;
+  const clients: Client[] = [];
+  try {
+    running = await start(path); const a = new Client(running.port); clients.push(a);
+    const initial = await a.wait('snapshot') as WorldSnapshot; assert.equal(initial.village!.residents.length, 5);
+    a.send({ type: 'speed', speed: 20 });
+    let building: Extract<ServerMessage, {type: 'village'}> | undefined;
+    for (let i = 0; i < 60; i++) {
+      const message = await a.wait('village');
+      if (message.type === 'village' && message.village.huts.some(h => h.status === 'building' && h.progress >= 8)) { building = message; break; }
+    }
+    assert.ok(building, 'A hut did not start construction at 20×');
+    assert.ok(building.village.events.some(e => e.text.includes('届けました')));
+    a.send({ type: 'speed', speed: 0 });
+    let message = await a.wait('clock'); while (message.type !== 'clock' || message.speed !== 0) message = await a.wait('clock');
+    const beforeClient = new Client(running.port); clients.push(beforeClient);
+    const before = await beforeClient.wait('snapshot') as WorldSnapshot;
+    await new Promise(resolve => setTimeout(resolve, 350));
+    const frozenClient = new Client(running.port); clients.push(frozenClient);
+    const frozen = await frozenClient.wait('snapshot') as WorldSnapshot;
+    assert.deepEqual(frozen.village, before.village); assert.equal(frozen.time, before.time);
+    for (const client of clients) client.ws.close(); await stop(running.child); running = await start(path);
+    const restored = new Client(running.port); clients.push(restored);
+    const after = await restored.wait('snapshot') as WorldSnapshot;
+    assert.equal(after.speed, 0); assert.equal(after.time, before.time); assert.deepEqual(after.edits, before.edits);
+    assert.deepEqual(after.village!.huts, before.village!.huts); assert.deepEqual(after.village!.resources, before.village!.resources);
+    assert.deepEqual(after.village!.residents.map(r => ({ id: r.id, inventory: r.inventory, memories: r.memories })), before.village!.residents.map(r => ({ id: r.id, inventory: r.inventory, memories: r.memories })));
+    restored.send({ type: 'speed', speed: 20 });
+    const continuing = await restored.wait('village'); assert.equal(continuing.type, 'village');
+    if (continuing.type === 'village') assert.ok(continuing.village.elapsed > before.village!.elapsed);
+  } finally {
+    for (const client of clients) client.ws.close(); if (running && running.child.exitCode === null) await stop(running.child);
     rmSync(dir, { recursive: true, force: true });
   }
 });
