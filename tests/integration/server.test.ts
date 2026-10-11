@@ -1,0 +1,66 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { spawn, type ChildProcess } from 'node:child_process';
+import { once } from 'node:events';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { WebSocket } from 'ws';
+import type { ServerMessage, WorldSnapshot } from '../../shared/world';
+async function start(path: string) {
+  const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], { env: { ...process.env, DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const port = await new Promise<number>((resolve, reject) => {
+    let output = ''; const timer = setTimeout(() => { child.kill(); reject(new Error(`Server startup timeout: ${output}`)); }, 10000);
+    child.stdout!.on('data', chunk => { output += String(chunk); const match = output.match(/backend :(\d+)/); if (match) { clearTimeout(timer); resolve(Number(match[1])); } });
+    child.stderr!.on('data', chunk => output += String(chunk));
+    child.once('exit', code => { clearTimeout(timer); reject(new Error(`Server exited ${code}: ${output}`)); });
+  });
+  return { child, port };
+}
+async function stop(child: ChildProcess) { const done = once(child, 'exit'); child.kill('SIGTERM'); await done; }
+class Client {
+  ws: WebSocket;
+  messages: ServerMessage[] = [];
+  constructor(port: number) {
+    this.ws = new WebSocket(`ws://localhost:${port}/socket`, { origin: `http://localhost:${port}` });
+    this.ws.on('message', data => this.messages.push(JSON.parse(data.toString())));
+  }
+  send(data: unknown) { this.ws.send(JSON.stringify(data)); }
+  async wait(type: ServerMessage['type']) {
+    const start = Date.now();
+    while (Date.now() - start < 5000) {
+      const i = this.messages.findIndex(m => m.type === type); if (i >= 0) return this.messages.splice(i, 1)[0];
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    throw new Error(`No ${type} message received`);
+  }
+}
+test('HTTP + WebSocket: snapshots, two-client edits, rejection, clock and real process restart', { timeout: 30000 }, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ai-world-integration-')), path = join(dir, 'world.sqlite');
+  let running: Awaited<ReturnType<typeof start>> | undefined;
+  const clients: Client[] = [];
+  try {
+    running = await start(path);
+    assert.equal((await fetch(`http://localhost:${running.port}/api/health`)).status, 200);
+    const a = new Client(running.port), b = new Client(running.port); clients.push(a, b);
+    assert.equal((await a.wait('snapshot') as WorldSnapshot).seed, 73129); await b.wait('snapshot');
+    a.send({ type: 'edit', x: 32, y: 11, z: 40, block: 5, expected: 0 });
+    for (const client of [a, b]) { const message = await client.wait('edit'); assert.equal(message.type, 'edit'); if (message.type === 'edit') assert.equal(message.revision, 1); }
+    b.send({ type: 'edit', x: 32, y: 11, z: 40, block: 3, expected: 0 }); assert.equal((await b.wait('error')).type, 'error');
+    a.send({ type: 'edit', x: 64, y: 40, z: 0, block: 1, expected: 0 }); await a.wait('error');
+    a.send({ type: 'speed', speed: 0 });
+    let clock = await a.wait('clock'); while (clock.type !== 'clock' || clock.speed !== 0) clock = await a.wait('clock');
+    const bad = new WebSocket(`ws://localhost:${running.port}/socket`, { origin: 'http://malicious.example' });
+    await new Promise<void>((resolve, reject) => { bad.on('unexpected-response', (_, response) => { assert.equal(response.statusCode, 403); response.resume(); bad.terminate(); resolve(); }); bad.on('open', () => reject(new Error('Invalid origin accepted'))); bad.on('error', () => {}); });
+    for (const client of clients) client.ws.close();
+    await stop(running.child); running = await start(path);
+    const restored = new Client(running.port); clients.push(restored);
+    const snapshot = await restored.wait('snapshot') as WorldSnapshot;
+    assert.equal(snapshot.revision, 1); assert.equal(snapshot.speed, 0);
+    assert.deepEqual(snapshot.edits, [{ x: 32, y: 11, z: 40, block: 5 }]);
+  } finally {
+    for (const client of clients) client.ws.close();
+    if (running && running.child.exitCode === null) await stop(running.child);
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

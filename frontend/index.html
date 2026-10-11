@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#eff4e9" />
+  <meta name="description" content="ブロックで島を育てる、AI WORLDの最初の世界。" />
+  <title>AI WORLD — はじまりの島</title>
+</head>
+<body>
+  <div id="world" aria-label="編集できる3Dの島"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="AI WORLD ホーム"><span class="brand-mark">◈</span> AI WORLD<span class="edition">WORLD BUILDER</span></a>
+    <div class="connection"><i id="status-dot"></i><span id="connection">接続中</span></div>
+    <button id="help" class="icon-button" aria-label="操作ガイド">?</button>
+  </header>
+  <main class="overlay">
+    <section class="world-title">
+      <div class="eyebrow">YOUR FIRST WORLD <span>01</span></div>
+      <h1>はじまりの島<span class="tiny-leaf">✦</span></h1>
+      <p>ここから、世界が育っていく。</p>
+      <div class="world-tags"><span>64 × 64</span><span>温帯の島</span><span id="day">1日目</span></div>
+    </section>
+    <section class="creation-card">
+      <div class="eyebrow">A LITTLE BEGINNING</div>
+      <h2>世界を、<br>ひとつずつ。</h2>
+      <p>森と川に囲まれた、小さな島。<br>ブロックを置いて、あなただけの<br>物語の土台をつくろう。</p>
+      <button id="start-building">島をつくる <span>↗</span></button>
+      <div class="phase-note"><span class="live-dot"></span> PHASE 01 · 世界の創造</div>
+    </section>
+    <div class="view-controls" aria-label="カメラ操作">
+      <button id="zoom-in" aria-label="ズームイン">＋</button>
+      <button id="zoom-out" aria-label="ズームアウト">−</button>
+      <span></span><button id="rotate" aria-label="カメラを回転">↻</button>
+      <button id="home" aria-label="島全体を表示">⌂</button>
+    </div>
+    <div class="scene-caption"><span class="live-dot"></span> A WORLD OF POSSIBILITIES <span id="fps"></span></div>
+    <section class="dock">
+      <div class="dock-top">
+        <div class="tool-group" role="group" aria-label="編集ツール">
+          <button data-mode="observe" class="tool active"><span>◎</span>ながめる</button>
+          <button data-mode="place" class="tool"><span>▣</span>置く</button>
+          <button data-mode="remove" class="tool"><span>▱</span>消す</button>
+        </div>
+        <div class="dock-divider"></div>
+        <div class="palette" id="palette" role="group" aria-label="ブロックの種類"></div>
+        <button id="undo" class="icon-button" aria-label="最後の編集を元に戻す" disabled>↶</button>
+      </div>
+      <div class="dock-bottom">
+        <span id="hint">ドラッグで回転 · 右ドラッグで移動 · スクロールでズーム</span>
+        <span class="save-state" id="save-state">世界を読み込み中</span>
+      </div>
+    </section>
+    <footer class="world-footer"><span id="clock">☀ 08:00</span><div class="speed-group" aria-label="時間の速さ"><button data-speed="0" aria-label="一時停止">Ⅱ</button><button data-speed="1" class="active">1×</button><button data-speed="5">5×</button><button data-speed="20">20×</button></div><span class="footer-note">小さな一歩が、世界になる。</span></footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="loading"><span class="loading-cube">◈</span><h2>世界をひらいています</h2><p id="loading-message">島の地形と保存データを読み込み中…</p></div>
+  <dialog id="guide"><button id="close-guide" class="icon-button" aria-label="ガイドを閉じる">×</button><div class="eyebrow">FIELD GUIDE</div><h2>あなたの島の歩き方</h2><p><b>PC</b><br>左ドラッグ：回転 ／ 右ドラッグ・Shift＋左ドラッグ：移動<br>ホイール：ズーム</p><p><b>スマートフォン</b><br>1本指ドラッグ：移動<br>2本指：ピンチでズーム、ひねって回転<br>長押し：ブロック配置ツールを開く</p><p><b>島を編集</b><br>「置く」→素材を選ぶ→地形をタップ。<br>「消す」→固体ブロックをタップ。↶で直前の編集を戻せます。<br>編集はサーバーのSQLiteに即時保存されます。</p><p class="guide-note">Phase 1では地形を創造できます。AI住民・建築指示・文明発展は次のフェーズで実装します。時間操作は昼夜サイクルに反映されます。</p></dialog>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

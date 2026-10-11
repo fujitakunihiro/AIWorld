@@ -1,0 +1,29 @@
+name: ai-world
+services:
+  backend:
+    build: .
+    command: npm run dev:backend
+    environment:
+      DB_PATH: /data/world.sqlite
+      WORLD_SEED: ${WORLD_SEED:-73129}
+    volumes:
+      - world-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  frontend:
+    build: .
+    command: npm run dev:frontend
+    environment:
+      BACKEND_URL: http://backend:3001
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  world-data:
