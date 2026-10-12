@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-12",
+  "gpu": "AMD Radeon(TM) Graphics / ANGLE Direct3D11",
+  "method": "DPR 1, day preview, 1 second warmup + 10 second sampling, simulation running at 1x; metrics are a later individual-frame sample",
+  "iphoneTested": false,
+  "measurements": [
+    {
+      "scene": "islands",
+      "style": "diorama",
+      "quality": "high",
+      "benchmark": "10.0秒 / 598フレーム\n平均 59.8 FPS · フレーム95% 17.8 ms · CPU描画 10.2 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "metrics": "60.0 FPS · フレーム95% 17.4 ms · CPU描画 10.3 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 1359 · 三角形 362,656 · 影 2048 · AO ON\nジオメトリ 379 · テクスチャ 9\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "scene": "village",
+      "style": "diorama",
+      "quality": "high",
+      "benchmark": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.3 ms · CPU描画 8.3 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "metrics": "59.8 FPS · フレーム95% 17.2 ms · CPU描画 8.5 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 621 · 三角形 175,880 · 影 2048 · AO ON\nジオメトリ 379 · テクスチャ 9\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "scene": "village",
+      "style": "diorama",
+      "quality": "auto-medium",
+      "viewport": "390x844 on PC GPU",
+      "benchmark": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.1 ms · CPU描画 6.9 ms\nジオラマ · medium · 390×844 · 影 1024 · AO ON",
+      "metrics": "60.0 FPS · フレーム95% 17.3 ms · CPU描画 7.6 ms\n品質 中 · 390×844 · 解像度倍率 1.00\n描画呼び出し 428 · 三角形 113,636 · 影 1024 · AO ON\nジオメトリ 379 · テクスチャ 9\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    }
+  ]
+}

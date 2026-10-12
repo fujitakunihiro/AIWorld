@@ -236,13 +236,13 @@ export class WorldRenderer {
   measure() { this.benchmark = { durations: [], cpu: [], warmupUntil: performance.now() + 1000, elapsed: 0 }; }
   focusVillage(state: VillageState, residentId?: string) {
     const p = state.residents.find(r => r.id === residentId)?.position ?? state.camp;
-    this.controls.target.set(p.x, p.y, p.z);
+    this.controls.target.set(p.x, p.y + (residentId ? .75 : 0), p.z);
     if (!residentId && state.huts.length) {
       const points = [state.camp, ...state.huts.map(h => ({ x: h.x + 2, y: h.y + 1, z: h.z + 2 }))];
       this.controls.target.set((Math.min(...points.map(p => p.x)) + Math.max(...points.map(p => p.x))) / 2,
         Math.max(...points.map(p => p.y)), (Math.min(...points.map(p => p.z)) + Math.max(...points.map(p => p.z))) / 2);
     }
-    this.controls.orbit.radius = residentId ? (window.innerWidth < 700 ? 43 : 28) : (window.innerWidth < 700 ? 68 : 48);
+    this.controls.orbit.radius = residentId ? (window.innerWidth < 700 ? 24 : 16) : (window.innerWidth < 700 ? 68 : 48);
     this.controls.update();
   }
   pickResident(clientX: number, clientY: number) {

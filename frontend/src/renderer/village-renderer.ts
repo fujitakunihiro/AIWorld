@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import type { Resident, VillageState } from '../../../shared/village';
 import type { EffectKind } from './effects';
 import type { GraphicStyle } from './graphics';
-interface Figure { group: THREE.Group; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident; label: HTMLElement; speech: HTMLElement }
+import { ResidentModelLibrary, type ResidentRig } from './resident-model';
+import { residentPose } from './resident-pose';
+interface Figure { group: THREE.Group; classic: THREE.Group; rig: ResidentRig; animationTime: number; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident; label: HTMLElement; speech: HTMLElement }
 export class VillageRenderer {
   showBubbles = true;
   onEffect: (kind: EffectKind, position: Resident['position']) => void = () => {};
@@ -13,6 +15,7 @@ export class VillageRenderer {
   private labels = document.getElementById('resident-labels')!;
   private root = new THREE.Group();
   private figures = new Map<string, Figure>();
+  private characters = new ResidentModelLibrary();
   private sites = new Map<string, THREE.Group>();
   private nodes = new Map<string, THREE.Group>();
   private fields = new Map<string, { group: THREE.Group; crops: THREE.Group[] }>();
@@ -32,8 +35,10 @@ export class VillageRenderer {
   }
   setGraphicStyle(style: GraphicStyle) {
     this.style = style; for (const [color, material] of this.materials) this.tint(material, color);
+    for (const figure of this.figures.values()) this.figureStyle(figure);
     this.updatePropsVisibility();
   }
+  private figureStyle(figure: Figure) { figure.classic.visible = this.style === 'classic'; figure.rig.group.visible = this.style === 'diorama'; }
   private updatePropsVisibility() {
     for (const [id, node] of this.nodes) node.visible = this.style === 'classic' && !!this.previous?.nodes.find(n => n.id === id && n.remaining > 0);
     for (const [id, field] of this.fields) field.group.visible = this.style === 'classic' && this.previous?.huts.find(h => h.id === id)?.status === 'complete';
@@ -42,23 +47,25 @@ export class VillageRenderer {
     const mesh = new THREE.Mesh(this.cube, this.material(color)); mesh.castShadow = mesh.receiveShadow = true; mesh.scale.set(size[0], size[1], size[2]); mesh.position.set(p[0], p[1], p[2]); parent.add(mesh); return mesh;
   }
   private figure(r: Resident): Figure {
-    const group = new THREE.Group(); group.userData.residentId = r.id;
-    const legs = [-1, 1].map(side => this.box(group, '#334b50', [0.18, 0.52, 0.23], [side * 0.13, 0.27, 0]));
-    this.box(group, r.color, [0.48, 0.59, 0.3], [0, 0.82, 0]);
-    const arms = [-1, 1].map(side => this.box(group, r.color, [0.17, 0.55, 0.22], [side * 0.34, 0.84, 0]));
-    this.box(group, '#efcc9f', [0.44, 0.43, 0.42], [0, 1.34, 0]);
-    this.box(group, r.id === 'ren' ? '#5a5148' : '#5b4233', [0.46, 0.14, 0.44], [0, 1.57, 0]);
-    for (const side of [-1, 1]) this.box(group, '#324443', [0.055, 0.07, 0.015], [side * 0.095, 1.36, 0.217]);
-    const cargo = this.box(group, '#c5a36e', [0.5, 0.45, 0.42], [0, 0.9, 0.43]);
+    const group = new THREE.Group(), classic = new THREE.Group(); group.userData.residentId = r.id; group.add(classic);
+    const legs = [-1, 1].map(side => this.box(classic, '#334b50', [0.18, 0.52, 0.23], [side * 0.13, 0.27, 0]));
+    this.box(classic, r.color, [0.48, 0.59, 0.3], [0, 0.82, 0]);
+    const arms = [-1, 1].map(side => this.box(classic, r.color, [0.17, 0.55, 0.22], [side * 0.34, 0.84, 0]));
+    this.box(classic, '#efcc9f', [0.44, 0.43, 0.42], [0, 1.34, 0]);
+    this.box(classic, r.id === 'ren' ? '#5a5148' : '#5b4233', [0.46, 0.14, 0.44], [0, 1.57, 0]);
+    for (const side of [-1, 1]) this.box(classic, '#324443', [0.055, 0.07, 0.015], [side * 0.095, 1.36, 0.217]);
+    const cargo = this.box(classic, '#c5a36e', [0.5, 0.45, 0.42], [0, 0.9, 0.43]);
     cargo.visible = false;
     const handle = this.box(arms[1], '#826244', [0.12, 0.7, 0.12], [0, -0.65, 0.5]);
     // Child coordinates use the arm's scaled frame, keeping the tool compact.
     this.box(handle, '#9aa6a5', [2.5, 0.3, 1.3], [0, -0.4, 0]);
+    const rig = this.characters.create(r); group.add(rig.group);
     group.position.set(r.position.x, r.position.y, r.position.z); this.root.add(group);
     const label = document.createElement('div'); label.className = 'resident-label';
     const name = document.createElement('strong'); name.textContent = r.name; label.append(name);
     const speech = document.createElement('span'); label.append(speech); this.labels.append(label);
-    return { group, legs, arms, cargo, resident: r, target: group.position.clone(), label, speech };
+    const figure = { group, classic, rig, animationTime: 0, legs, arms, cargo, resident: r, target: group.position.clone(), label, speech };
+    this.figureStyle(figure); return figure;
   }
   update(state: VillageState, snap = false) {
     if (!snap && this.previous) {
@@ -79,12 +86,20 @@ export class VillageRenderer {
       }
     }
     this.previous = state;
+    const residentIds = new Set(state.residents.map(r => r.id));
+    for (const [id, figure] of this.figures) if (!residentIds.has(id)) {
+      this.characters.release(figure.rig); figure.group.removeFromParent(); figure.label.remove(); this.figures.delete(id);
+    }
     for (const r of state.residents) {
       let figure = this.figures.get(r.id);
       if (!figure) { figure = this.figure(r); this.figures.set(r.id, figure); }
+      if (figure.rig.cacheKey !== this.characters.signature(r)) {
+        this.characters.release(figure.rig); figure.rig = this.characters.create(r); figure.group.add(figure.rig.group); this.figureStyle(figure);
+      }
       figure.resident = r; figure.target.set(r.position.x, r.position.y, r.position.z);
       figure.speech.textContent = r.speech?.text ?? '';
       if (snap || figure.group.position.distanceTo(figure.target) > 6) figure.group.position.copy(figure.target);
+      if (snap) this.characters.pose(figure.rig, residentPose(r, figure.animationTime, this.reduced, state.nodes.find(n => n.id === r.task?.targetId)?.kind));
       figure.cargo.visible = r.inventory.food + r.inventory.wood + r.inventory.stone > 0;
       figure.cargo.material = this.material(r.inventory.food ? '#cba56c' : r.inventory.stone ? '#8b9a9d' : '#ab7955');
     }
@@ -139,7 +154,10 @@ export class VillageRenderer {
   }
   select(id: string | null) { this.selected = id; }
   pick(raycaster: THREE.Raycaster, terrainDistance: number) {
-    const hit = raycaster.intersectObjects([...this.figures.values()].map(f => f.group), true)[0];
+    // Raycaster does not skip invisible objects by itself. Only the active rig is selectable.
+    const meshes: THREE.Object3D[] = [];
+    for (const figure of this.figures.values()) figure.group.traverseVisible(o => { if (o instanceof THREE.Mesh) meshes.push(o); });
+    const hit = raycaster.intersectObjects(meshes, false)[0];
     if (!hit || hit.distance > terrainDistance + 0.1) return null;
     let object: THREE.Object3D | null = hit.object;
     while (object && !object.userData.residentId) object = object.parent;
@@ -148,22 +166,29 @@ export class VillageRenderer {
   frame(now: number, delta: number, paused: boolean, camera: THREE.PerspectiveCamera, radius: number) {
     let bubbles = 0;
     for (const figure of this.figures.values()) {
+      if (!paused && !this.reduced) figure.animationTime += delta;
       const d = this.direction.copy(figure.target).sub(figure.group.position);
-      if (Math.hypot(d.x, d.z) > 0.015) figure.group.rotation.y = Math.atan2(d.x, d.z);
-      figure.group.position.lerp(figure.target, 1 - Math.exp(-delta * 16));
-      const moving = !paused && !this.reduced && figure.resident.action === 'moving';
-      const working = !paused && !this.reduced && (figure.resident.action === 'gathering' || figure.resident.action === 'building' || figure.resident.action === 'farming');
-      if (working && figure.resident.task) {
+      if (!paused && Math.hypot(d.x, d.z) > 0.015) figure.group.rotation.y = Math.atan2(d.x, d.z);
+      if (!paused) figure.group.position.lerp(figure.target, 1 - Math.exp(-delta * 16));
+      const moving = !this.reduced && figure.resident.action === 'moving';
+      const working = !this.reduced && (figure.resident.action === 'gathering' || figure.resident.action === 'building' || figure.resident.action === 'farming');
+      if (working && !paused && figure.resident.task) {
         const hut = this.previous?.huts.find(h => h.id === figure.resident.task?.targetId);
         const node = this.previous?.nodes.find(n => n.id === figure.resident.task?.targetId);
-        const p = hut ? { x: hut.x + 2, z: hut.z + 2 } : node?.position;
+        const bridge = this.previous?.bridges.find(b => b.id === figure.resident.task?.targetId);
+        const block = bridge?.blocks[Math.min(bridge.progress, bridge.blocks.length - 1)];
+        const p = hut ? { x: hut.x + 2, z: hut.z + 2 } : node?.position ?? (block ? { x: block.x + .5, z: block.z + .5 } : undefined);
         if (p) figure.group.rotation.y = Math.atan2(p.x - figure.group.position.x, p.z - figure.group.position.z);
       }
       for (let i = 0; i < 2; i++) {
-        figure.legs[i].rotation.x = moving ? Math.sin(now / 120 + i * Math.PI) * 0.5 : 0;
-        figure.arms[i].rotation.x = working ? -0.7 + Math.sin(now / 180) * 0.55 : moving ? Math.sin(now / 120 + (1 - i) * Math.PI) * 0.35 : 0;
+        figure.legs[i].rotation.x = moving ? Math.sin(figure.animationTime * 8.33 + i * Math.PI) * 0.5 : 0;
+        figure.arms[i].rotation.x = working ? -0.7 + Math.sin(figure.animationTime * 5.56) * 0.55 : moving ? Math.sin(figure.animationTime * 8.33 + (1 - i) * Math.PI) * 0.35 : 0;
       }
-      if (figure.resident.action === 'resting') figure.group.scale.y = 0.75; else figure.group.scale.y = 1;
+      figure.classic.scale.y = figure.resident.action === 'resting' ? .75 : 1;
+      if (this.style === 'diorama') {
+        const resource = this.previous?.nodes.find(n => n.id === figure.resident.task?.targetId)?.kind;
+        this.characters.pose(figure.rig, residentPose(figure.resident, figure.animationTime, this.reduced, resource), paused ? 0 : this.reduced ? 1 : 1 - Math.exp(-delta * 18));
+      }
       const speaking = this.showBubbles && !!figure.resident.speech && radius < 120 && bubbles < 4;
       this.projected.copy(figure.group.position); this.projected.y += 2.15; this.projected.project(camera);
       const visible = (speaking || this.selected === figure.resident.id) && radius < 120 && this.projected.z > -1 && this.projected.z < 1 && Math.abs(this.projected.x) < .93 && Math.abs(this.projected.y) < .9;

@@ -2,9 +2,11 @@
 
 プレイヤーが世界を創造し、AI住民が文明を築くファンタジーゲームの **Phase 1〜6** です。128×128の世界で、5人の住民が採集して小屋を建て、農業・住宅・移住へ発展します。住民と会話し、記憶や世界の歴史を読みながら、文明を見守れます。自然言語で建築・農業・採集・休息を指示でき、会話も指示も外部APIを使わずに遊べます。キャラクター、地形、演出、Web Audioの効果音は独自制作です。
 
-グラフィックリメイク **Phase 2** に対応しました。光・影・AO・空・水面に加え、丸い樹木、草・花・岩、瓦屋根と窓・煙突のある住宅、欄干付きの橋、倉庫・畑を独自の3Dモデルへ刷新しました。設定から旧ボクセル描画へ戻して比較できます。[Phase 2の変更・測定結果](docs/graphics-phase2.md) / [Phase 1の光・水面改善](docs/graphics-phase1.md)を参照してください。
+グラフィックリメイク **Phase 3** に対応しました。丸い樹木、瓦屋根の街、欄干付きの橋に加え、住民を職業ごとの衣装と道具を持つデフォルメ3Dキャラクターへ刷新。歩行・待機・採集・農業・建築が実際の行動に連動します。設定から旧ボクセル描画へ戻して比較できます。[Phase 3の住民・測定結果](docs/graphics-phase3.md) / [Phase 2の街のモデル](docs/graphics-phase2.md) / [Phase 1の光・水面改善](docs/graphics-phase1.md)を参照してください。
 
 ![ジオラマ風の住宅・樹木・橋](docs/screenshots/models-diorama-village.png)
+
+![丸い住民と職業別の衣装](docs/screenshots/residents-diorama-close.png)
 
 [Phase 6の調査・検証結果](docs/phase6.md) / [住民の判断スコア](docs/screenshots/phase6-utility.png) / [橋と村の仕事](docs/screenshots/phase6-tasks.png) / [関連する住民・建物を開く履歴](docs/screenshots/phase6-history.png)
 
