@@ -1,4 +1,5 @@
 import type { InstructionRecord, ResidentOrder } from './instructions';
+import type { Conversation } from './conversation';
 export interface Position { x: number; y: number; z: number }
 export type Resource = 'food' | 'wood' | 'stone';
 export type Resources = Record<Resource, number>;
@@ -13,6 +14,7 @@ export interface Resident {
   health: number; energy: number; hunger: number; inventory: Resources; position: Position;
   action: Action; reason: string; goal: string; relationships: Record<string, number>;
   memories: string[]; memorySummary: string;
+  conversations: Conversation[]; speech: { text: string; until: number } | null; nextSocialAt: number;
   task: { kind: 'gather' | 'deliver' | 'build' | 'farm' | 'wander' | 'rest'; targetId: string | null; destination: Position } | null;
   path: Position[]; work: number; decisionIn: number; home: string | null; order: ResidentOrder | null;
 }
@@ -34,9 +36,11 @@ export const MAX_BUILDINGS = 20;
 export interface Civilization {
   level: 1 | 2; nextArrival: number; nextEventAt: number; eventSequence: number; arrivals: number; harvests: number;
 }
-export interface VillageEvent { id: number; time: number; text: string; kind: 'life' | 'harvest' | 'arrival' | 'growth' | 'weather' | 'festival' | 'trade' }
+export interface VillageEvent { id: number; time: number; text: string; kind: 'life' | 'harvest' | 'arrival' | 'growth' | 'weather' | 'festival' | 'trade' | 'construction' | 'conversation' }
+export const EVENT_LABELS: Record<VillageEvent['kind'], string> = { life: '暮らし', harvest: '農業', arrival: '移住', growth: '発展', weather: '天候', festival: '祭り', trade: '交易', construction: '建築', conversation: '会話' };
 export interface VillageState {
-  version: 2; residents: Resident[]; resources: Resources; nodes: ResourceNode[]; huts: Hut[]; civilization: Civilization;
+  version: 3; residents: Resident[]; resources: Resources; nodes: ResourceNode[]; huts: Hut[]; civilization: Civilization;
+  chronicle: VillageEvent[]; archive: { count: number; through: number; kinds: Record<string, number> };
   camp: Position; events: VillageEvent[]; nextEvent: number; elapsed: number; nextPlan: number; instructions: InstructionRecord[];
 }
 export function beds(state: VillageState) {

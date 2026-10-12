@@ -4,14 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#eff4e9" />
-  <meta name="description" content="ブロックで島を育てる、AI WORLDの最初の世界。" />
+  <meta name="description" content="128×128の島々で、AI住民が会話と記憶を重ねて文明を育てる、AI WORLD。" />
   <title>AI WORLD — はじまりの島</title>
 </head>
 <body>
-  <div id="world" aria-label="編集できる3Dの島"></div>
+  <div id="world" aria-label="編集できる128×128の3D世界"></div>
+  <div id="resident-labels" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="/" aria-label="AI WORLD ホーム"><span class="brand-mark">◈</span> AI WORLD<span class="edition">WORLD BUILDER</span></a>
     <div class="connection"><i id="status-dot"></i><span id="connection">接続中</span></div>
+    <button id="settings" class="icon-button" aria-label="音と描画の設定">⚙</button>
     <button id="help" class="icon-button" aria-label="操作ガイド">?</button>
   </header>
   <main class="overlay">
@@ -19,9 +21,10 @@
       <div class="eyebrow">YOUR FIRST WORLD <span>01</span></div>
       <h1>はじまりの島<span class="tiny-leaf">✦</span></h1>
       <p>ここから、世界が育っていく。</p>
-      <div class="world-tags"><span>64 × 64</span><span>温帯の島</span><span id="day">1日目</span></div>
+      <div class="world-tags"><span>128 × 128</span><span>温帯の島々</span><span id="day">1日目</span><button id="toggle-map" aria-pressed="false">地図 ⤢</button></div>
       <div class="resource-bar" aria-label="村の人口と共有資源"><span id="population">住民 —</span><span id="resource-food">食料 —</span><span id="resource-wood">木材 —</span><span id="resource-stone">石材 —</span></div>
       <button id="civilization" class="civilization-badge" aria-label="村の発展を開く"><span id="civilization-label">Lv.1 集落</span><span>村の発展 ↗</span></button>
+      <button id="open-history" class="history-button">世界の歴史 ↗</button>
     </section>
     <section class="creation-card village-card">
       <div class="eyebrow">LIFE ON THE ISLAND</div>
@@ -29,7 +32,7 @@
       <div id="resident-list"></div>
       <div class="hut-summary"><strong id="homes">小屋 0 / 3</strong><p id="hut-status">敷地を探しています</p><progress id="hut-progress" value="0" max="1" aria-label="小屋の建築進捗"></progress><small id="hut-materials">必要資源を確認中</small></div>
       <button id="start-building">村を近くで見る <span>↗</span></button>
-      <div class="phase-note"><span class="live-dot"></span> PHASE 04 · 文明が芽吹く島</div>
+      <div class="phase-note"><span class="live-dot"></span> PHASE 05 · 記憶を重ねる世界</div>
     </section>
     <div class="view-controls" aria-label="カメラ操作">
       <button id="zoom-in" aria-label="ズームイン">＋</button>
@@ -38,6 +41,7 @@
       <button id="home" aria-label="島全体を表示">⌂</button>
     </div>
     <div class="scene-caption"><span class="live-dot"></span><span id="village-event">5人の暮らしが始まります</span><span id="fps"></span></div>
+    <section id="map-card" class="map-card" hidden><strong>世界を見渡す</strong><canvas id="minimap" width="256" height="256" aria-label="128×128の世界地図。クリックでその場所へ移動"></canvas><small>タップで移動 · 金色は村</small></section>
     <section class="dock">
       <form id="quick-instruction" class="instruction-strip">
         <label for="quick-instruction-text"><span>✦</span><span class="sr-only">世界への指示</span></label>
@@ -72,6 +76,7 @@
     <div class="eyebrow">PEOPLE OF YOUR WORLD</div><div id="resident-roster"></div>
     <h2 id="resident-name">住民</h2><p id="resident-meta"></p>
     <div class="reason-card"><strong id="resident-action"></strong><p id="resident-reason"></p></div>
+    <section class="conversation-panel" aria-label="住民との会話"><h3>ひとこと、話してみる。</h3><div id="conversation-log" class="conversation-log" role="log" aria-live="polite"></div><div class="conversation-presets"><button data-question="何をしているの？">いまの仕事</button><button data-question="最近の思い出は？">思い出</button><button data-question="目標は？">これから</button></div><form id="conversation-form"><label class="sr-only" for="conversation-text">住民への話しかけ</label><input id="conversation-text" maxlength="300" placeholder="こんにちは。何をしているの？" autocomplete="off" required /><button id="conversation-send" type="submit" disabled>話す ↗</button></form><p id="conversation-feedback" role="status">行動と記憶から、住民が答えます。</p></section>
     <div class="resident-vitals">
       <label>体力 <span id="resident-health-value"></span><meter id="resident-health" min="0" max="100" value="100"></meter></label>
       <label>元気 <span id="resident-energy-value"></span><meter id="resident-energy" min="0" max="100" value="100"></meter></label>
@@ -84,6 +89,8 @@
     <h3>仲間との親しさ</h3><p id="resident-relations"></p>
     <h3>村の出来事</h3><ul id="village-history"></ul>
   </dialog>
+  <dialog id="history-dialog" class="history-dialog"><button id="close-history" class="icon-button dialog-close" aria-label="世界の歴史を閉じる">×</button><div class="eyebrow">THE STORY WE SHARE</div><h2>この世界の、歩んだ時間。</h2><p>最初の小屋、実った作物、新しい仲間。住民たちが刻んだ出来事を残します。</p><label for="history-filter" class="history-filter-label">出来事の種類</label><select id="history-filter"><option value="all">すべての歴史</option><option value="growth">発展</option><option value="arrival">移住</option><option value="harvest">農業</option><option value="construction">建築</option><option value="festival">祭り</option><option value="weather">天候</option><option value="trade">交易</option></select><p id="history-archive"></p><ol id="world-history" class="world-history"></ol></dialog>
+  <dialog id="settings-dialog"><button id="close-settings" class="icon-button dialog-close" aria-label="設定を閉じる">×</button><div class="eyebrow">MAKE YOURSELF AT HOME</div><h2>心地よい、世界の眺め方。</h2><label class="setting-row"><span><strong>効果音</strong><small>建築・収穫・新しい仲間の到着</small></span><input id="sound-enabled" type="checkbox" /></label><label class="setting-row"><span><strong>エフェクト</strong><small>建築の粒子と完成時のお祝い</small></span><input id="effects-enabled" type="checkbox" checked /></label><label class="setting-row"><span><strong>住民の吹き出し</strong><small>村を近くで見ると会話が表示されます</small></span><input id="bubbles-enabled" type="checkbox" checked /></label><label class="quality-setting" for="render-quality">描画品質<select id="render-quality"><option value="auto">自動 · FPSに合わせて調整</option><option value="low">軽量 · 近くの地形を優先</option><option value="high">高品質 · 遠くの地形も表示</option></select></label><p>音はこの端末で操作した後に再生されます。設定はブラウザに保存されます。端末の「視差効果を減らす」設定にも対応しています。</p></dialog>
   <dialog id="instructions-dialog" class="instructions-dialog">
     <button id="close-instructions" class="icon-button" aria-label="AI指示を閉じる">×</button>
     <div class="eyebrow">A WORD TO YOUR WORLD</div><h2>ことばから、次の暮らし。</h2>

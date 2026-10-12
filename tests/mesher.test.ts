@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Block, SIZE, HEIGHT, getBlock, index, generateWorld } from '../shared/world';
+import { Block, SIZE, HEIGHT, CHUNK, getBlock, index, generateWorld } from '../shared/world';
 import { meshChunk, type MeshData } from '../shared/mesher';
 function area(mesh: MeshData) {
   let result = 0;
@@ -47,7 +47,7 @@ test('greedy terrain surface area equals independently counted exposed voxel fac
     }
   }
   const actual = { solid: 0, water: 0 };
-  for (let cz = 0; cz < 4; cz++) for (let cx = 0; cx < 4; cx++) {
+  for (let cz = 0; cz < SIZE / CHUNK; cz++) for (let cx = 0; cx < SIZE / CHUNK; cx++) {
     const mesh = meshChunk(data, cx, cz); actual.solid += area(mesh.solid); actual.water += area(mesh.water);
   }
   assert.deepEqual(actual, expected);

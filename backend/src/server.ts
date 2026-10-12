@@ -6,15 +6,47 @@ import { SAVE_VERSION } from '../../shared/world';
 import { Simulation } from './simulation/engine';
 import { InstructionInterpreter } from './llm/interpreter';
 import type { InstructionResult } from '../../shared/instructions';
+import { ConversationService } from './llm/conversation';
+import type { ConversationResult } from '../../shared/conversation';
 const seed = Number(process.env.WORLD_SEED ?? 73129);
 if (!Number.isSafeInteger(seed) || seed < 0 || seed > 2147483647) throw new Error('WORLD_SEEDは0〜2147483647の整数で指定してください。');
 const store = new WorldStore(process.env.DB_PATH ?? '/data/world.sqlite', seed);
 const simulation = new Simulation(store.data, store.village);
 store.saveVillage(simulation.state);
 const interpreter = new InstructionInterpreter({ apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL });
+const conversations = new ConversationService({ apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL });
+const talking = new Map<string, { residentId: string; text: string; result: Promise<ConversationResult> }>();
 let closing = false;
 let instructionTimes: number[] = [];
 const inFlight = new Map<string, { text: string; result: Promise<InstructionResult> }>();
+async function handleConversation(id: string, residentId: string, text: string): Promise<ConversationResult> {
+  const fail = (message: string): ConversationResult => ({ type: 'conversation-result', id, residentId, ok: false, message });
+  const resident = simulation.state.residents.find(r => r.id === residentId);
+  if (!resident) return fail('この住民は見つかりません。');
+  const previous = simulation.state.residents.flatMap(r => r.conversations.map(c => ({ residentId: r.id, conversation: c }))).find(c => c.conversation.id === id);
+  if (previous) return previous.residentId === residentId && previous.conversation.question === text ? { type: 'conversation-result', id, residentId, ok: true, message: '保存済みの会話です。', conversation: previous.conversation } : fail('この会話IDは使用済みです。');
+  const pending = talking.get(id);
+  if (pending) return pending.text === text && pending.residentId === residentId ? pending.result : fail('この会話IDは使用中です。');
+  const now = Date.now(); instructionTimes = instructionTimes.filter(t => now - t < 60_000);
+  if (instructionTimes.length >= 12 || talking.size >= 2) return fail('少し待ってから、もう一度話しかけてください。');
+  instructionTimes.push(now);
+  const result = (async (): Promise<ConversationResult> => {
+    try {
+      const reply = await conversations.reply(text, structuredClone(resident), structuredClone(simulation.state));
+      if (closing) return fail('サーバーを再起動しています。');
+      const backup = structuredClone(simulation.state);
+      let conversation;
+      try {
+        conversation = simulation.acceptConversation(residentId, { id, time: simulation.state.elapsed, question: text, answer: reply.answer, source: reply.source });
+        store.saveVillage(simulation.state);
+      } catch (error) { Object.assign(simulation.state, backup); throw error; }
+      broadcast({ type: 'village', village: simulation.state, time: store.time, speed: store.speed });
+      return { type: 'conversation-result', id, residentId, ok: true, message: reply.source === 'llm' ? 'AIとの会話を保存しました。' : '住民の行動と記憶から応答しました。', conversation };
+    } catch { return fail('会話を保存できませんでした。もう一度お試しください。'); }
+    finally { talking.delete(id); }
+  })();
+  talking.set(id, { residentId, text, result }); return result;
+}
 async function handleInstruction(id: string, text: string): Promise<InstructionResult> {
   const previous = simulation.state.instructions.find(r => r.id === id);
   if (previous) return previous.text === text ? { type: 'instruction-result', id, ok: true, message: '受け付け済みの指示です。', record: previous } : { type: 'instruction-result', id, ok: false, message: 'この指示IDは使用済みです。' };
@@ -72,6 +104,8 @@ wss.on('connection', ws => {
       const command = commandSchema.parse(JSON.parse(raw.toString()));
       if (command.type === 'instruction') {
         void handleInstruction(command.id, command.text).then(result => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(result)); });
+      } else if (command.type === 'conversation') {
+        void handleConversation(command.id, command.residentId, command.text).then(result => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(result)); });
       } else if (command.type === 'edit') {
         const edit = store.edit(command);
         simulation.terrainChanged(edit);

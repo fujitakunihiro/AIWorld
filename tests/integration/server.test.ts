@@ -10,6 +10,26 @@ import { randomUUID } from 'node:crypto';
 import { WorldStore } from '../../backend/src/database/store';
 import { Simulation } from '../../backend/src/simulation/engine';
 import { type ServerMessage, type WorldSnapshot } from '../../shared/world';
+test('resident conversation is saved once, synchronized to another client and remembered after restarting while paused', { timeout: 25000 }, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ai-world-chat-')), path = join(dir, 'world.sqlite');
+  let running: Awaited<ReturnType<typeof start>> | undefined; const clients: Client[] = [];
+  try {
+    running = await start(path); const a = new Client(running.port), b = new Client(running.port); clients.push(a, b);
+    await a.wait('snapshot'); await b.wait('snapshot'); a.send({ type: 'speed', speed: 0 });
+    let clock = await a.wait('clock'); while (clock.type !== 'clock' || clock.speed !== 0) clock = await a.wait('clock');
+    const id = randomUUID(), question = '好きな花は青い花です。覚えて';
+    a.send({ type: 'conversation', id, residentId: 'haru', text: question });
+    const answer = await a.wait('conversation-result'); assert.equal(answer.type, 'conversation-result'); if (answer.type === 'conversation-result') { assert.equal(answer.ok, true); assert.equal(answer.conversation!.source, 'rules'); }
+    const synced = await b.wait('village'); assert.equal(synced.type, 'village'); if (synced.type === 'village') assert.equal(synced.village.residents[0].conversations[0].question, question);
+    a.send({ type: 'conversation', id, residentId: 'haru', text: question }); await a.wait('conversation-result');
+    a.send({ type: 'conversation', id, residentId: 'mio', text: question }); const conflict = await a.wait('conversation-result'); if (conflict.type === 'conversation-result') assert.equal(conflict.ok, false);
+    for (const c of clients) c.ws.close(); await stop(running.child); running = await start(path);
+    const restored = new Client(running.port); clients.push(restored); const snapshot = await restored.wait('snapshot') as WorldSnapshot;
+    assert.equal(snapshot.speed, 0); assert.equal(snapshot.village!.residents[0].conversations.length, 1); assert.equal(snapshot.village!.residents[0].conversations[0].id, id);
+    restored.send({ type: 'conversation', id: randomUUID(), residentId: 'haru', text: '前に何を話した？' }); const memory = await restored.wait('conversation-result');
+    if (memory.type === 'conversation-result') assert.match(memory.conversation!.answer, /青い花/);
+  } finally { for (const c of clients) c.ws.close(); if (running && running.child.exitCode === null) await stop(running.child); rmSync(dir, { recursive: true, force: true }); }
+});
 async function start(path: string) {
   const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], { env: { ...process.env, OPENAI_API_KEY: '', DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
   const port = await new Promise<number>((resolve, reject) => {

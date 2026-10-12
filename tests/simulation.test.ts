@@ -78,12 +78,15 @@ test('navigation avoids water, blocked headroom, cliffs and diagonal corner cutt
   for (let x = 8; x < 18; x++) for (let z = 8; z < 18; z++) data[index(x, 0, z)] = Block.Grass;
   for (let z = 8; z < 18; z++) data[index(12, 1, z)] = Block.Water;
   data[index(10, 1, 10)] = Block.Stone; data[index(10, 2, 10)] = Block.Stone; data[index(10, 3, 10)] = Block.Stone;
+  data[index(0, 0, 9)] = Block.Grass;
   const nav = new Navigation(data);
   assert.equal(nav.height(12, 10), -1);
   assert.equal(nav.path({ x: 9.5, y: 1, z: 9.5 }, { x: 14.5, y: 1, z: 9.5 }), null);
   const route = nav.path({ x: 9.5, y: 1, z: 9.5 }, { x: 11.5, y: 1, z: 11.5 })!;
   assert.ok(route); assert.ok(route.every(p => !(Math.floor(p.x) === 10 && Math.floor(p.z) === 10)));
   for (let i = 1; i < route.length; i++) assert.equal(Math.abs(route[i].x - route[i - 1].x) + Math.abs(route[i].z - route[i - 1].z), 1);
+  assert.equal(nav.search({ x: .5, y: 1, z: 9.5 }).queue.length, 1);
+  assert.equal(nav.search({ x: SIZE + .5, y: 1, z: 8.5 }).queue.length, 0, 'Invalid coordinates must not alias a cached route');
 });
 test('terrain changes invalidate blocked paths and gathering sites instead of walking through them', () => {
   const sim = new Simulation(generateWorld(73129)); advance(sim, 3);

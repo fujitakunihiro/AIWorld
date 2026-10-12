@@ -3,10 +3,15 @@ import type { Position } from '../../../shared/village';
 const directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 export class Navigation {
   private heights = new Int8Array(SIZE * SIZE).fill(-1);
+  private searches = new Map<number, { parents: Int32Array; queue: number[]; root: number }>();
   constructor(readonly data: Uint8Array) { this.rebuild(); }
   rebuild() {
-    this.heights.fill(-1);
-    for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) {
+    this.searches.clear();
+    for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) this.rebuildColumn(x, z);
+  }
+  rebuildColumn(x: number, z: number) {
+      const previous = this.heights[x + SIZE * z];
+      this.heights[x + SIZE * z] = -1;
       // A two-block clearance allows walking under tree canopies, never through logs or water.
       for (let y = 1; y < HEIGHT - 1; y++) {
         const floor = getBlock(this.data, x, y - 1, z);
@@ -15,7 +20,7 @@ export class Navigation {
           this.heights[x + SIZE * z] = y; break;
         }
       }
-    }
+      if (previous !== this.heights[x + SIZE * z]) this.searches.clear();
   }
   height(x: number, z: number) { return x >= 0 && z >= 0 && x < SIZE && z < SIZE ? this.heights[x + SIZE * z] : -1; }
   position(x: number, z: number): Position | null {
@@ -30,6 +35,7 @@ export class Navigation {
   }
   search(start: Position) {
     const sx = Math.floor(start.x), sz = Math.floor(start.z), root = sx + SIZE * sz;
+    const cached = this.searches.get(root); if (this.height(sx, sz) >= 0 && cached) return cached;
     const parents = new Int32Array(SIZE * SIZE).fill(-1), queue: number[] = [];
     if (this.height(sx, sz) < 0) return { parents, queue, root };
     parents[root] = root; queue.push(root);
@@ -40,7 +46,9 @@ export class Navigation {
         parents[id] = cell; queue.push(id);
       }
     }
-    return { parents, queue, root };
+    const result = { parents, queue, root };
+    if (this.searches.size >= 32) this.searches.delete(this.searches.keys().next().value!);
+    this.searches.set(root, result); return result;
   }
   path(start: Position, goal: Position) {
     const search = this.search(start); return this.pathFrom(search, goal);

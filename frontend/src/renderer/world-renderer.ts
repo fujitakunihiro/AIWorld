@@ -1,16 +1,29 @@
 import * as THREE from 'three';
 import { WorldCamera } from '../camera/controls';
 import { Block, CHUNK, SIZE, getBlock, inside, type Edit } from '../../../shared/world';
-import { meshChunk, type MeshData } from '../../../shared/mesher';
 import type { VillageState } from '../../../shared/village';
 import { VillageRenderer } from './village-renderer';
+import { WorldEffects } from './effects';
+interface WorkerMesh { positions: Float32Array; normals: Float32Array; blocks: Uint8Array; indices: Uint32Array }
 const palette: Record<number, string> = { 1: '#85ae62', 2: '#a47a50', 3: '#909a9e', 4: '#e9d39c', 5: '#aa8057', 6: '#548b54', 7: '#77bec7', 8: '#c6886b' };
 export class WorldRenderer {
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
+  readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 800);
   readonly renderer: THREE.WebGLRenderer;
   readonly controls: WorldCamera;
   readonly village: VillageRenderer;
+  readonly effects: WorldEffects;
+  quality: 'auto' | 'low' | 'high' = 'auto';
+  private worker?: Worker;
+  private jobId = 0;
+  private jobs = new Map<string, number>();
+  private dirty = new Set<string>();
+  private pendingEdits: Edit[] = [];
+  private slowFrames = 0;
+  private ratio = 1;
+  private sky = new THREE.Color();
+  private nightColor = new THREE.Color('#152c48');
+  private dayColor = new THREE.Color('#dfeef0');
   paused = false;
   private lastFrame = performance.now();
   private chunks = new Map<string, THREE.Group>();
@@ -28,12 +41,13 @@ export class WorldRenderer {
   onFps: (fps: number) => void = () => {};
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, window.innerWidth < 700 ? 1.5 : 2));
+    this.ratio = Math.min(devicePixelRatio, window.innerWidth < 700 ? 1.5 : 2); this.renderer.setPixelRatio(this.ratio);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(this.renderer.domElement);
     this.controls = new WorldCamera(this.camera, this.renderer.domElement); this.controls.home();
     this.village = new VillageRenderer(this.scene);
-    this.scene.background = new THREE.Color('#dfeef0'); this.scene.fog = new THREE.Fog('#dfeef0', 190, 360);
+    this.effects = new WorldEffects(this.scene); this.village.onEffect = (kind, position) => this.effects.emit(kind, position);
+    this.scene.background = new THREE.Color('#dfeef0'); this.scene.fog = new THREE.Fog('#dfeef0', 380, 700);
     this.scene.add(this.sun, this.ambient); this.sun.position.set(45, 75, 20);
     this.scene.add(this.outline); this.outline.visible = false;
     const cloudGeo = new THREE.BoxGeometry(1, 1, 1);
@@ -47,31 +61,51 @@ export class WorldRenderer {
     }
     this.clouds.add(instanced); this.scene.add(this.clouds);
     window.addEventListener('resize', () => this.resize()); this.resize();
+    document.addEventListener('visibilitychange', () => { this.lastFrame = performance.now(); this.renderer.setAnimationLoop(document.hidden ? null : () => this.frame()); });
     this.renderer.setAnimationLoop(() => this.frame());
   }
-  private geometry(mesh: MeshData) {
+  private geometry(mesh: WorkerMesh) {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(mesh.positions, 3));
     geometry.setAttribute('normal', new THREE.Float32BufferAttribute(mesh.normals, 3));
-    const colors: number[] = [];
+    const colors = new Float32Array(mesh.blocks.length * 3), color = new THREE.Color();
     for (let i = 0; i < mesh.blocks.length; i++) {
       const block = mesh.blocks[i], normalY = mesh.normals[i * 3 + 1];
-      const color = new THREE.Color(block === Block.Grass && normalY !== 1 ? '#96734d' : palette[block]);
+      color.set(block === Block.Grass && normalY !== 1 ? '#96734d' : palette[block]);
       if (normalY < 0) color.multiplyScalar(0.76);
-      colors.push(color.r, color.g, color.b);
+      colors.set([color.r, color.g, color.b], i * 3);
     }
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); geometry.setIndex(mesh.indices);
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); geometry.setIndex(new THREE.BufferAttribute(mesh.indices, 1));
     geometry.computeBoundingSphere(); return geometry;
   }
-  setWorld(data: Uint8Array) {
+  setWorld(data: Uint8Array, center = { x: 34, z: 40 }): Promise<void> {
     this.data = data;
-    for (let z = 0; z < SIZE / CHUNK; z++) for (let x = 0; x < SIZE / CHUNK; x++) this.rebuild(x, z);
+    this.worker?.terminate(); this.jobs.clear(); this.dirty.clear(); this.pendingEdits = [];
+    for (const group of this.chunks.values()) { group.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); }); this.scene.remove(group); } this.chunks.clear();
+    this.worker = new Worker(new URL('./mesh-worker.ts', import.meta.url), { type: 'module' });
+    const requests: { cx: number; cz: number; id: number }[] = [];
+    for (let cz = 0; cz < SIZE / CHUNK; cz++) for (let cx = 0; cx < SIZE / CHUNK; cx++) { const id = ++this.jobId; requests.push({ cx, cz, id }); this.jobs.set(`${cx},${cz}`, id); }
+    requests.sort((a, b) => Math.hypot(a.cx * CHUNK + 8 - center.x, a.cz * CHUNK + 8 - center.z) - Math.hypot(b.cx * CHUNK + 8 - center.x, b.cz * CHUNK + 8 - center.z));
+    let initial = requests.length;
+    const initialIds = new Set(requests.map(r => r.id));
+    const ready = new Promise<void>((resolve, reject) => {
+      this.worker!.onerror = () => reject(new Error('地形を描画できませんでした。ページを再読み込みしてください。'));
+      this.worker!.onmessage = (event: MessageEvent<{ cx: number; cz: number; id: number; solid: WorkerMesh; water: WorkerMesh }>) => {
+        const { cx, cz, id, solid, water } = event.data;
+        if (this.jobs.get(`${cx},${cz}`) === id) this.applyChunk(cx, cz, { solid, water });
+        if (initialIds.delete(id) && --initial === 0) resolve();
+      };
+    });
+    const copy = data.slice(); this.worker.postMessage({ data: copy, requests }, [copy.buffer]); return ready;
   }
   rebuild(cx: number, cz: number) {
     if (!this.data || cx < 0 || cz < 0 || cx >= SIZE / CHUNK || cz >= SIZE / CHUNK) return;
+    this.dirty.add(`${cx},${cz}`);
+  }
+  private applyChunk(cx: number, cz: number, result: { solid: WorkerMesh; water: WorkerMesh }) {
     const key = `${cx},${cz}`, old = this.chunks.get(key);
     if (old) { old.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); }); this.scene.remove(old); }
-    const group = new THREE.Group(), result = meshChunk(this.data, cx, cz);
+    const group = new THREE.Group(); group.userData.cx = cx; group.userData.cz = cz;
     for (const [kind, mesh] of Object.entries(result)) {
       if (!mesh.indices.length) continue;
       const object = new THREE.Mesh(this.geometry(mesh), kind === 'solid' ? this.solid : this.water);
@@ -80,6 +114,7 @@ export class WorldRenderer {
     this.chunks.set(key, group); this.scene.add(group);
   }
   changed(edit: Edit) {
+    this.pendingEdits.push(edit);
     const cx = Math.floor(edit.x / CHUNK), cz = Math.floor(edit.z / CHUNK);
     this.rebuild(cx, cz);
     if (edit.x % CHUNK === 0) this.rebuild(cx - 1, cz);
@@ -88,6 +123,8 @@ export class WorldRenderer {
     if (edit.z % CHUNK === CHUNK - 1) this.rebuild(cx, cz + 1);
   }
   changedBatch(edits: Edit[]) {
+    this.pendingEdits.push(...edits);
+    for (const edit of edits.slice(-12)) if (edit.block !== Block.Air) this.effects.block(edit, palette[edit.block]);
     const chunks = new Set<string>();
     for (const edit of edits) {
       const cx = Math.floor(edit.x / CHUNK), cz = Math.floor(edit.z / CHUNK); chunks.add(`${cx},${cz}`);
@@ -97,6 +134,10 @@ export class WorldRenderer {
       if (edit.z % CHUNK === CHUNK - 1) chunks.add(`${cx},${cz + 1}`);
     }
     for (const key of chunks) { const [x, z] = key.split(',').map(Number); this.rebuild(x, z); }
+  }
+  setQuality(quality: 'auto' | 'low' | 'high') {
+    this.quality = quality; this.slowFrames = 0;
+    this.ratio = quality === 'low' ? 1 : Math.min(devicePixelRatio, window.innerWidth < 700 ? 1.5 : 2); this.renderer.setPixelRatio(this.ratio); this.resize();
   }
   focusVillage(state: VillageState, residentId?: string) {
     const p = state.residents.find(r => r.id === residentId)?.position ?? state.camp;
@@ -135,25 +176,36 @@ export class WorldRenderer {
   }
   private resize() {
     this.camera.fov = window.innerWidth < 700 ? 50 : 42;
-    this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix();
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.setViewOffset(window.innerWidth, window.innerHeight, 0, window.innerWidth < 700 ? 0 : window.innerHeight * .08, window.innerWidth, window.innerHeight); this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
   private frame() {
     const now = performance.now(), hour = (this.time % 1440) / 60;
-    this.village.frame(now, Math.min(0.1, (now - this.lastFrame) / 1000), this.paused); this.lastFrame = now;
+    const delta = Math.min(0.1, (now - this.lastFrame) / 1000);
+    this.village.frame(now, delta, this.paused, this.camera, this.controls.orbit.radius); this.effects.frame(delta, this.paused); this.lastFrame = now;
+    if (this.dirty.size && this.worker) {
+      const requests = [...this.dirty].map(key => { const [cx, cz] = key.split(',').map(Number), id = ++this.jobId; this.jobs.set(key, id); return { cx, cz, id }; });
+      this.worker.postMessage({ edits: this.pendingEdits, requests }); this.dirty.clear(); this.pendingEdits = [];
+    }
     const light = Math.max(0.12, Math.sin((hour - 6) / 24 * Math.PI * 2));
     this.sun.intensity = light * 2.1; this.ambient.intensity = 0.6 + light * 1.4;
-    const sky = new THREE.Color('#152c48').lerp(new THREE.Color('#dfeef0'), light);
-    (this.scene.background as THREE.Color).copy(sky); (this.scene.fog as THREE.Fog).color.copy(sky);
+    this.sky.copy(this.nightColor).lerp(this.dayColor, light);
+    (this.scene.background as THREE.Color).copy(this.sky); (this.scene.fog as THREE.Fog).color.copy(this.sky);
     this.clouds.position.x = Math.sin(now / 90000) * 10;
     this.water.opacity = 0.68 + Math.sin(now / 1800) * 0.035;
     // Frustum culling is enabled on each mesh; mobile limits distant chunks as well.
     const mobile = window.innerWidth < 700;
-    for (const [key, group] of this.chunks) {
-      const [cx, cz] = key.split(',').map(Number);
-      group.visible = !mobile || Math.hypot(cx * CHUNK + 8 - this.controls.target.x, cz * CHUNK + 8 - this.controls.target.z) < Math.max(38, this.controls.orbit.radius * 0.8);
+    for (const group of this.chunks.values()) {
+      const { cx, cz } = group.userData;
+      group.visible = !(mobile || this.quality === 'low') || Math.hypot(cx * CHUNK + 8 - this.controls.target.x, cz * CHUNK + 8 - this.controls.target.z) < Math.max(44, this.controls.orbit.radius * 0.8);
     }
     this.renderer.render(this.scene, this.camera); this.frames++;
-    if (now - this.fpsAt > 1000) { this.onFps(Math.round(this.frames * 1000 / (now - this.fpsAt))); this.frames = 0; this.fpsAt = now; }
+    if (now - this.fpsAt > 1000) {
+      const fps = Math.round(this.frames * 1000 / (now - this.fpsAt)); this.onFps(fps);
+      this.slowFrames = fps < 30 ? this.slowFrames + 1 : 0;
+      if (this.quality === 'auto' && this.slowFrames >= 4 && this.ratio > 1) { this.ratio = Math.max(1, this.ratio - .25); this.renderer.setPixelRatio(this.ratio); this.resize(); this.slowFrames = 0; }
+      this.frames = 0; this.fpsAt = now;
+    }
   }
 }

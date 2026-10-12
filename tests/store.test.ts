@@ -100,3 +100,22 @@ test('player edits protect resident bodies, their supporting block, and hut rese
   assert.throws(() => store.edit({ type: 'edit', x: Math.floor(resident.position.x), y: resident.position.y - 1, z: Math.floor(resident.position.z), block: 0, expected: 1 }), /住民/);
   assert.equal(store.revision, 0); assert.equal(store.edits().length, 0); store.close();
 });
+test('Phase 4 migration preserves edited terrain and village coordinates; new island edits survive restarting', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ai-world-expand-')), path = join(dir, 'world.sqlite');
+  try {
+    const store = new WorldStore(path, 73129), sim = new Simulation(store.data);
+    store.edit({ type: 'edit', x: 32, y: 11, z: 40, block: Block.Wood, expected: Block.Air });
+    const legacy: any = structuredClone(sim.state); legacy.version = 2; delete legacy.chronicle; delete legacy.archive;
+    for (const r of legacy.residents) { delete r.conversations; delete r.speech; delete r.nextSocialAt; }
+    store.close();
+    const db = new DatabaseSync(path); db.prepare('INSERT INTO simulation VALUES(1,?)').run(JSON.stringify(legacy)); db.exec('UPDATE world SET version=3'); db.close();
+    const migrated = new WorldStore(path, 1);
+    assert.equal(migrated.snapshot().version, 4); assert.equal(migrated.village!.version, 3);
+    assert.equal(getBlock(migrated.data, 32, 11, 40), Block.Wood);
+    assert.deepEqual(migrated.village!.huts, legacy.huts); assert.deepEqual(migrated.village!.residents.map(r => r.position), legacy.residents.map((r: any) => r.position));
+    assert.match(migrated.village!.chronicle.at(-1)!.text, /128×128/);
+    migrated.edit({ type: 'edit', x: 99, y: 11, z: 38, block: Block.Wood, expected: Block.Air });
+    const history = structuredClone(migrated.village!.chronicle); migrated.close();
+    const reopened = new WorldStore(path, 1); assert.equal(getBlock(reopened.data, 99, 11, 38), Block.Wood); assert.deepEqual(reopened.village!.chronicle, history); reopened.close();
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

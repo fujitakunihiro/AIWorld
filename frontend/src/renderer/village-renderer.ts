@@ -1,7 +1,15 @@
 import * as THREE from 'three';
 import type { Resident, VillageState } from '../../../shared/village';
-interface Figure { group: THREE.Group; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident }
+import type { EffectKind } from './effects';
+interface Figure { group: THREE.Group; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident; label: HTMLElement; speech: HTMLElement }
 export class VillageRenderer {
+  showBubbles = true;
+  onEffect: (kind: EffectKind, position: Resident['position']) => void = () => {};
+  private previous?: VillageState;
+  private direction = new THREE.Vector3();
+  private projected = new THREE.Vector3();
+  private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private labels = document.getElementById('resident-labels')!;
   private root = new THREE.Group();
   private figures = new Map<string, Figure>();
   private sites = new Map<string, THREE.Group>();
@@ -33,13 +41,31 @@ export class VillageRenderer {
     // Child coordinates use the arm's scaled frame, keeping the tool compact.
     this.box(handle, '#9aa6a5', [2.5, 0.3, 1.3], [0, -0.4, 0]);
     group.position.set(r.position.x, r.position.y, r.position.z); this.root.add(group);
-    return { group, legs, arms, cargo, resident: r, target: group.position.clone() };
+    const label = document.createElement('div'); label.className = 'resident-label';
+    const name = document.createElement('strong'); name.textContent = r.name; label.append(name);
+    const speech = document.createElement('span'); label.append(speech); this.labels.append(label);
+    return { group, legs, arms, cargo, resident: r, target: group.position.clone(), label, speech };
   }
   update(state: VillageState, snap = false) {
+    if (!snap && this.previous) {
+      for (const hut of state.huts) {
+        const previous = this.previous.huts.find(h => h.id === hut.id);
+        if (hut.status === 'complete' && previous && previous.status !== 'complete') this.onEffect('complete', { x: hut.x + 2, y: hut.y + 4, z: hut.z + 2 });
+        else if (previous && hut.progress > previous.progress) this.onEffect('build', { x: hut.x + 2, y: hut.y + 1, z: hut.z + 4 });
+        if (hut.crop?.stage === 'ripe' && previous?.crop?.stage === 'growing') this.onEffect('harvest', { x: hut.x + 2, y: hut.y + 1, z: hut.z + 2 });
+      }
+      for (const r of state.residents) {
+        const previous = this.previous.residents.find(old => old.id === r.id);
+        if (!previous) this.onEffect('arrival', r.position);
+        else if (r.inventory.food + r.inventory.wood + r.inventory.stone > previous.inventory.food + previous.inventory.wood + previous.inventory.stone) this.onEffect('gather', r.position);
+      }
+    }
+    this.previous = state;
     for (const r of state.residents) {
       let figure = this.figures.get(r.id);
       if (!figure) { figure = this.figure(r); this.figures.set(r.id, figure); }
       figure.resident = r; figure.target.set(r.position.x, r.position.y, r.position.z);
+      figure.speech.textContent = r.speech?.text ?? '';
       if (snap || figure.group.position.distanceTo(figure.target) > 6) figure.group.position.copy(figure.target);
       figure.cargo.visible = r.inventory.food + r.inventory.wood + r.inventory.stone > 0;
       figure.cargo.material = this.material(r.inventory.food ? '#cba56c' : r.inventory.stone ? '#8b9a9d' : '#ab7955');
@@ -100,21 +126,33 @@ export class VillageRenderer {
     while (object && !object.userData.residentId) object = object.parent;
     return object?.userData.residentId as string | null;
   }
-  frame(now: number, delta: number, paused: boolean) {
+  frame(now: number, delta: number, paused: boolean, camera: THREE.PerspectiveCamera, radius: number) {
+    let bubbles = 0;
     for (const figure of this.figures.values()) {
-      const d = figure.target.clone().sub(figure.group.position);
+      const d = this.direction.copy(figure.target).sub(figure.group.position);
       if (Math.hypot(d.x, d.z) > 0.015) figure.group.rotation.y = Math.atan2(d.x, d.z);
       figure.group.position.lerp(figure.target, 1 - Math.exp(-delta * 16));
-      const moving = !paused && figure.resident.action === 'moving';
-      const working = !paused && (figure.resident.action === 'gathering' || figure.resident.action === 'building' || figure.resident.action === 'farming');
+      const moving = !paused && !this.reduced && figure.resident.action === 'moving';
+      const working = !paused && !this.reduced && (figure.resident.action === 'gathering' || figure.resident.action === 'building' || figure.resident.action === 'farming');
+      if (working && figure.resident.task) {
+        const hut = this.previous?.huts.find(h => h.id === figure.resident.task?.targetId);
+        const node = this.previous?.nodes.find(n => n.id === figure.resident.task?.targetId);
+        const p = hut ? { x: hut.x + 2, z: hut.z + 2 } : node?.position;
+        if (p) figure.group.rotation.y = Math.atan2(p.x - figure.group.position.x, p.z - figure.group.position.z);
+      }
       for (let i = 0; i < 2; i++) {
         figure.legs[i].rotation.x = moving ? Math.sin(now / 120 + i * Math.PI) * 0.5 : 0;
         figure.arms[i].rotation.x = working ? -0.7 + Math.sin(now / 180) * 0.55 : moving ? Math.sin(now / 120 + (1 - i) * Math.PI) * 0.35 : 0;
       }
       if (figure.resident.action === 'resting') figure.group.scale.y = 0.75; else figure.group.scale.y = 1;
+      const speaking = this.showBubbles && !!figure.resident.speech && radius < 120 && bubbles < 4;
+      this.projected.copy(figure.group.position); this.projected.y += 2.15; this.projected.project(camera);
+      const visible = (speaking || this.selected === figure.resident.id) && radius < 120 && this.projected.z > -1 && this.projected.z < 1 && Math.abs(this.projected.x) < .93 && Math.abs(this.projected.y) < .9;
+      figure.label.hidden = !visible; figure.speech.hidden = !speaking;
+      if (visible) { if (speaking) bubbles++; figure.label.style.transform = `translate(-50%, -100%) translate(${(this.projected.x + 1) / 2 * innerWidth}px, ${(1 - this.projected.y) / 2 * innerHeight}px)`; }
     }
     const selected = this.selected ? this.figures.get(this.selected) : null;
     this.selection.visible = !!selected;
-    if (selected) this.selection.position.copy(selected.group.position).add(new THREE.Vector3(0, 0.03, 0));
+    if (selected) { this.selection.position.copy(selected.group.position); this.selection.position.y += .03; }
   }
 }

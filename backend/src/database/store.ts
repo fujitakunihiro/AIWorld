@@ -24,7 +24,7 @@ export class WorldStore {
       CREATE TABLE IF NOT EXISTS simulation (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL);`);
     this.db.prepare('INSERT OR IGNORE INTO world VALUES (?, ?, ?, 0, 480, 1)').run('island-1', SAVE_VERSION, seed);
     const row = this.db.prepare('SELECT * FROM world WHERE id=?').get('island-1')!;
-    if (![1, 2, SAVE_VERSION].includes(Number(row.version))) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
+    if (![1, 2, 3, SAVE_VERSION].includes(Number(row.version))) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
     this.seed = Number(row.seed); this.revision = Number(row.revision); this.time = Number(row.time); this.speed = Number(row.speed);
     this.base = generateWorld(this.seed); this.data = this.base.slice();
     for (const edit of this.edits()) this.data[index(edit.x, edit.y, edit.z)] = edit.block;
@@ -33,7 +33,19 @@ export class WorldStore {
       try { this.village = villageSchema.parse(JSON.parse(String(saved.state))); }
       catch (error) { this.db.close(); throw new Error('住民の保存データが不正です。データを保護するため起動を停止しました。', { cause: error }); }
     }
-    if (row.version !== SAVE_VERSION) this.db.prepare('UPDATE world SET version=? WHERE id=?').run(SAVE_VERSION, 'island-1');
+    if (row.version !== SAVE_VERSION) {
+      if (this.village) {
+        const event = { id: this.village.nextEvent++, time: this.village.elapsed, kind: 'growth' as const, text: '世界が128×128に広がりました。はじまりの島を残し、新しい森・山・平地を持つ島々が加わりました。' };
+        this.village.events.push(event); if (this.village.events.length > 30) this.village.events.shift();
+        this.village.chronicle.push(event);
+        if (this.village.chronicle.length > 300) { const old = this.village.chronicle.shift()!; this.village.archive.count++; this.village.archive.through = old.time; this.village.archive.kinds[old.kind] = (this.village.archive.kinds[old.kind] ?? 0) + 1; }
+      }
+      this.db.exec('BEGIN IMMEDIATE');
+      try {
+        if (this.village) this.db.prepare('INSERT INTO simulation VALUES(1,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state').run(JSON.stringify(this.village));
+        this.db.prepare('UPDATE world SET version=? WHERE id=?').run(SAVE_VERSION, 'island-1'); this.db.exec('COMMIT');
+      } catch (error) { this.db.exec('ROLLBACK'); this.db.close(); throw error; }
+    }
   }
   edits(): Edit[] { return this.db.prepare('SELECT x,y,z,block FROM edits ORDER BY y,z,x').all() as unknown as Edit[]; }
   snapshot(): WorldSnapshot {

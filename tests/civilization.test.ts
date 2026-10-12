@@ -99,7 +99,7 @@ test('legacy Phase 3 saves migrate and agricultural worlds resume crops, timers,
     store.close();
     const db = new DatabaseSync(path); db.prepare('INSERT INTO simulation VALUES(1,?)').run(JSON.stringify(legacy)); db.exec('UPDATE world SET version=2'); db.close();
     const migrated = new WorldStore(path, 1);
-    assert.equal(migrated.snapshot().version, SAVE_VERSION); assert.equal(migrated.village!.version, 2);
+    assert.equal(migrated.snapshot().version, SAVE_VERSION); assert.equal(migrated.village!.version, 3);
     assert.deepEqual(migrated.village!.residents, legacy.residents); assert.equal(migrated.village!.huts[0].kind, 'hut');
     const active = new Simulation(migrated.data, migrated.village), edits = advance(active, 1600); migrated.saveVillage(active.state, edits); migrated.close();
     const reopened = new WorldStore(path, 1), resumed = new Simulation(reopened.data, reopened.village);

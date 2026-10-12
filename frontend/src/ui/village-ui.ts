@@ -1,4 +1,4 @@
-import { ACTION_LABELS, beds, growthRequirements, MAX_POPULATION, RESOURCE_LABELS, type VillageState } from '../../../shared/village';
+import { ACTION_LABELS, beds, EVENT_LABELS, growthRequirements, MAX_POPULATION, RESOURCE_LABELS, type VillageState } from '../../../shared/village';
 const $ = (id: string) => document.getElementById(id)!;
 const add = (tag: string, parent: HTMLElement, className = '', text = '') => {
   const element = document.createElement(tag); element.className = className; element.textContent = text; parent.append(element); return element;
@@ -53,7 +53,7 @@ export class VillageUI {
     ($('hut-progress') as HTMLProgressElement).value = active ? active.progress / active.total : 1;
     $('hut-materials').textContent = active && !active.materialsReserved ? `木材 ${Math.min(state.resources.wood, active.cost.wood)}/${active.cost.wood} · 石材 ${Math.min(state.resources.stone, active.cost.stone)}/${active.cost.stone}` : active ? '資源を確保して建築中' : '農業・採集・食事・休息を続けます';
     const last = state.events.at(-1); if (last) $('village-event').textContent = last.text;
-    this.details();
+    if (this.dialog.open) this.details();
     if (this.growthDialog.open) this.growth();
   }
   private growth() {
@@ -90,7 +90,7 @@ export class VillageUI {
     $('growth-events').replaceChildren();
     for (const event of s.events.filter(e => e.kind !== 'life').slice(-12).reverse()) {
       const row = add('li', $('growth-events'));
-      add('small', row, '', `開始から${Math.floor(event.time / 60)}時間 · ${{ life: '暮らし', harvest: '農業', arrival: '移住', growth: '発展', weather: '天候', festival: '祭り', trade: '交易' }[event.kind]}`);
+      add('small', row, '', `開始から${Math.floor(event.time / 60)}時間 · ${EVENT_LABELS[event.kind]}`);
       add('span', row, '', event.text);
     }
     if (!$('growth-events').children.length) add('li', $('growth-events'), '', 'これから村の歴史が生まれます。');

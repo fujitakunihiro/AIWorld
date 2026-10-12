@@ -1,6 +1,7 @@
 import { PerspectiveCamera, Spherical, Vector3 } from 'three';
+import { SIZE } from '../../../shared/world';
 export class WorldCamera {
-  target = new Vector3(32, 7, 32);
+  target = new Vector3(SIZE / 2, 7, SIZE / 2);
   orbit = new Spherical(84, 0.82, 0.72);
   private pointers = new Map<number, { x: number; y: number; touch: boolean }>();
   private start = { x: 0, y: 0, at: 0 };
@@ -55,14 +56,14 @@ export class WorldCamera {
   }
   zoom(factor: number) { this.orbit.radius *= factor; this.update(); }
   home() {
-    this.target.set(32, 7, 32);
+    this.target.set(SIZE / 2, 7, SIZE / 2);
     const aspect = window.innerWidth / window.innerHeight;
-    this.orbit.set(Math.max(84, Math.min(225, 105 / Math.min(1, aspect))), 0.82, 0.72); this.update();
+    this.orbit.set(Math.max(175, Math.min(400, 205 / Math.min(1, aspect))), 0.82, 0.72); this.update();
   }
   update() {
-    this.orbit.radius = Math.max(12, Math.min(240, this.orbit.radius));
+    this.orbit.radius = Math.max(12, Math.min(450, this.orbit.radius));
     this.orbit.phi = Math.max(0.18, Math.min(1.4, this.orbit.phi));
-    this.target.x = Math.max(0, Math.min(64, this.target.x)); this.target.z = Math.max(0, Math.min(64, this.target.z));
+    this.target.x = Math.max(0, Math.min(SIZE, this.target.x)); this.target.z = Math.max(0, Math.min(SIZE, this.target.z));
     this.camera.position.copy(this.target).add(new Vector3().setFromSpherical(this.orbit));
     this.camera.lookAt(this.target);
   }

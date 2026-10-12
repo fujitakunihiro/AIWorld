@@ -6,6 +6,8 @@ import { Navigation } from '../agents/navigation';
 import { siteClear } from '../buildings/hut';
 import { BUILDING_COSTS, buildingBlocks } from '../buildings/development';
 import { describeCommand, MAX_HUTS, type Interpretation, type InstructionRecord } from '../../../shared/instructions';
+import type { Conversation } from '../../../shared/conversation';
+import { rememberResident } from '../../../shared/memory';
 const empty = (): Resources => ({ food: 0, wood: 0, stone: 0 });
 const distance = (a: Position, b: Position) => Math.hypot(a.x - b.x, a.z - b.z);
 const carried = (r: Resident) => r.inventory.food + r.inventory.wood + r.inventory.stone;
@@ -22,6 +24,7 @@ export class Simulation {
   readonly nav: Navigation;
   readonly state: VillageState;
   private terrainDirty = false;
+  private terrainColumns = new Set<number>();
   economicChange = false;
   constructor(data: Uint8Array, saved: VillageState | null = null) {
     this.data = data.slice(); this.nav = new Navigation(this.data);
@@ -31,12 +34,13 @@ export class Simulation {
     const reachable = this.nav.search(camp);
     const spawn = reachable.queue.slice(0, 5).map(id => this.nav.position(id % SIZE, Math.floor(id / SIZE))!);
     if (spawn.length < 5) throw new Error('5人の住民が暮らせる連続した陸地が必要です。');
-    this.state = { version: 2, civilization: { level: 1, nextArrival: 720, nextEventAt: 720, eventSequence: 0, arrivals: 0, harvests: 0 }, residents: profiles.map((p, i) => ({
+    this.state = { version: 3, chronicle: [{ id: 1, time: 0, kind: 'arrival', text: '5人がはじまりの島に到着。村の歴史が始まりました。' }], archive: { count: 0, through: 0, kinds: {} }, civilization: { level: 1, nextArrival: 720, nextEventAt: 720, eventSequence: 0, arrivals: 0, harvests: 0 }, residents: profiles.map((p, i) => ({
       id: p[0], name: p[1], age: p[2], personality: p[3], job: p[4], color: p[5],
       health: 100, energy: 90 - i * 3, hunger: 12 + i * 3, inventory: empty(), position: spawn[i],
       action: 'idle', reason: 'この島に、みんなで暮らせる村をつくりたい。', goal: '5人全員が安心して眠れる小屋をつくる',
       relationships: Object.fromEntries(profiles.filter(other => other[0] !== p[0]).map(other => [other[0], 50])),
       memories: ['仲間5人と、はじまりの島で暮らし始めた。'], memorySummary: '',
+      conversations: [], speech: null, nextSocialAt: 30 + i * 8,
       task: null, path: [], work: 0, decisionIn: i * 0.5, home: null, order: null
     })), resources: { food: 12, wood: 0, stone: 0 }, nodes: [], huts: [], camp,
       events: [{ id: 1, time: 0, kind: 'arrival', text: '5人の住民が島に到着しました。まずは小屋の材料を集めます。' }], nextEvent: 2, elapsed: 0, nextPlan: 0, instructions: [] };
@@ -60,18 +64,52 @@ export class Simulation {
     this.state.nodes.push({ id: `${kind}-${this.state.nodes.length}`, kind, position, remaining: amount, capacity: amount, regeneration: 0 });
   }
   private event(text: string, kind: VillageEvent['kind'] = 'life') {
-    this.state.events.push({ id: this.state.nextEvent++, time: this.state.elapsed, text, kind });
+    if (kind === 'life' && /敷地|建築を始/.test(text)) kind = 'construction';
+    const event: VillageEvent = { id: this.state.nextEvent++, time: this.state.elapsed, text, kind };
+    this.state.events.push(event);
+    if (kind !== 'life' && kind !== 'conversation' || /敷地|建築を始|指示を受け/.test(text)) {
+      this.state.chronicle.push(event);
+      if (this.state.chronicle.length > 300) {
+        const old = this.state.chronicle.shift()!, archive = this.state.archive;
+        archive.count++; archive.through = old.time; archive.kinds[old.kind] = (archive.kinds[old.kind] ?? 0) + 1;
+      }
+    }
     if (this.state.events.length > 30) this.state.events.shift(); this.economicChange = true;
   }
   private remember(r: Resident, text: string) {
-    r.memories.push(text);
-    if (r.memories.length > 8) { r.memorySummary = `以前の記憶：${r.memories.shift()}`; }
+    rememberResident(r, text); this.economicChange = true;
+  }
+  acceptConversation(residentId: string, conversation: Conversation) {
+    const resident = this.state.residents.find(r => r.id === residentId);
+    if (!resident) throw new Error('この住民は見つかりません。');
+    const previous = resident.conversations.find(c => c.id === conversation.id);
+    if (previous) return previous;
+    resident.conversations.push(conversation);
+    if (resident.conversations.length > 12) resident.conversations.shift();
+    this.remember(resident, `プレイヤーと話した：「${conversation.question.slice(0, 100)}」 → ${conversation.answer.slice(0, 200)}`);
+    resident.speech = { text: conversation.answer.length > 80 ? `${conversation.answer.slice(0, 79)}…` : conversation.answer, until: this.state.elapsed + 8 };
+    return conversation;
+  }
+  private socialize(resident: Resident) {
+    if (resident.nextSocialAt > this.state.elapsed || resident.speech || resident.action === 'resting') return;
+    const friend = this.state.residents.find(r => r.id !== resident.id && !r.speech && r.nextSocialAt <= this.state.elapsed && distance(r.position, resident.position) < 3 && r.action !== 'resting');
+    if (!friend) return;
+    const farm = this.state.huts.find(h => h.kind === 'farm' && h.status === 'complete');
+    const text = this.state.resources.food < this.state.residents.length * 2 ? '食料を集めて、今夜はみんなで食べよう。' : farm ? '畑が育ってきたね。次の収穫が楽しみ！' : 'いつか、この島をにぎやかな村にしたいね。';
+    resident.speech = { text: `${friend.name}、${text}`, until: this.state.elapsed + 8 };
+    friend.speech = { text: resident.personality.includes('慎重') ? 'うん。焦らず、一歩ずつ進めよう。' : 'いいね！ 私も一緒に頑張るよ。', until: this.state.elapsed + 8 };
+    for (const [a, b] of [[resident, friend], [friend, resident]]) {
+      a.nextSocialAt = this.state.elapsed + 120;
+      a.relationships[b.id] = Math.min(100, (a.relationships[b.id] ?? 50) + 2);
+      this.remember(a, `${b.name}と「${text}」と話した。`);
+    }
+    this.event(`${resident.name}と${friend.name}：${text}`, 'conversation');
   }
   adjacent(p: Position) {
     return [[1, 0], [0, 1], [-1, 0], [0, -1]].map(([dx, dz]) => this.nav.position(Math.floor(p.x) + dx, Math.floor(p.z) + dz))
       .filter((point): point is Position => !!point && Math.abs(point.y - p.y) <= 1);
   }
-  terrainChanged(edit: Edit) { this.data[index(edit.x, edit.y, edit.z)] = edit.block; this.terrainDirty = true; }
+  terrainChanged(edit: Edit) { this.data[index(edit.x, edit.y, edit.z)] = edit.block; this.terrainDirty = true; this.terrainColumns.add(edit.x + SIZE * edit.z); }
   private isReserved(x: number, z: number) {
     return this.state.huts.some(h => x >= h.x - 1 && x <= h.x + 4 && z >= h.z - 1 && z <= h.z + 4);
   }
@@ -171,7 +209,7 @@ export class Simulation {
         const n = c.arrivals++, id = `new-${n + 1}`;
         const newcomer: Resident = { id, name: names[n], age: 20 + n % 13, personality: '新しい暮らしを楽しみにしている', job, color: ['#77a69b', '#c5a575', '#a589b9'][n % 3],
           health: 100, hunger: 15, energy: 85, inventory: empty(), position: { ...this.state.camp }, action: 'idle', reason: '食料と住宅が整った村へ移住した。仲間と仕事を始めたい。', goal: job === '農家' ? '村の食料を育てる' : '村の発展に必要な資源を届ける',
-          relationships: Object.fromEntries(this.state.residents.map(r => [r.id, 50])), memories: ['安心して暮らせる村の噂を聞いて、島へ移住した。'], memorySummary: '', task: null, path: [], work: 0, decisionIn: 0, home: null, order: null };
+          relationships: Object.fromEntries(this.state.residents.map(r => [r.id, 50])), memories: ['安心して暮らせる村の噂を聞いて、島へ移住した。'], memorySummary: '', conversations: [], speech: null, nextSocialAt: this.state.elapsed + 30, task: null, path: [], work: 0, decisionIn: 0, home: null, order: null };
         for (const r of this.state.residents) r.relationships[id] = 50;
         this.state.resources.food -= 4; this.state.residents.push(newcomer); this.assignHomes(); c.nextArrival = this.state.elapsed + 720;
         this.event(`${newcomer.name}が移住しました！ ${job}として暮らします。歓迎の食料4を使い、人口${population + 1}人になりました。`, 'arrival');
@@ -354,8 +392,8 @@ export class Simulation {
     return node.kind === 'wood' ? getBlock(this.data, Math.floor(x), y, Math.floor(z)) === Block.Wood : this.nav.height(Math.floor(x), Math.floor(z)) === y;
   }
   private revalidate() {
-    this.nav.rebuild();
-    const camp = this.nav.nearest(this.state.camp); if (camp) this.state.camp = camp;
+    for (const column of this.terrainColumns) this.nav.rebuildColumn(column % SIZE, Math.floor(column / SIZE)); this.terrainColumns.clear();
+    if (!this.nav.valid(this.state.camp)) { const camp = this.nav.nearest(this.state.camp); if (camp) this.state.camp = camp; }
     for (const r of this.state.residents) {
       const y = this.nav.height(Math.floor(r.position.x), Math.floor(r.position.z));
       if (y >= 0 && Math.abs(y - r.position.y) <= 1) { if (!r.path.length) r.position.y = y; }
@@ -390,6 +428,8 @@ export class Simulation {
       if (node.regeneration >= 480) { node.remaining = Math.min(node.capacity, node.remaining + Math.ceil(node.capacity / 2)); node.regeneration = 0; this.economicChange = true; }
     }
     for (const r of this.state.residents) {
+      if (r.speech && r.speech.until <= this.state.elapsed) r.speech = null;
+      this.socialize(r);
       if (!this.nav.valid({ ...r.position, y: Math.round(r.position.y) }) && !r.path.length) {
         r.action = 'idle'; r.reason = '安全な足場がないため、地形が戻るのを待っている。'; continue;
       }
@@ -438,7 +478,7 @@ export class Simulation {
               const occupant = this.state.residents.find(other => Math.floor(other.position.x) === edit.x && Math.floor(other.position.z) === edit.z && edit.y >= other.position.y - 1 && edit.y < other.position.y + 2);
               if (occupant) { this.finish(occupant); this.go(occupant, 'wander', this.state.camp, null, '建築の邪魔にならないよう、敷地から離れる。'); continue; }
               if (current !== oldBlock) { r.reason = '建築予定の場所に障害物があるので、作業を待つ。'; continue; }
-              this.data[index(edit.x, edit.y, edit.z)] = edit.block; edits.push(edit); this.terrainDirty = true;
+              this.terrainChanged(edit); edits.push(edit);
             }
             hut.progress++; r.work = 0; this.economicChange = true;
             if (hut.progress === hut.total) {

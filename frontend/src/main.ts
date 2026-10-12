@@ -3,6 +3,8 @@ import { WorldRenderer } from './renderer/world-renderer';
 import { Block, SAVE_VERSION, generateWorld, getBlock, index, type BlockId, type Edit, type ServerMessage } from '../../shared/world';
 import { VillageUI } from './ui/village-ui';
 import { InstructionUI } from './ui/instruction-ui';
+import { LifeUI } from './ui/life-ui';
+import { VillageAudio } from './audio';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 type Mode = 'observe' | 'place' | 'remove';
 let mode: Mode = 'observe', material: BlockId = Block.Grass;
@@ -13,6 +15,8 @@ let pending: { before: Edit; after: Edit; undo: boolean; timer: ReturnType<typeo
 let renderer: WorldRenderer;
 const villageUI = new VillageUI();
 const instructionUI = new InstructionUI();
+const lifeUI = new LifeUI(), audio = new VillageAudio();
+lifeUI.onSend = (id, residentId, text) => { if (ready && socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'conversation', id, residentId, text })); };
 instructionUI.onSend = (id, text) => { if (ready && socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'instruction', id, text })); };
 const materials: { id: BlockId; name: string; color: string }[] = [
   { id: Block.Grass, name: '草', color: '#85ae62' }, { id: Block.Dirt, name: '土', color: '#a47a50' },
@@ -36,6 +40,7 @@ function setMode(next: Mode) {
 }
 function setConnection(connected: boolean) {
   instructionUI.setConnected(connected);
+  lifeUI.setConnected(connected);
   $('connection').textContent = connected ? '世界に接続中' : '再接続中';
   $('status-dot').classList.toggle('online', connected);
   document.querySelectorAll<HTMLButtonElement>('[data-speed]').forEach(button => button.disabled = !connected);
@@ -63,20 +68,23 @@ function clock(time: number, speed: number) {
 }
 function connect() {
   const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/socket`); socket = ws;
-  ws.onmessage = event => {
+  ws.onmessage = async event => {
     try {
       const message = JSON.parse(event.data) as ServerMessage;
       if (message.type === 'snapshot') {
         if (message.version !== SAVE_VERSION) throw new Error('保存バージョンが一致しません。ページを再読み込みしてください。');
         world = generateWorld(message.seed);
         for (const edit of message.edits) world[index(edit.x, edit.y, edit.z)] = edit.block;
-        renderer.setWorld(world); ready = true; history = []; clearPending(); setConnection(true); reconnectDelay = 1000;
-        clock(message.time, message.speed); $('loading').classList.add('hidden');
-        if (message.village) { villageUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village, true); }
+        const renderReady = renderer.setWorld(world, message.village?.camp); lifeUI.setWorld(world);
+        clock(message.time, message.speed);
+        if (message.village) { villageUI.update(message.village); lifeUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village, true); }
+        await renderReady; if (ws !== socket || ws.readyState !== WebSocket.OPEN) return;
+        ready = true; history = []; clearPending(); setConnection(true); reconnectDelay = 1000; $('loading').classList.add('hidden'); $('loading').setAttribute('aria-hidden', 'true');
         $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
       } else if (message.type === 'edit' && world) {
         const { edit } = message;
         world[index(edit.x, edit.y, edit.z)] = edit.block; renderer.changed(edit);
+        lifeUI.terrain([edit]);
         if (pending && ['x', 'y', 'z', 'block'].every(key => edit[key as keyof Edit] === pending!.after[key as keyof Edit])) {
           if (pending.undo) history.pop(); else { history.push({ before: pending.before, after: pending.after }); if (history.length > 50) history.shift(); }
           clearPending();
@@ -85,9 +93,11 @@ function connect() {
       } else if (message.type === 'terrain' && world) {
         for (const edit of message.edits) world[index(edit.x, edit.y, edit.z)] = edit.block;
         renderer.changedBatch(message.edits); $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
+        lifeUI.terrain(message.edits);
       } else if (message.type === 'village') {
-        villageUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village); clock(message.time, message.speed);
+        villageUI.update(message.village); lifeUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village); clock(message.time, message.speed);
       } else if (message.type === 'instruction-result') instructionUI.result(message);
+      else if (message.type === 'conversation-result') { lifeUI.result(message); if (message.ok) audio.play('harvest'); }
       else if (message.type === 'instruction-config') instructionUI.configure(message.mode);
       else if (message.type === 'clock') clock(message.time, message.speed);
       else if (message.type === 'error') { clearPending(); $('save-state').textContent = '操作は適用されませんでした'; toast(message.message); }
@@ -121,9 +131,13 @@ $('undo').onclick = () => {
 };
 try {
   renderer = new WorldRenderer($('world'));
+  renderer.effects.onSound = kind => audio.play(kind);
+  lifeUI.onSettings = settings => { if (audio.enabled !== settings.sound) void audio.setEnabled(settings.sound); renderer.effects.enabled = settings.effects; renderer.village.showBubbles = settings.bubbles; renderer.setQuality(settings.quality); };
+  lifeUI.applySettings();
+  lifeUI.onMapFocus = (x, z) => { renderer.controls.target.set(x, 10, z); renderer.controls.orbit.radius = innerWidth < 700 ? 65 : 45; renderer.controls.update(); };
   villageUI.onFocus = (state, id) => { setMode('observe'); renderer.focusVillage(state, id); };
-  villageUI.onSelect = id => renderer.village.select(id);
-  renderer.onFps = fps => $('fps').textContent = `${fps} FPS`;
+  villageUI.onSelect = id => { renderer.village.select(id); lifeUI.select(id); };
+  renderer.onFps = fps => { $('fps').textContent = `${fps} FPS`; lifeUI.view(renderer.controls.target.x, renderer.controls.target.z, renderer.controls.orbit.radius); };
   renderer.controls.onTap = (x, y) => {
     if (mode === 'observe') { const id = renderer.pickResident(x, y); if (id) villageUI.open(id); return; }
     const picked = renderer.pick(x, y, mode === 'place');
