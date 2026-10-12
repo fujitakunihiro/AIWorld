@@ -31,7 +31,7 @@ test('JSON boundary rejects arbitrary code, coordinates, extra fields, unknown t
 test('no-key mode never calls a network and always returns verified commands', async () => {
   const interpreter = new InstructionInterpreter({ fetch: async () => { throw new Error('Network must not run'); } });
   const result = await interpreter.interpret('ミオに木材を集めてほしい', sim().state);
-  assert.equal(interpreter.mode, 'rules'); assert.equal(result.source, 'rules'); assert.ok(result.notice.includes('API未設定'));
+  assert.equal(interpreter.mode, 'rules'); assert.equal(result.source, 'rules'); assert.ok(result.notice.includes('ローカル'));
 });
 test('Responses transport sends a strict schema and bounded context, and accepts validated JSON', async () => {
   const interpreter = new InstructionInterpreter({ apiKey: 'test-secret', model: 'test-model', fetch: async (url, init) => {

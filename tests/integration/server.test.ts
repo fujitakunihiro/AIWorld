@@ -31,7 +31,7 @@ test('resident conversation is saved once, synchronized to another client and re
   } finally { for (const c of clients) c.ws.close(); if (running && running.child.exitCode === null) await stop(running.child); rmSync(dir, { recursive: true, force: true }); }
 });
 async function start(path: string) {
-  const child = spawn(process.execPath, ['--import', 'tsx', 'backend/src/server.ts'], { env: { ...process.env, OPENAI_API_KEY: '', DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, ['--import', 'tsx', '--require', './tests/fixtures/no-external-fetch.cjs', 'backend/src/server.ts'], { env: { ...process.env, OPENAI_API_KEY: 'configured-but-disabled-in-phase6', DB_PATH: path, PORT: '0' }, stdio: ['ignore', 'pipe', 'pipe'] });
   const port = await new Promise<number>((resolve, reject) => {
     let output = ''; const timer = setTimeout(() => { child.kill(); reject(new Error(`Server startup timeout: ${output}`)); }, 10000);
     child.stdout!.on('data', chunk => { output += String(chunk); const match = output.match(/backend :(\d+)/); if (match) { clearTimeout(timer); resolve(Number(match[1])); } });

@@ -1,4 +1,5 @@
 import { ACTION_LABELS, beds, EVENT_LABELS, growthRequirements, MAX_POPULATION, RESOURCE_LABELS, type VillageState } from '../../../shared/village';
+import { UTILITY_LABELS } from '../../../shared/autonomy';
 const $ = (id: string) => document.getElementById(id)!;
 const add = (tag: string, parent: HTMLElement, className = '', text = '') => {
   const element = document.createElement(tag); element.className = className; element.textContent = text; parent.append(element); return element;
@@ -8,6 +9,7 @@ export class VillageUI {
   private state?: VillageState;
   private rows = new Map<string, { action: HTMLElement; title: HTMLElement; button: HTMLButtonElement }>();
   private roster = new Map<string, HTMLButtonElement>();
+  private thoughtKey = '';
   private dialog = $('residents-dialog') as HTMLDialogElement;
   private growthDialog = $('civilization-dialog') as HTMLDialogElement;
   onFocus: (state: VillageState, id?: string) => void = () => {};
@@ -100,6 +102,27 @@ export class VillageUI {
     for (const [id, button] of this.roster) { button.classList.toggle('active', id === r.id); button.setAttribute('aria-pressed', String(id === r.id)); }
     $('resident-name').textContent = r.name; $('resident-meta').textContent = `${r.age}歳 · ${r.job} · ${r.personality}`;
     $('resident-action').textContent = ACTION_LABELS[r.action]; $('resident-reason').textContent = r.reason;
+    const task = this.state.tasks.find(t => t.id === r.ai.taskId);
+    $('thinking-goal').textContent = r.goal;
+    $('thinking-task').textContent = task ? `${task.title} · 担当 ${task.assignees.map(id => this.state!.residents.find(p => p.id === id)?.name ?? id).join('・')} · ${Math.floor(task.progress)}/${task.total}` : r.ai.chosen ? UTILITY_LABELS[r.ai.chosen] : r.action === 'eating' ? '食事で空腹を回復' : r.task?.kind === 'deliver' ? '採集した資源を拠点へ運搬' : '次の状況を評価中';
+    ($('thinking-progress') as HTMLProgressElement).value = task ? Math.min(1, task.progress / task.total) : r.action === 'resting' ? r.energy / 100 : 0;
+    const traits = r.traits;
+    $('thinking-traits').textContent = `勤勉さ ${Math.round(traits.diligence * 100)} · 好奇心 ${Math.round(traits.curiosity * 100)} · 社交性 ${Math.round(traits.sociability * 100)} · 慎重さ ${Math.round(traits.caution * 100)} · 得意：${UTILITY_LABELS[traits.specialty]}`;
+    const thoughtKey = `${r.id}:${JSON.stringify(r.ai.scores)}:${r.ai.chosen}`;
+    if (thoughtKey !== this.thoughtKey) {
+    const expanded = new Set([...$('thinking-scores').querySelectorAll<HTMLDetailsElement>('details[open]')].map(row => row.dataset.action));
+    $('thinking-scores').replaceChildren();
+    for (const score of r.ai.scores.slice().sort((a, b) => Number(b.available) - Number(a.available) || b.score - a.score)) {
+      const row = add('details', $('thinking-scores'), `utility-score${score.available ? '' : ' unavailable'}`);
+      row.dataset.action = score.action; (row as HTMLDetailsElement).open = expanded.has(score.action);
+      add('summary', row, '', `${score.action === r.ai.chosen ? '✓ ' : ''}${UTILITY_LABELS[score.action]} · ${score.score}点${score.available ? '' : ' · 対象外'}`);
+      add('p', row, '', score.reason);
+      if (!score.available) add('p', row, '', score.factors.filter(f => f.value !== 0).map(f => `${f.label} ${f.value > 0 ? '+' : ''}${f.value}`).join(' / '));
+    }
+    this.thoughtKey = thoughtKey;
+    }
+    $('thinking-history').replaceChildren();
+    for (const entry of r.ai.history.slice(-8).reverse()) add('li', $('thinking-history'), '', `${Math.floor(entry.time)}分 · ${{ selected: '選択', complete: '完了', failed: '失敗', interrupted: '切替' }[entry.outcome]} · ${entry.text}`);
     for (const key of ['health', 'energy', 'hunger'] as const) {
       ($(`resident-${key}`) as HTMLMeterElement).value = r[key]; $(`resident-${key}-value`).textContent = `${Math.round(r[key])} / 100`;
     }

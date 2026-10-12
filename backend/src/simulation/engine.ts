@@ -8,6 +8,8 @@ import { BUILDING_COSTS, buildingBlocks } from '../buildings/development';
 import { describeCommand, MAX_HUTS, type Interpretation, type InstructionRecord } from '../../../shared/instructions';
 import type { Conversation } from '../../../shared/conversation';
 import { rememberResident } from '../../../shared/memory';
+import { defaultTraits, emptyAI } from '../../../shared/autonomy';
+import { Autonomy } from '../agents/autonomy';
 const empty = (): Resources => ({ food: 0, wood: 0, stone: 0 });
 const distance = (a: Position, b: Position) => Math.hypot(a.x - b.x, a.z - b.z);
 const carried = (r: Resident) => r.inventory.food + r.inventory.wood + r.inventory.stone;
@@ -25,22 +27,27 @@ export class Simulation {
   readonly state: VillageState;
   private terrainDirty = false;
   private terrainColumns = new Set<number>();
+  private brain: Autonomy;
   economicChange = false;
   constructor(data: Uint8Array, saved: VillageState | null = null) {
     this.data = data.slice(); this.nav = new Navigation(this.data);
+    const simulation = this;
+    this.brain = new Autonomy({ get state() { return simulation.state; }, get nav() { return simulation.nav; }, get data() { return simulation.data; },
+      go: (...args) => this.go(...args), finish: r => this.finish(r), terrain: edit => this.terrainChanged(edit), nodeValid: node => this.nodeValid(node), event: (...args) => this.event(...args) });
     if (saved) { this.state = saved; this.revalidate(); return; }
     const camp = this.nav.nearest({ x: 34.5, y: 11, z: 45.5 });
     if (!camp) throw new Error('住民が暮らせる陸地がありません。');
     const reachable = this.nav.search(camp);
     const spawn = reachable.queue.slice(0, 5).map(id => this.nav.position(id % SIZE, Math.floor(id / SIZE))!);
     if (spawn.length < 5) throw new Error('5人の住民が暮らせる連続した陸地が必要です。');
-    this.state = { version: 3, chronicle: [{ id: 1, time: 0, kind: 'arrival', text: '5人がはじまりの島に到着。村の歴史が始まりました。' }], archive: { count: 0, through: 0, kinds: {} }, civilization: { level: 1, nextArrival: 720, nextEventAt: 720, eventSequence: 0, arrivals: 0, harvests: 0 }, residents: profiles.map((p, i) => ({
+    this.state = { version: 4, tasks: [], bridges: [], issues: [], nextTaskEvaluation: 0, nextBridgePlan: 0, chronicle: [{ id: 1, time: 0, kind: 'arrival', text: '5人がはじまりの島に到着。村の歴史が始まりました。' }], archive: { count: 0, through: 0, kinds: {} }, civilization: { level: 1, nextArrival: 720, nextEventAt: 720, eventSequence: 0, arrivals: 0, harvests: 0 }, residents: profiles.map((p, i) => ({
       id: p[0], name: p[1], age: p[2], personality: p[3], job: p[4], color: p[5],
       health: 100, energy: 90 - i * 3, hunger: 12 + i * 3, inventory: empty(), position: spawn[i],
       action: 'idle', reason: 'この島に、みんなで暮らせる村をつくりたい。', goal: '5人全員が安心して眠れる小屋をつくる',
       relationships: Object.fromEntries(profiles.filter(other => other[0] !== p[0]).map(other => [other[0], 50])),
       memories: ['仲間5人と、はじまりの島で暮らし始めた。'], memorySummary: '',
       conversations: [], speech: null, nextSocialAt: 30 + i * 8,
+      traits: defaultTraits(p[0], p[4]), ai: emptyAI(),
       task: null, path: [], work: 0, decisionIn: i * 0.5, home: null, order: null
     })), resources: { food: 12, wood: 0, stone: 0 }, nodes: [], huts: [], camp,
       events: [{ id: 1, time: 0, kind: 'arrival', text: '5人の住民が島に到着しました。まずは小屋の材料を集めます。' }], nextEvent: 2, elapsed: 0, nextPlan: 0, instructions: [] };
@@ -63,9 +70,9 @@ export class Simulation {
   private node(kind: Resource, position: Position, amount: number) {
     this.state.nodes.push({ id: `${kind}-${this.state.nodes.length}`, kind, position, remaining: amount, capacity: amount, regeneration: 0 });
   }
-  private event(text: string, kind: VillageEvent['kind'] = 'life') {
+  private event(text: string, kind: VillageEvent['kind'] = 'life', links: Partial<Pick<VillageEvent, 'residentIds' | 'buildingId' | 'taskId' | 'position'>> = {}) {
     if (kind === 'life' && /敷地|建築を始/.test(text)) kind = 'construction';
-    const event: VillageEvent = { id: this.state.nextEvent++, time: this.state.elapsed, text, kind };
+    const event: VillageEvent = { id: this.state.nextEvent++, time: this.state.elapsed, text, kind, ...Object.fromEntries(Object.entries(links).filter(([, value]) => value !== undefined)) };
     this.state.events.push(event);
     if (kind !== 'life' && kind !== 'conversation' || /敷地|建築を始|指示を受け/.test(text)) {
       this.state.chronicle.push(event);
@@ -111,19 +118,19 @@ export class Simulation {
   }
   terrainChanged(edit: Edit) { this.data[index(edit.x, edit.y, edit.z)] = edit.block; this.terrainDirty = true; this.terrainColumns.add(edit.x + SIZE * edit.z); }
   private isReserved(x: number, z: number) {
-    return this.state.huts.some(h => x >= h.x - 1 && x <= h.x + 4 && z >= h.z - 1 && z <= h.z + 4);
+    return this.state.huts.some(h => x >= h.x - 1 && x <= h.x + 4 && z >= h.z - 1 && z <= h.z + 4) || this.state.bridges.some(b => b.blocks.some(e => e.x === x && e.z === z));
   }
   private planHut() {
     if (this.state.huts.filter(h => h.kind === 'hut' || h.kind === 'house').length >= 3 || this.state.huts.some(h => h.status !== 'complete')) return;
     const hut = this.findHut('village', [], 'hut');
     if (hut) { this.state.huts.push(hut); this.event(`${hut.name}の敷地を確保しました。木材24・石材8を集めます。`); }
   }
-  private findHut(location: 'village' | 'river' | 'forest', extra: Hut[], kind: BuildingKind): Hut | null {
+  private findHut(location: 'village' | 'river' | 'forest', extra: Hut[], kind: BuildingKind, connectedIslands = false): Hut | null {
     const search = this.nav.search(this.state.camp);
     const river: Position[] = [];
     if (location === 'river') for (let z = 8; z < SIZE - 8; z++) for (let x = 18; x <= 29; x++) if (getBlock(this.data, x, 5, z) === Block.Water) river.push({ x, y: 5, z });
     const trees = this.state.nodes.filter(n => n.kind === 'wood' && this.nodeValid(n)).map(n => n.position);
-    const landmarks = location === 'river' ? river : location === 'forest' ? trees : [this.state.camp];
+    const landmarks = location === 'river' ? river : location === 'forest' ? trees : [this.state.camp, ...(connectedIslands ? this.state.bridges.filter(b => b.status === 'complete').map(b => b.destination) : [])];
     const proximity = (p: { x: number; z: number }) => Math.min(...landmarks.map(n => Math.hypot(n.x - p.x - 2, n.z - p.z - 2)));
     const preferred = [{ x: 29, z: 35 }, { x: 35, z: 35 }, { x: 29, z: 41 }];
     const score = (p: { x: number; z: number }) => {
@@ -161,7 +168,10 @@ export class Simulation {
     if (!count('warehouse')) candidates.push('warehouse');
     if (!count('house') || (beds(this.state) - this.state.residents.length < 2 && this.state.residents.length < MAX_POPULATION)) candidates.push('house');
     for (const kind of candidates) {
-      const building = this.findHut('village', [], kind);
+      let building = this.findHut('village', [], kind);
+      // Keep existing hut upgrades first, then use connected islands when the
+      // original village has no room for another home or field.
+      if (!building && (kind !== 'house' || !this.state.huts.some(h => h.kind === 'hut'))) building = this.findHut('village', [], kind, true);
       if (!building) {
         if (kind === 'house') {
           const old = this.state.huts.find(h => h.kind === 'hut' && this.nav.path(this.state.camp, this.nav.position(h.x + 2, h.z + 4) ?? { x: -1, y: -1, z: -1 }) !== null);
@@ -187,11 +197,11 @@ export class Simulation {
   private develop() {
     const c = this.state.civilization;
     if (this.state.residents.every(r => r.home)) for (const r of this.state.residents) {
-      if (r.job !== '農家') r.goal = r.job === '建築家' ? '農業と住宅を整えて、新しい仲間を迎える' : r.job === '木こり' ? '村の建築と備蓄に使う木材を届ける' : r.job === '採掘師' ? '住宅と倉庫の土台に使う石材を届ける' : '村の食料を安定して確保する';
+      if (!r.ai.chosen && r.job !== '農家') r.goal = r.job === '建築家' ? '農業と住宅を整えて、新しい仲間を迎える' : r.job === '木こり' ? '村の建築と備蓄に使う木材を届ける' : r.job === '採掘師' ? '住宅と倉庫の土台に使う石材を届ける' : '村の食料を安定して確保する';
     }
     if (this.state.huts.some(h => h.kind === 'farm' && h.status === 'complete') && !this.state.residents.some(r => r.job === '農家')) {
       const farmer = this.state.residents.find(r => r.job === '採集家') ?? this.state.residents.find(r => r.job === '木こり');
-      if (farmer) { farmer.job = '農家'; farmer.goal = '畑を育てて、村に安定した食料を届ける'; this.remember(farmer, '畑ができたので、農家の仕事を選んだ。'); this.event(`${farmer.name}が農家になりました。種まきと収穫を担当します。`, 'growth'); }
+      if (farmer) { farmer.job = '農家'; farmer.traits.specialty = 'farm'; farmer.goal = '畑を育てて、村に安定した食料を届ける'; this.remember(farmer, '畑ができたので、農家の仕事を選んだ。'); this.event(`${farmer.name}が農家になりました。種まきと収穫を担当します。`, 'growth', { residentIds: [farmer.id] }); }
     }
     if (c.level === 1 && growthRequirements(this.state).every(r => r.met)) {
       c.level = 2; this.event('文明が Level 2「村」に発展！ 農業・住宅・倉庫と役割分担が揃いました。', 'growth');
@@ -207,12 +217,12 @@ export class Simulation {
         const jobs = ['農家', '木こり', '採掘師'];
         const job = jobs.slice().sort((a, b) => this.state.residents.filter(r => r.job === a).length - this.state.residents.filter(r => r.job === b).length)[0];
         const n = c.arrivals++, id = `new-${n + 1}`;
-        const newcomer: Resident = { id, name: names[n], age: 20 + n % 13, personality: '新しい暮らしを楽しみにしている', job, color: ['#77a69b', '#c5a575', '#a589b9'][n % 3],
+        const newcomer: Resident = { id, traits: defaultTraits(id, job), ai: emptyAI(), name: names[n], age: 20 + n % 13, personality: '新しい暮らしを楽しみにしている', job, color: ['#77a69b', '#c5a575', '#a589b9'][n % 3],
           health: 100, hunger: 15, energy: 85, inventory: empty(), position: { ...this.state.camp }, action: 'idle', reason: '食料と住宅が整った村へ移住した。仲間と仕事を始めたい。', goal: job === '農家' ? '村の食料を育てる' : '村の発展に必要な資源を届ける',
           relationships: Object.fromEntries(this.state.residents.map(r => [r.id, 50])), memories: ['安心して暮らせる村の噂を聞いて、島へ移住した。'], memorySummary: '', conversations: [], speech: null, nextSocialAt: this.state.elapsed + 30, task: null, path: [], work: 0, decisionIn: 0, home: null, order: null };
         for (const r of this.state.residents) r.relationships[id] = 50;
         this.state.resources.food -= 4; this.state.residents.push(newcomer); this.assignHomes(); c.nextArrival = this.state.elapsed + 720;
-        this.event(`${newcomer.name}が移住しました！ ${job}として暮らします。歓迎の食料4を使い、人口${population + 1}人になりました。`, 'arrival');
+        this.event(`${newcomer.name}が移住しました！ ${job}として暮らします。歓迎の食料4を使い、人口${population + 1}人になりました。`, 'arrival', { residentIds: [id], buildingId: home!.id, position: door });
       }
     }
     if (c.nextEventAt <= this.state.elapsed) {
@@ -266,7 +276,7 @@ export class Simulation {
       const command = job.command;
       for (const r of this.state.residents.filter(r => command.target === 'all' || r.id === command.target)) {
         r.order = command.action === 'auto' ? null : { requestId: `${id}:${i}`, kind: command.action === 'rest' ? 'rest' : command.action === 'farm' ? 'farm' : command.resource, until: job.until };
-        this.finish(r); r.decisionIn = 0; r.reason = `プレイヤーからの指示：${describeCommand(command)}。`; this.remember(r, r.reason);
+        this.finish(r); r.decisionIn = 0; r.ai.cooldownUntil = this.state.elapsed; r.reason = `プレイヤーからの指示：${describeCommand(command)}。`; this.remember(r, r.reason);
       }
     });
     this.event(`指示を受け付けました：${jobs.map(j => describeCommand(j.command)).join(' ／ ')}。`);
@@ -297,6 +307,7 @@ export class Simulation {
     });
   }
   private finish(r: Resident) {
+    this.brain.finish(r);
     // A new order can interrupt a step between two floor heights. Settle onto the
     // current cell before removing its route, otherwise it appears permanently unsafe.
     const floor = this.nav.height(Math.floor(r.position.x), Math.floor(r.position.z));
@@ -306,7 +317,7 @@ export class Simulation {
   private go(r: Resident, kind: NonNullable<Resident['task']>['kind'], destination: Position, targetId: string | null, reason: string, path?: Position[]) {
     const route = path ?? this.nav.path(r.position, destination); if (!route) return false;
     r.task = { kind, destination, targetId }; r.path = route; r.work = 0;
-    r.action = route.length ? 'moving' : kind === 'gather' ? 'gathering' : kind === 'build' ? 'building' : kind === 'farm' ? 'farming' : kind === 'deliver' ? 'delivering' : 'socializing';
+    r.action = route.length ? 'moving' : kind === 'gather' ? 'gathering' : kind === 'build' || kind === 'bridge' ? 'building' : kind === 'farm' ? 'farming' : kind === 'deliver' ? 'delivering' : kind === 'explore' ? 'exploring' : 'socializing';
     r.reason = reason; return true;
   }
   private choose(r: Resident, time: number) {
@@ -318,78 +329,31 @@ export class Simulation {
       if (distance(r.position, this.state.camp) > 1) { this.go(r, 'deliver', this.state.camp, null, 'お腹が空いたので、拠点で食事をする。'); return; }
       r.action = 'eating'; r.reason = 'お腹が空いたので、共有の食料を食べて元気を取り戻す。'; r.work = 0; return;
     }
-    const night = time % 1440 >= 1200 || time % 1440 < 360;
-    if (r.order?.kind === 'rest') { r.action = 'resting'; r.reason = 'プレイヤーの休息指示で、1時間ゆっくり体を休める。空腹時は食事を先に済ませる。'; r.work = 0; return; }
-    if (r.energy < 22 || (night && r.energy < 75)) {
-      const home = this.state.huts.find(h => h.id === r.home && h.status === 'complete');
-      const bed = home ? this.nav.position(home.x + 1, home.z + 2) : null;
-      if (bed && distance(r.position, bed) > 0.5 && this.go(r, 'rest', bed, home!.id, '疲れたので、自分の小屋に戻って休む。')) return;
-      r.action = 'resting'; r.reason = r.home ? '自分の寝床があるので、安心して休息する。' : '疲れがたまったので、ここでひと休みする。'; r.work = 0; return;
-    }
-    const hut = this.state.huts.find(h => h.status !== 'complete');
-    if (!r.order && hut && (!hut.builder || hut.builder === r.id) && (r.job === '建築家' || !this.state.residents.some(other => other.job === '建築家' && other.energy > 20))) {
-      if (!hut.materialsReserved && this.state.resources.wood >= hut.cost.wood && this.state.resources.stone >= hut.cost.stone) {
-        this.state.resources.wood -= hut.cost.wood; this.state.resources.stone -= hut.cost.stone;
-        hut.materialsReserved = true; hut.status = 'building'; hut.builder = r.id;
-        this.event(`${r.name}が${hut.name}の建築を始めました。材料を取り置きしました。`);
-      }
-      if (hut.materialsReserved) {
-        const stand = this.nav.position(hut.x + 2, hut.z + 4);
-        const requested = this.state.instructions.some(record => record.jobs.some(job => job.hutIds.includes(hut.id)));
-        if (stand && this.go(r, 'build', stand, hut.id, requested ? `プレイヤーからの建築指示。材料が揃ったので${hut.name}を建てる。` : `${hut.kind === 'farm' ? '安定した食料を育てたい。' : hut.kind === 'warehouse' ? '収穫と備蓄を増やしたい。' : 'みんなと新しい住民の寝床が必要。'}材料が揃ったので${hut.name}を建てる。`)) return;
-      }
-    }
-    const search = this.nav.search(r.position);
-    const population = this.state.residents.length;
-    if (r.order?.kind === 'farm' || (!r.order && (r.job === '農家' || this.state.resources.food < population * 3))) {
-      const farms = this.state.huts.filter(h => h.kind === 'farm' && h.status === 'complete' && h.crop?.stage !== 'growing')
-        .sort((a, b) => Number(b.crop?.stage === 'ripe') - Number(a.crop?.stage === 'ripe') || distance(a, r.position) - distance(b, r.position));
-      for (const farm of farms) {
-        if (farm.crop?.stage === 'fallow' && this.state.civilization.harvests > 0 && this.state.resources.food >= population * 12 && r.order?.kind !== 'farm') continue;
-        if (this.state.residents.some(other => other.id !== r.id && other.task?.kind === 'farm' && other.task.targetId === farm.id)) continue;
-        const stand = this.nav.position(farm.x + 1, farm.z + 4);
-        if (stand && this.go(r, 'farm', stand, farm.id, farm.crop?.stage === 'ripe' ? '作物が実ったので収穫して拠点へ運ぶ。' : '畑に種をまき、村の食料を育てる。')) return;
-      }
-    }
-    const needWood = !!hut && !hut.materialsReserved && this.state.resources.wood < hut.cost.wood;
-    const needStone = !!hut && !hut.materialsReserved && this.state.resources.stone < hut.cost.stone;
-    const priorities: Record<Resource, number> = {
-      food: (this.state.resources.food < population * 2 ? 95 : this.state.resources.food < population * 5 ? 50 : 0) + (r.hunger > 60 ? 50 : 0),
-      wood: needWood ? 70 : this.state.resources.wood < (this.state.huts.some(h => h.kind === 'warehouse' && h.status === 'complete') ? 80 : 24) ? 20 : 0,
-      stone: needStone ? 70 : this.state.resources.stone < (this.state.huts.some(h => h.kind === 'warehouse' && h.status === 'complete') ? 40 : 8) ? 20 : 0
-    };
-    if (r.order) { priorities.food = r.hunger > 70 ? 160 : r.order.kind === 'farm' && this.state.resources.food < population * 2 ? 95 : 0; priorities.wood = 0; priorities.stone = 0; if (r.order.kind !== 'farm') priorities[r.order.kind] += 140; }
-    if (r.job === '木こり' && priorities.wood > 0) priorities.wood += 30;
-    if (r.job === '採掘師' && priorities.stone > 0) priorities.stone += 30;
-    if (r.job === '採集家' && priorities.food > 0) priorities.food += 30;
-    const choices: { score: number; node: VillageState['nodes'][number]; stand: Position; path: Position[] }[] = [];
-    for (const node of this.state.nodes) {
-      if (node.remaining <= 0 || priorities[node.kind] <= 0 || !this.nodeValid(node)) continue;
-      const workers = this.state.residents.filter(other => other.id !== r.id && other.task?.targetId === node.id).length;
-      for (const stand of this.adjacent(node.position)) {
-        const path = this.nav.pathFrom(search, stand); if (!path) continue;
-        choices.push({ node, stand, path, score: priorities[node.kind] - path.length * 0.55 - workers * 15 });
-      }
-    }
-    choices.sort((a, b) => b.score - a.score);
-    const choice = choices[0];
-    if (choice) {
-      const reason = r.order?.kind === choice.node.kind ? `プレイヤーの指示で、${RESOURCE_LABELS[choice.node.kind]}の採集を優先する。集めた資源は拠点へ運ぶ。` : choice.node.kind === 'food' ? '食料の備蓄を増やして、仲間が空腹にならないようにする。' :
-        choice.node.kind === 'wood' ? (needWood ? `${hut!.name}を建てる木材が足りないので、森で集める。` : '次の暮らしに備えて、木材を補充する。') :
-          (needStone ? `${hut!.name}の土台に使う石材が足りないので、採掘する。` : '修繕に備えて、石材を補充する。');
-      this.go(r, 'gather', choice.stand, choice.node.id, reason, choice.path); return;
-    }
-    if (r.hunger >= 75) { r.action = 'resting'; r.reason = '食料に届く道がない。体力を温存しながら待つ。'; r.work = 0; return; }
-    if (r.order) { r.action = 'resting'; r.reason = r.order.kind === 'farm' ? '畑の完成や作物の成長を待つ。食料不足なら採集も手伝う。' : '指示された資源が枯渇しているか、道が塞がっている。再生や地形の変化を待つ。'; r.work = 0; return; }
-    const id = search.queue[(Math.floor(this.state.elapsed / 8) + this.state.residents.indexOf(r) * 13) % Math.max(1, search.queue.length)];
-    const p = id === undefined ? null : this.nav.position(id % SIZE, Math.floor(id / SIZE));
-    if (p && distance(p, r.position) < 20 && !this.isReserved(Math.floor(p.x), Math.floor(p.z))) {
-      this.go(r, 'wander', p, null, hut ? '届く資源や安全な建築場所を探して、周囲を見回る。' : '小屋も備蓄も揃ったので、島を歩いて仲間と交流する。');
-    } else { r.action = 'resting'; r.reason = 'いま届く仕事がないので、休みながら周囲の変化を待つ。'; r.work = 0; }
+    if (!this.brain.choose(r, time)) { r.action = 'resting'; r.reason = '実行できる仕事がないため、安全な場所で休みながら再評価する。'; r.work = 0; }
   }
   private nodeValid(node: VillageState['nodes'][number]) {
     const { x, y, z } = node.position;
     return node.kind === 'wood' ? getBlock(this.data, Math.floor(x), y, Math.floor(z)) === Block.Wood : this.nav.height(Math.floor(x), Math.floor(z)) === y;
+  }
+  private explore(r: Resident) {
+    const search = this.nav.search(r.position); let discovered = 0;
+    for (let z = Math.max(1, Math.floor(r.position.z) - 6); z < Math.min(SIZE - 1, Math.floor(r.position.z) + 7); z++) for (let x = Math.max(1, Math.floor(r.position.x) - 6); x < Math.min(SIZE - 1, Math.floor(r.position.x) + 7); x++) {
+      if (this.state.nodes.length >= 64 || discovered >= 3) break;
+      if (this.state.nodes.some(n => Math.floor(n.position.x) === x && Math.floor(n.position.z) === z) || this.isReserved(x, z)) continue;
+      for (let y = 2; y < HEIGHT - 3; y++) if (getBlock(this.data, x, y, z) === Block.Wood && getBlock(this.data, x, y - 1, z) === Block.Grass) {
+        const point = { x: x + .5, y, z: z + .5 };
+        if (this.adjacent(point).some(p => this.nav.pathFrom(search, p) !== null)) { this.node('wood', point, 24); discovered++; }
+        break;
+      }
+    }
+    if ((r.position.x >= 64 || r.position.z >= 64) && !this.isReserved(Math.floor(r.position.x), Math.floor(r.position.z))) {
+      for (const kind of ['food', 'stone'] as const) if (this.state.nodes.length < 64 && this.state.nodes.filter(n => n.kind === kind).every(n => distance(n.position, r.position) > 8)) {
+        const point = search.queue.map(id => this.nav.position(id % SIZE, Math.floor(id / SIZE))!).find(p => distance(p, r.position) <= 6 && !this.isReserved(Math.floor(p.x), Math.floor(p.z)) && this.state.nodes.every(n => distance(n.position, p) > 4));
+        if (point) { this.node(kind, point, kind === 'food' ? 20 : 30); discovered++; }
+      }
+    }
+    this.remember(r, `(${Math.floor(r.position.x)}, ${Math.floor(r.position.z)})周辺を探索し、${discovered ? `新しい採集地${discovered}か所を発見した` : '地形と安全な道を確かめた'}。`);
+    if (discovered) { this.event(`${r.name}が探索で採集地${discovered}か所を発見しました。近くの住民が採集の候補にできます。`, 'task', { residentIds: [r.id], position: { ...r.position } }); this.state.nextTaskEvaluation = 0; }
   }
   private revalidate() {
     for (const column of this.terrainColumns) this.nav.rebuildColumn(column % SIZE, Math.floor(column / SIZE)); this.terrainColumns.clear();
@@ -402,7 +366,7 @@ export class Simulation {
         if (safe) r.position = safe;
         this.finish(r); r.reason = safe ? '地形が変わったので、近くの安全な足場へ避難した。' : '安全な足場がないため、行動を停止している。';
       }
-      if (r.task && (!this.nav.valid(r.task.destination) || r.path.some(p => !this.nav.valid(p)))) this.finish(r);
+      if (r.task && (!this.nav.valid(r.task.destination) || r.path.some(p => !this.nav.valid(p)))) this.brain.fail(r, '地形が変わり、作業場所への道が塞がった');
     }
     this.terrainDirty = false;
   }
@@ -419,6 +383,7 @@ export class Simulation {
     this.state.elapsed += dt; this.state.nextPlan -= dt;
     this.refreshInstructions();
     if (this.state.nextPlan <= 0) { this.develop(); this.planDevelopment(); this.state.nextPlan = 20; }
+    this.brain.tick(time);
     for (const farm of this.state.huts) if (farm.status === 'complete' && farm.crop?.stage === 'growing') {
       farm.crop.growth = Math.min(1, farm.crop.growth + dt / 180);
       if (farm.crop.growth === 1) { farm.crop.stage = 'ripe'; farm.crop.remaining = this.harvestYield(); this.event(`${farm.name}の作物が実りました。収穫を待っています。`, 'harvest'); }
@@ -437,24 +402,28 @@ export class Simulation {
       r.energy = Math.max(0, r.energy - dt * (r.action === 'resting' ? 0 : 0.08));
       if (r.hunger > 95) r.health = Math.max(10, r.health - dt * 0.05);
       else if (r.hunger < 40) r.health = Math.min(100, r.health + dt * 0.08);
+      if (r.task && !['rest', 'deliver'].includes(r.task.kind) && (r.energy < 15 || r.hunger >= 80 && this.state.resources.food > 0)) { this.brain.finish(r, 'interrupted'); this.finish(r); r.ai.cooldownUntil = this.state.elapsed; }
       if (r.path.length) {
         const next = r.path[0];
-        if (!this.nav.valid(next)) { this.finish(r); continue; }
+        if (!this.nav.valid(next)) { this.brain.fail(r, '移動経路に到達できない足場がある'); continue; }
         const remaining = distance(r.position, next), movement = dt * 1.4;
         if (remaining <= movement) { r.position = { ...next }; r.path.shift(); }
         else { const ratio = movement / remaining; r.position.y = Math.max(this.nav.height(Math.floor(r.position.x), Math.floor(r.position.z)), next.y); r.position.x += (next.x - r.position.x) * ratio; r.position.z += (next.z - r.position.z) * ratio; }
+        const task = this.state.tasks.find(t => t.id === r.ai.taskId); if (task) task.lastProgressAt = this.state.elapsed;
         r.action = 'moving'; continue;
       }
       if (r.task) {
         r.work += dt;
         if (r.task.kind === 'gather') {
           const node = this.state.nodes.find(n => n.id === r.task!.targetId);
-          if (!node || !this.nodeValid(node) || node.remaining <= 0 || distance(r.position, node.position) > 1.1) { this.finish(r); continue; }
+          if (!node || !this.nodeValid(node) || node.remaining <= 0 || distance(r.position, node.position) > 1.1) { this.brain.fail(r, '採集場所が枯渇したか、足場が変化した'); continue; }
           r.action = 'gathering';
           if (r.work >= (node.kind === 'stone' ? 5 : 4)) {
             const amount = Math.min(node.remaining, node.kind === 'stone' ? 3 : 4, capacity - carried(r));
             node.remaining -= amount; r.inventory[node.kind] += amount; r.work = 0; this.economicChange = true;
             this.remember(r, `${RESOURCE_LABELS[node.kind]}を${amount}集めた。`);
+            const task = this.state.tasks.find(t => t.id === r.ai.taskId); if (task) this.brain.progress(task, task.progress + amount);
+            this.event(`${r.name}が${RESOURCE_LABELS[node.kind]}を${amount}採集しました。拠点へ運んでから備蓄になります。`, 'task', { residentIds: [r.id], taskId: r.ai.taskId ?? undefined, position: node.position });
             if (carried(r) >= capacity || node.remaining <= 0 || r.hunger >= 70 || r.energy < 18) this.finish(r);
           }
         } else if (r.task.kind === 'deliver') {
@@ -465,6 +434,8 @@ export class Simulation {
             if (count) { this.remember(r, `集めた資源${count}個を拠点へ運んだ。`); this.event(`${r.name}が資源${count}個を拠点に届けました。`); }
             this.finish(r);
           }
+        } else if (r.task.kind === 'bridge') {
+          this.brain.workBridge(r, edits);
         } else if (r.task.kind === 'build') {
           const hut = this.state.huts.find(h => h.id === r.task!.targetId);
           if (!hut || !hut.materialsReserved || hut.status === 'complete') { this.finish(r); continue; }
@@ -481,11 +452,12 @@ export class Simulation {
               this.terrainChanged(edit); edits.push(edit);
             }
             hut.progress++; r.work = 0; this.economicChange = true;
+            const task = this.state.tasks.find(t => t.id === r.ai.taskId); if (task) this.brain.progress(task, hut.progress);
             if (hut.progress === hut.total) {
               hut.status = 'complete';
               this.assignHomes();
               const effect = hut.kind === 'farm' ? '種まきから農業を始めます。' : hut.kind === 'warehouse' ? '収穫量が24から32に増え、木材80・石材40を目安に備蓄します。' : `${hut.kind === 'house' ? 4 : 2}人分の寝床ができました。`;
-              this.remember(r, `${hut.name}を完成させた。`); this.event(`${hut.name}が完成！ ${effect}`, 'growth'); this.finish(r); this.state.nextPlan = 0;
+              this.remember(r, `${hut.name}を完成させた。`); this.event(`${hut.name}が完成！ ${effect}`, 'growth', { residentIds: [r.id], buildingId: hut.id, taskId: r.ai.taskId ?? undefined, position: { x: hut.x + 2, y: hut.y, z: hut.z + 2 } }); this.finish(r); this.state.nextPlan = 0;
             }
           }
         } else if (r.task.kind === 'farm') {
@@ -505,8 +477,9 @@ export class Simulation {
             this.economicChange = true;
           }
         } else if (r.task.kind === 'rest') {
-          r.task = null; r.action = 'resting'; r.work = 0; r.reason = '自分の小屋に戻ったので、安心して休息する。';
-        } else { r.action = 'socializing'; if (r.work >= 4) {
+          r.task = null; r.action = 'resting'; r.work = 0;
+        } else { r.action = r.task.kind === 'explore' ? 'exploring' : 'socializing'; if (r.work >= 4) {
+          if (r.task.kind === 'explore') { this.explore(r); this.finish(r); continue; }
           const other = this.state.residents.find(other => other.id !== r.id && distance(other.position, r.position) < 4);
           if (other) { r.relationships[other.id] = Math.min(100, (r.relationships[other.id] ?? 50) + 2); this.remember(r, `${other.name}と島での暮らしについて話した。`); }
           this.finish(r);
@@ -519,7 +492,7 @@ export class Simulation {
         if ((r.order?.kind !== 'rest' && r.energy >= 85 && r.work >= 4) || r.work >= 100 || (r.hunger >= 60 && this.state.resources.food > 0)) this.finish(r);
       } else {
         r.decisionIn -= dt;
-        if (r.decisionIn <= 0) this.choose(r, time);
+        if (r.decisionIn <= 0 && this.state.elapsed >= r.ai.cooldownUntil) this.choose(r, time);
       }
     }
   }

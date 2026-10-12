@@ -5,7 +5,7 @@ export const SEA = 5;
 import type { VillageState } from './village';
 import type { InstructionResult } from './instructions';
 import type { ConversationResult } from './conversation';
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 export const Block = { Air: 0, Grass: 1, Dirt: 2, Stone: 3, Sand: 4, Wood: 5, Leaves: 6, Water: 7, Brick: 8 } as const;
 export type BlockId = typeof Block[keyof typeof Block];
 export interface Edit { x: number; y: number; z: number; block: BlockId }

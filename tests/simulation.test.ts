@@ -30,7 +30,7 @@ test('an unassisted village gathers, transports resources and completes three ha
   assert.equal(sim.state.residents.filter(r => r.home).length, 5);
   assert.ok(edits.length > 100);
   assert.ok(sim.state.events.some(e => e.text.includes('届けました')));
-  assert.ok(sim.state.events.some(e => e.text.includes('完成')));
+  assert.ok(sim.state.chronicle.some(e => e.text.includes('完成')));
   assert.ok(sim.state.residents.some((r, i) => r.position.x !== start[i].x || r.position.z !== start[i].z));
   for (const hut of sim.state.huts.filter(h => h.kind === 'hut')) {
     assert.equal(hut.progress, hut.total); assert.ok(hut.materialsReserved);

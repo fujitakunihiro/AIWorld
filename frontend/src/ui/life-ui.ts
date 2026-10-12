@@ -1,11 +1,13 @@
 import { Block, HEIGHT, SIZE, getBlock, type Edit } from '../../../shared/world';
 import { EVENT_LABELS, type VillageState } from '../../../shared/village';
+import { UTILITY_LABELS } from '../../../shared/autonomy';
 import type { ConversationResult } from '../../../shared/conversation';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const add = (tag: string, parent: HTMLElement, className: string, text: string) => { const element = document.createElement(tag); element.className = className; element.textContent = text; parent.append(element); return element; };
 export class LifeUI {
   onSend: (id: string, residentId: string, text: string) => void = () => {};
   onMapFocus: (x: number, z: number) => void = () => {};
+  onHistoryResident: (id: string) => void = () => {};
   onSettings: (settings: { sound: boolean; effects: boolean; bubbles: boolean; quality: 'auto' | 'low' | 'high' }) => void = () => {};
   private selected = 'haru';
   private state?: VillageState;
@@ -13,6 +15,7 @@ export class LifeUI {
   private pending?: { id: string; residentId: string; text: string; timer: ReturnType<typeof setTimeout> };
   private chatKey = '';
   private historyKey = '';
+  private tasksKey = '';
   private baseMap = document.createElement('canvas');
   private data?: Uint8Array;
   private target = { x: 64, z: 64, radius: 80 };
@@ -20,11 +23,15 @@ export class LifeUI {
     const history = $('history-dialog') as HTMLDialogElement, settings = $('settings-dialog') as HTMLDialogElement;
     $('open-history').onclick = () => { this.history(true); history.showModal(); };
     $('close-history').onclick = () => history.close(); $('history-filter').onchange = () => this.history(true);
+    const tasks = $('tasks-dialog') as HTMLDialogElement;
+    $('open-tasks').onclick = () => { this.tasks(); tasks.showModal(); };
+    $('close-tasks').onclick = () => tasks.close();
     $('settings').onclick = () => settings.showModal(); $('close-settings').onclick = () => settings.close();
-    for (const dialog of [history, settings]) dialog.addEventListener('click', event => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); } });
+    for (const dialog of [history, settings, tasks]) dialog.addEventListener('click', event => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); } });
     $('conversation-form').onsubmit = event => { event.preventDefault(); this.send(); };
     document.querySelectorAll<HTMLButtonElement>('[data-question]').forEach(button => button.onclick = () => { $('conversation-text').focus(); ($('conversation-text') as HTMLInputElement).value = button.dataset.question!; this.send(); });
     $('toggle-map').onclick = () => { $('map-card').hidden = !$('map-card').hidden; $('toggle-map').setAttribute('aria-pressed', String(!$('map-card').hidden)); this.map(); };
+    $('close-map').onclick = () => { $('map-card').hidden = true; $('toggle-map').setAttribute('aria-pressed', 'false'); $('toggle-map').focus(); };
     $('minimap').onclick = event => { const rect = $('minimap').getBoundingClientRect(); this.onMapFocus(Math.max(0, Math.min(SIZE - 1, (event.clientX - rect.left) / rect.width * SIZE)), Math.max(0, Math.min(SIZE - 1, (event.clientY - rect.top) / rect.height * SIZE))); };
     this.baseMap.width = this.baseMap.height = SIZE;
     $('sound-enabled').toggleAttribute('checked', localStorage.getItem('ai-world-sound') === 'on');
@@ -63,7 +70,7 @@ export class LifeUI {
       if (result.ok && $<HTMLInputElement>('conversation-text').value.trim() === pending.text) $<HTMLInputElement>('conversation-text').value = '';
     }
   }
-  update(state: VillageState) { this.state = state; if (($('residents-dialog') as HTMLDialogElement).open) this.chat(); if (($('history-dialog') as HTMLDialogElement).open) this.history(); this.map(); }
+  update(state: VillageState) { this.state = state; if (($('residents-dialog') as HTMLDialogElement).open) this.chat(); if (($('history-dialog') as HTMLDialogElement).open) this.history(); if (($('tasks-dialog') as HTMLDialogElement).open) this.tasks(); this.map(); }
   private chat() {
     const resident = this.state?.residents.find(r => r.id === this.selected); if (!resident) return;
     const key = `${resident.id}:${resident.conversations.map(c => c.id).join(',')}`; if (key === this.chatKey) return; this.chatKey = key;
@@ -80,14 +87,54 @@ export class LifeUI {
     const state = this.state; if (!state) return;
     const filter = $<HTMLSelectElement>('history-filter').value, key = `${filter}:${state.nextEvent}:${state.archive.count}`;
     if (!force && this.historyKey === key) return; this.historyKey = key;
-    const log = $('world-history'); log.replaceChildren();
+    const log = $('world-history'), expanded = new Set([...log.querySelectorAll<HTMLDetailsElement>('details[open]')].map(row => row.dataset.event)); log.replaceChildren();
     $('history-archive').textContent = state.archive.count ? `古い${state.archive.count}件を記録にまとめました：${Object.entries(state.archive.kinds).map(([kind, count]) => `${EVENT_LABELS[kind as keyof typeof EVENT_LABELS] ?? '暮らし'} ${count}件`).join(' · ')}。最近の重要な出来事を最大300件表示します。` : '建築・農業・移住などの重要な出来事を、時間とともに保存します。';
     for (const event of state.chronicle.filter(e => filter === 'all' || e.kind === filter).slice().reverse()) {
       const row = add('li', log, 'history-entry', ''), minute = Math.floor((event.time + 480) % 1440);
       add('small', row, '', `${Math.floor((event.time + 480) / 1440) + 1}日目 · ${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')} · ${EVENT_LABELS[event.kind]}`);
-      add('p', row, '', event.text);
+      const linked = event.position || event.residentIds?.length || event.buildingId;
+      if (!linked) { add('p', row, '', event.text); continue; }
+      const details = add('details', row, 'event-details', ''); add('summary', details, '', event.text);
+      details.dataset.event = String(event.id); (details as HTMLDetailsElement).open = expanded.has(String(event.id));
+      for (const id of event.residentIds ?? []) {
+        const resident = state.residents.find(r => r.id === id); if (!resident) continue;
+        const button = add('button', details, 'event-link', `${resident.name} · ${resident.job}を見る`) as HTMLButtonElement;
+        button.onclick = () => { ($('history-dialog') as HTMLDialogElement).close(); this.onHistoryResident(id); };
+      }
+      const building = state.huts.find(h => h.id === event.buildingId), bridge = state.bridges.find(b => b.id === event.buildingId), task = state.tasks.find(t => t.id === event.taskId);
+      if (building || bridge) add('p', details, '', building ? `${building.name} · ${building.status === 'complete' ? '完成' : `建築 ${building.progress}/${building.total}`}` : `${bridge!.name} · ${bridge!.progress}/${bridge!.blocks.length}`);
+      if (task) add('p', details, '', `仕事：${task.title} · ${task.failure || { queued: '担当待ち', running: '作業中', blocked: '再評価待ち', complete: '完成' }[task.status]}`);
+      if (event.position) {
+        const button = add('button', details, 'event-link', 'この場所を近くで見る ↗') as HTMLButtonElement;
+        button.onclick = () => { ($('history-dialog') as HTMLDialogElement).close(); this.onMapFocus(event.position!.x, event.position!.z); };
+      }
     }
     if (!log.children.length) add('li', log, 'chat-empty', 'この種類の出来事は、これから刻まれます。');
+  }
+  private tasks() {
+    const state = this.state; if (!state) return;
+    const key = JSON.stringify([state.issues, state.bridges.map(b => [b.status, b.progress]), state.tasks.map(t => [t.id, t.status, t.progress, t.assignees, t.failure]), state.resources]);
+    if (key === this.tasksKey) return; this.tasksKey = key;
+    $('task-issues').textContent = state.issues.length ? `いまの課題：${state.issues.join(' · ')}` : '備蓄と住まいが整いました。住民は維持・交流・探索を続けます。';
+    $('bridge-list').replaceChildren();
+    for (const bridge of state.bridges) {
+      const row = add('article', $('bridge-list'), 'growth-site', ''); add('strong', row, '', bridge.name);
+      add('p', row, '', `${bridge.status === 'complete' ? '完成 · 島へ歩いて渡れます' : bridge.materialsReserved ? '建設中 · 木材を確保済み' : `材料待ち · 木材 ${state.resources.wood}/${bridge.cost.wood}`} · ${bridge.progress}/${bridge.blocks.length}`);
+      const progress = add('progress', row, '', '') as HTMLProgressElement; progress.max = 1; progress.value = bridge.progress / bridge.blocks.length;
+      const focus = add('button', row, 'event-link', '橋を近くで見る ↗') as HTMLButtonElement;
+      const block = bridge.blocks[Math.floor(bridge.blocks.length / 2)]; focus.onclick = () => { ($('tasks-dialog') as HTMLDialogElement).close(); this.onMapFocus(block.x, block.z); };
+    }
+    if (!state.bridges.length) add('p', $('bridge-list'), '', '島への道を調べています。未接続の島があれば橋を計画します。');
+    $('task-list').replaceChildren();
+    const tasks = state.tasks.filter(t => t.status === 'running' || t.kind !== 'gather' && t.status !== 'complete').sort((a, b) => Number(b.status === 'running') - Number(a.status === 'running') || b.priority - a.priority);
+    for (const task of tasks) {
+      const row = add('article', $('task-list'), 'growth-site', ''); add('strong', row, '', `${UTILITY_LABELS[task.action]} · ${task.title}`);
+      add('p', row, '', `優先度 ${task.priority} · ${{ queued: '担当待ち', running: '作業中', blocked: '再評価待ち', complete: '完成' }[task.status]} · ${Math.floor(task.progress)}/${task.total}`);
+      add('p', row, '', `必要人数 ${task.requiredPeople} · 担当 ${task.assignees.map(id => state.residents.find(r => r.id === id)?.name ?? id).join('・') || '未決定'} · 場所 (${Math.floor(task.location.x)}, ${Math.floor(task.location.z)})`);
+      if (task.requiredResources.wood || task.requiredResources.stone) add('p', row, '', `必要木材 ${task.requiredResources.wood} / 取り置き ${task.reservedResources.wood} · 必要石材 ${task.requiredResources.stone} / 取り置き ${task.reservedResources.stone}`);
+      if (task.failure) add('p', row, 'instruction-error', `${task.failure} · 再評価まで${Math.max(0, Math.ceil(task.retryAt - state.elapsed))}分`);
+    }
+    if (!tasks.length) add('p', $('task-list'), '', '住民は体調と備蓄を見て、次の仕事を選びます。');
   }
   setWorld(data: Uint8Array) { this.data = data; for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) this.mapPixel(x, z); this.map(); }
   terrain(edits: Edit[]) { for (const edit of edits) this.mapPixel(edit.x, edit.z); this.map(); }

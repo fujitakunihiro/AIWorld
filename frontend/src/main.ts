@@ -5,6 +5,7 @@ import { VillageUI } from './ui/village-ui';
 import { InstructionUI } from './ui/instruction-ui';
 import { LifeUI } from './ui/life-ui';
 import { VillageAudio } from './audio';
+import { OverlayUI } from './ui/overlay-ui';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 type Mode = 'observe' | 'place' | 'remove';
 let mode: Mode = 'observe', material: BlockId = Block.Grass;
@@ -16,6 +17,8 @@ let renderer: WorldRenderer;
 const villageUI = new VillageUI();
 const instructionUI = new InstructionUI();
 const lifeUI = new LifeUI(), audio = new VillageAudio();
+const overlayUI = new OverlayUI();
+overlayUI.onObserve = () => setMode('observe');
 lifeUI.onSend = (id, residentId, text) => { if (ready && socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'conversation', id, residentId, text })); };
 instructionUI.onSend = (id, text) => { if (ready && socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'instruction', id, text })); };
 const materials: { id: BlockId; name: string; color: string }[] = [
@@ -135,6 +138,7 @@ try {
   lifeUI.onSettings = settings => { if (audio.enabled !== settings.sound) void audio.setEnabled(settings.sound); renderer.effects.enabled = settings.effects; renderer.village.showBubbles = settings.bubbles; renderer.setQuality(settings.quality); };
   lifeUI.applySettings();
   lifeUI.onMapFocus = (x, z) => { renderer.controls.target.set(x, 10, z); renderer.controls.orbit.radius = innerWidth < 700 ? 65 : 45; renderer.controls.update(); };
+  lifeUI.onHistoryResident = id => villageUI.open(id);
   villageUI.onFocus = (state, id) => { setMode('observe'); renderer.focusVillage(state, id); };
   villageUI.onSelect = id => { renderer.village.select(id); lifeUI.select(id); };
   renderer.onFps = fps => { $('fps').textContent = `${fps} FPS`; lifeUI.view(renderer.controls.target.x, renderer.controls.target.z, renderer.controls.orbit.radius); };
@@ -145,7 +149,7 @@ try {
     sendEdit({ ...picked, block: mode === 'place' ? material : Block.Air });
   };
   renderer.controls.onHover = (x, y) => renderer.highlight(mode === 'observe' ? null : renderer.pick(x, y, mode === 'place'), mode === 'remove');
-  renderer.controls.onLongPress = () => { setMode('place'); toast('配置ツールを開きました。素材を選んでタップしてください。'); };
+  renderer.controls.onLongPress = () => { overlayUI.edit(true); setMode('place'); toast('配置ツールを開きました。素材を選んでタップしてください。'); };
   $('zoom-in').onclick = () => renderer.controls.zoom(0.82); $('zoom-out').onclick = () => renderer.controls.zoom(1.22);
   $('rotate').onclick = () => { renderer.controls.orbit.theta += Math.PI / 4; renderer.controls.update(); };
   $('home').onclick = () => renderer.controls.home();

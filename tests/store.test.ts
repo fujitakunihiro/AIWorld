@@ -110,7 +110,7 @@ test('Phase 4 migration preserves edited terrain and village coordinates; new is
     store.close();
     const db = new DatabaseSync(path); db.prepare('INSERT INTO simulation VALUES(1,?)').run(JSON.stringify(legacy)); db.exec('UPDATE world SET version=3'); db.close();
     const migrated = new WorldStore(path, 1);
-    assert.equal(migrated.snapshot().version, 4); assert.equal(migrated.village!.version, 3);
+    assert.equal(migrated.snapshot().version, SAVE_VERSION); assert.equal(migrated.village!.version, 4);
     assert.equal(getBlock(migrated.data, 32, 11, 40), Block.Wood);
     assert.deepEqual(migrated.village!.huts, legacy.huts); assert.deepEqual(migrated.village!.residents.map(r => r.position), legacy.residents.map((r: any) => r.position));
     assert.match(migrated.village!.chronicle.at(-1)!.text, /128×128/);

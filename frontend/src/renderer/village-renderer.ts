@@ -48,6 +48,10 @@ export class VillageRenderer {
   }
   update(state: VillageState, snap = false) {
     if (!snap && this.previous) {
+      for (const bridge of state.bridges) {
+        const previous = this.previous.bridges.find(b => b.id === bridge.id), edit = bridge.blocks[Math.max(0, bridge.progress - 1)];
+        if (previous && bridge.progress > previous.progress) this.onEffect(bridge.status === 'complete' ? 'complete' : 'build', { x: edit.x + .5, y: edit.y + 1, z: edit.z + .5 });
+      }
       for (const hut of state.huts) {
         const previous = this.previous.huts.find(h => h.id === hut.id);
         if (hut.status === 'complete' && previous && previous.status !== 'complete') this.onEffect('complete', { x: hut.x + 2, y: hut.y + 4, z: hut.z + 2 });

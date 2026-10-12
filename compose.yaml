@@ -6,8 +6,6 @@ services:
     environment:
       DB_PATH: /data/world.sqlite
       WORLD_SEED: ${WORLD_SEED:-73129}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
     volumes:
       - world-data:/data
     restart: unless-stopped

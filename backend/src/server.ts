@@ -13,8 +13,9 @@ if (!Number.isSafeInteger(seed) || seed < 0 || seed > 2147483647) throw new Erro
 const store = new WorldStore(process.env.DB_PATH ?? '/data/world.sqlite', seed);
 const simulation = new Simulation(store.data, store.village);
 store.saveVillage(simulation.state);
-const interpreter = new InstructionInterpreter({ apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL });
-const conversations = new ConversationService({ apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL });
+// Phase 6 runs entirely locally, including player instructions and conversations.
+const interpreter = new InstructionInterpreter();
+const conversations = new ConversationService();
 const talking = new Map<string, { residentId: string; text: string; result: Promise<ConversationResult> }>();
 let closing = false;
 let instructionTimes: number[] = [];

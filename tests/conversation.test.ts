@@ -72,7 +72,7 @@ test('Phase 4 resident migration adds conversation and history without losing ho
   const s = fresh(), old: any = structuredClone(s.state); old.version = 2; delete old.chronicle; delete old.archive;
   for (const r of old.residents) { delete r.conversations; delete r.speech; delete r.nextSocialAt; }
   const migrated = villageSchema.parse(old);
-  assert.equal(migrated.version, 3); assert.deepEqual(migrated.chronicle, s.state.events);
+  assert.equal(migrated.version, 4); assert.deepEqual(migrated.chronicle, s.state.events);
   assert.deepEqual(migrated.residents.map(r => [r.position, r.inventory, r.home, r.memories]), s.state.residents.map(r => [r.position, r.inventory, r.home, r.memories]));
   assert.ok(migrated.residents.every(r => !r.conversations.length && r.speech === null));
 });

@@ -177,7 +177,7 @@ export class WorldRenderer {
   private resize() {
     this.camera.fov = window.innerWidth < 700 ? 50 : 42;
     this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.setViewOffset(window.innerWidth, window.innerHeight, 0, window.innerWidth < 700 ? 0 : window.innerHeight * .08, window.innerWidth, window.innerHeight); this.camera.updateProjectionMatrix();
+    this.camera.clearViewOffset(); this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
   private frame() {

@@ -11,29 +11,41 @@
   <div id="world" aria-label="編集できる128×128の3D世界"></div>
   <div id="resident-labels" aria-hidden="true"></div>
   <header class="topbar">
-    <a class="brand" href="/" aria-label="AI WORLD ホーム"><span class="brand-mark">◈</span> AI WORLD<span class="edition">WORLD BUILDER</span></a>
+    <a class="brand" href="/" aria-label="AI WORLD ホーム"><span class="brand-mark">◈</span> AI WORLD</a>
+    <span id="day" class="day-label">1日目</span>
     <div class="connection"><i id="status-dot"></i><span id="connection">接続中</span></div>
     <button id="settings" class="icon-button" aria-label="音と描画の設定">⚙</button>
     <button id="help" class="icon-button" aria-label="操作ガイド">?</button>
+    <button id="toggle-menu" class="menu-toggle" aria-label="世界と村のメニュー" aria-expanded="false" aria-controls="world-menu">☰ <span>メニュー</span></button>
   </header>
   <main class="overlay">
+    <aside id="world-menu" class="world-menu" aria-label="世界と村のメニュー" hidden>
+    <div class="panel-heading"><strong>世界と村</strong><button id="close-menu" class="icon-button" aria-label="メニューを閉じる">×</button></div>
     <section class="world-title">
       <div class="eyebrow">YOUR FIRST WORLD <span>01</span></div>
       <h1>はじまりの島<span class="tiny-leaf">✦</span></h1>
       <p>ここから、世界が育っていく。</p>
-      <div class="world-tags"><span>128 × 128</span><span>温帯の島々</span><span id="day">1日目</span><button id="toggle-map" aria-pressed="false">地図 ⤢</button></div>
+      <div class="world-tags"><span>128 × 128</span><span>温帯の島々</span></div>
       <div class="resource-bar" aria-label="村の人口と共有資源"><span id="population">住民 —</span><span id="resource-food">食料 —</span><span id="resource-wood">木材 —</span><span id="resource-stone">石材 —</span></div>
       <button id="civilization" class="civilization-badge" aria-label="村の発展を開く"><span id="civilization-label">Lv.1 集落</span><span>村の発展 ↗</span></button>
       <button id="open-history" class="history-button">世界の歴史 ↗</button>
+      <button id="open-tasks" class="history-button">村の仕事・橋 ↗</button>
     </section>
     <section class="creation-card village-card">
       <div class="eyebrow">LIFE ON THE ISLAND</div>
       <h2 id="village-title">5人の、小さな暮らし。</h2>
       <div id="resident-list"></div>
       <div class="hut-summary"><strong id="homes">小屋 0 / 3</strong><p id="hut-status">敷地を探しています</p><progress id="hut-progress" value="0" max="1" aria-label="小屋の建築進捗"></progress><small id="hut-materials">必要資源を確認中</small></div>
-      <button id="start-building">村を近くで見る <span>↗</span></button>
-      <div class="phase-note"><span class="live-dot"></span> PHASE 05 · 記憶を重ねる世界</div>
     </section>
+    <section class="menu-instruction" aria-label="世界への指示">
+      <form id="quick-instruction" class="instruction-strip">
+        <label for="quick-instruction-text"><span>✦</span><span class="sr-only">世界への指示</span></label>
+        <input id="quick-instruction-text" maxlength="500" placeholder="畑を1面作って、など…" autocomplete="off" required />
+        <button class="instruction-send" type="submit" disabled>指示 ↗</button>
+      </form>
+      <div class="instruction-feedback-row"><span id="instruction-mode">AIの接続を確認中</span><span id="instruction-feedback" role="status" aria-live="polite">ことばで、村の次の一歩を。</span></div>
+    </section>
+    </aside>
     <div class="view-controls" aria-label="カメラ操作">
       <button id="zoom-in" aria-label="ズームイン">＋</button>
       <button id="zoom-out" aria-label="ズームアウト">−</button>
@@ -41,21 +53,21 @@
       <button id="home" aria-label="島全体を表示">⌂</button>
     </div>
     <div class="scene-caption"><span class="live-dot"></span><span id="village-event">5人の暮らしが始まります</span><span id="fps"></span></div>
-    <section id="map-card" class="map-card" hidden><strong>世界を見渡す</strong><canvas id="minimap" width="256" height="256" aria-label="128×128の世界地図。クリックでその場所へ移動"></canvas><small>タップで移動 · 金色は村</small></section>
-    <section class="dock">
-      <form id="quick-instruction" class="instruction-strip">
-        <label for="quick-instruction-text"><span>✦</span><span class="sr-only">世界への指示</span></label>
-        <input id="quick-instruction-text" maxlength="500" placeholder="畑を1面作って、など…" autocomplete="off" required />
-        <button class="instruction-send" type="submit" disabled>指示する ↗</button>
-        <button id="open-instructions" class="instruction-history-button" type="button" aria-label="AI指示と履歴を開く">履歴</button>
-      </form>
-      <div class="instruction-feedback-row"><span id="instruction-mode">AIの接続を確認中</span><span id="instruction-feedback" role="status" aria-live="polite">ことばで、村の次の一歩を。</span></div>
+    <section id="map-card" class="map-card" hidden><div class="panel-heading"><strong>世界を見渡す</strong><button id="close-map" aria-label="地図を閉じる">×</button></div><canvas id="minimap" width="256" height="256" aria-label="128×128の世界地図。クリックでその場所へ移動"></canvas><small>タップで移動 · 金色は村</small></section>
+    <nav class="action-bar" aria-label="世界の操作">
+      <button id="start-building"><span>⌂</span>村を見る</button>
+      <button id="residents"><span>♧</span>住民</button>
+      <button id="open-instructions" type="button" aria-label="AI指示と履歴を開く"><span>✦</span>AI指示</button>
+      <button id="toggle-map" aria-pressed="false" aria-controls="map-card"><span>⤢</span>地図</button>
+      <button id="toggle-edit" aria-expanded="false" aria-controls="edit-tools"><span>▣</span>編集</button>
+    </nav>
+    <section id="edit-tools" class="dock" aria-label="ブロック編集" hidden>
+      <div class="panel-heading"><strong>ブロック編集</strong><button id="close-edit" class="icon-button" aria-label="編集を閉じる">×</button></div>
       <div class="dock-top">
         <div class="tool-group" role="group" aria-label="編集ツール">
           <button data-mode="observe" class="tool active"><span>◎</span>ながめる</button>
           <button data-mode="place" class="tool"><span>▣</span>置く</button>
           <button data-mode="remove" class="tool"><span>▱</span>消す</button>
-          <button id="residents" class="tool"><span>♧</span>住民</button>
         </div>
         <div class="dock-divider"></div>
         <div class="palette" id="palette" role="group" aria-label="ブロックの種類"></div>
@@ -66,16 +78,17 @@
         <span class="save-state" id="save-state">世界を読み込み中</span>
       </div>
     </section>
-    <footer class="world-footer"><span id="clock">☀ 08:00</span><div class="speed-group" aria-label="時間の速さ"><button data-speed="0" aria-label="一時停止">Ⅱ</button><button data-speed="1" class="active">1×</button><button data-speed="5">5×</button><button data-speed="20">20×</button></div><span class="footer-note">小さな一歩が、世界になる。</span></footer>
+    <footer class="world-footer"><span id="clock">☀ 08:00</span><div class="speed-group" aria-label="時間の速さ"><button data-speed="0" aria-label="一時停止">Ⅱ</button><button data-speed="1" class="active">1×</button><button data-speed="5">5×</button><button data-speed="20">20×</button></div></footer>
   </main>
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="loading"><span class="loading-cube">◈</span><h2>世界をひらいています</h2><p id="loading-message">島の地形と保存データを読み込み中…</p></div>
-  <dialog id="guide"><button id="close-guide" class="icon-button" aria-label="ガイドを閉じる">×</button><div class="eyebrow">FIELD GUIDE</div><h2>あなたの島の歩き方</h2><p><b>PC</b><br>左ドラッグ：回転 ／ 右ドラッグ・Shift＋左ドラッグ：移動<br>ホイール：ズーム</p><p><b>スマートフォン</b><br>1本指ドラッグ：移動<br>2本指：ピンチでズーム、ひねって回転<br>長押し：ブロック配置ツールを開く</p><p><b>島を編集</b><br>「置く」→素材を選ぶ→地形をタップ。<br>「消す」→固体ブロックをタップ。↶で直前の編集を戻せます。<br>住民の足場・建物・畑・確保済みの建築敷地は保護されています。</p><p><b>住民を観察</b><br>「住民」または「ながめる」で住民をタップすると、行動と理由・所持品・体調が見えます。住民が採集して運んだ資源は上部に表示します。小屋には木材24・石材8が必要で、2人分の寝床になります。5×・20×で発展を早送りできます。</p><p class="guide-note">下部の入力欄から住民に指示できます。「履歴」で指示の例、変換したJSON、進み具合を確認できます。API未設定時や接続失敗時も日本語のルール解析で動きます。「村の発展」で農業・住宅・移住・職業・イベントを確認できます。5×・20×で発展を早送りできます。</p></dialog>
+  <dialog id="guide"><button id="close-guide" class="icon-button" aria-label="ガイドを閉じる">×</button><div class="eyebrow">FIELD GUIDE</div><h2>あなたの島の歩き方</h2><p><b>PC</b><br>左ドラッグ：回転 ／ 右ドラッグ・Shift＋左ドラッグ：移動<br>ホイール：ズーム</p><p><b>スマートフォン</b><br>1本指ドラッグ：移動<br>2本指：ピンチでズーム、ひねって回転<br>長押し：ブロック配置ツールを開く</p><p><b>島を編集</b><br>下部の「編集」→「置く」→素材を選ぶ→地形をタップ。<br>「消す」→固体ブロックをタップ。↶で直前の編集を戻せます。編集を閉じると観察に戻ります。<br>住民の足場・建物・畑・確保済みの建築敷地は保護されています。</p><p><b>住民を観察</b><br>下部の「村を見る」で近づき、「住民」または画面の住民をタップすると会話と行動理由を見られます。人口・資源・建築進捗は右上の「メニュー」で確認できます。5×・20×で発展を早送りできます。</p><p class="guide-note">下部の「AI指示」から村に指示できます。指示の例、変換したJSON、進み具合も確認できます。API未設定時や接続失敗時も日本語のルール解析で動きます。「メニュー」の「村の発展」「世界の歴史」で暮らしの成長を確認できます。メニュー・地図・編集は × または Escape で閉じられます。</p></dialog>
   <dialog id="residents-dialog" class="resident-dialog">
     <button id="close-residents" class="icon-button" aria-label="住民の詳細を閉じる">×</button>
     <div class="eyebrow">PEOPLE OF YOUR WORLD</div><div id="resident-roster"></div>
     <h2 id="resident-name">住民</h2><p id="resident-meta"></p>
     <div class="reason-card"><strong id="resident-action"></strong><p id="resident-reason"></p></div>
+    <section class="thinking-panel" aria-label="住民の判断"><h3>目標と現在の仕事</h3><p id="thinking-goal"></p><p id="thinking-task"></p><progress id="thinking-progress" value="0" max="1" aria-label="現在の仕事の進捗"></progress><h3>個性と得意な仕事</h3><p id="thinking-traits"></p><h3>選択時の評価スコア</h3><p class="thinking-note">世界の状態から計算した点数です。灰色の候補は実行できません。</p><div id="thinking-scores"></div><h3>最近の行動履歴</h3><ol id="thinking-history"></ol></section>
     <section class="conversation-panel" aria-label="住民との会話"><h3>ひとこと、話してみる。</h3><div id="conversation-log" class="conversation-log" role="log" aria-live="polite"></div><div class="conversation-presets"><button data-question="何をしているの？">いまの仕事</button><button data-question="最近の思い出は？">思い出</button><button data-question="目標は？">これから</button></div><form id="conversation-form"><label class="sr-only" for="conversation-text">住民への話しかけ</label><input id="conversation-text" maxlength="300" placeholder="こんにちは。何をしているの？" autocomplete="off" required /><button id="conversation-send" type="submit" disabled>話す ↗</button></form><p id="conversation-feedback" role="status">行動と記憶から、住民が答えます。</p></section>
     <div class="resident-vitals">
       <label>体力 <span id="resident-health-value"></span><meter id="resident-health" min="0" max="100" value="100"></meter></label>
@@ -89,7 +102,8 @@
     <h3>仲間との親しさ</h3><p id="resident-relations"></p>
     <h3>村の出来事</h3><ul id="village-history"></ul>
   </dialog>
-  <dialog id="history-dialog" class="history-dialog"><button id="close-history" class="icon-button dialog-close" aria-label="世界の歴史を閉じる">×</button><div class="eyebrow">THE STORY WE SHARE</div><h2>この世界の、歩んだ時間。</h2><p>最初の小屋、実った作物、新しい仲間。住民たちが刻んだ出来事を残します。</p><label for="history-filter" class="history-filter-label">出来事の種類</label><select id="history-filter"><option value="all">すべての歴史</option><option value="growth">発展</option><option value="arrival">移住</option><option value="harvest">農業</option><option value="construction">建築</option><option value="festival">祭り</option><option value="weather">天候</option><option value="trade">交易</option></select><p id="history-archive"></p><ol id="world-history" class="world-history"></ol></dialog>
+  <dialog id="history-dialog" class="history-dialog"><button id="close-history" class="icon-button dialog-close" aria-label="世界の歴史を閉じる">×</button><div class="eyebrow">THE STORY WE SHARE</div><h2>この世界の、歩んだ時間。</h2><p>最初の小屋、実った作物、新しい仲間。住民たちが刻んだ出来事を残します。</p><label for="history-filter" class="history-filter-label">出来事の種類</label><select id="history-filter"><option value="all">すべての歴史</option><option value="task">村の課題と仕事</option><option value="growth">発展</option><option value="arrival">移住</option><option value="harvest">農業</option><option value="construction">建築</option><option value="festival">祭り</option><option value="weather">天候</option><option value="trade">交易</option></select><p id="history-archive"></p><ol id="world-history" class="world-history"></ol></dialog>
+  <dialog id="tasks-dialog" class="history-dialog"><button id="close-tasks" class="icon-button dialog-close" aria-label="村の仕事を閉じる">×</button><div class="eyebrow">OUR NEXT STEPS</div><h2>みんなで、村の課題を解く。</h2><p id="task-issues"></p><h3>島をつなぐ橋</h3><div id="bridge-list"></div><h3>必要な仕事と分担</h3><p>材料を取り置きし、作業場所ごとに担当を決めます。移動できない仕事は時間を置いて再評価します。</p><div id="task-list"></div></dialog>
   <dialog id="settings-dialog"><button id="close-settings" class="icon-button dialog-close" aria-label="設定を閉じる">×</button><div class="eyebrow">MAKE YOURSELF AT HOME</div><h2>心地よい、世界の眺め方。</h2><label class="setting-row"><span><strong>効果音</strong><small>建築・収穫・新しい仲間の到着</small></span><input id="sound-enabled" type="checkbox" /></label><label class="setting-row"><span><strong>エフェクト</strong><small>建築の粒子と完成時のお祝い</small></span><input id="effects-enabled" type="checkbox" checked /></label><label class="setting-row"><span><strong>住民の吹き出し</strong><small>村を近くで見ると会話が表示されます</small></span><input id="bubbles-enabled" type="checkbox" checked /></label><label class="quality-setting" for="render-quality">描画品質<select id="render-quality"><option value="auto">自動 · FPSに合わせて調整</option><option value="low">軽量 · 近くの地形を優先</option><option value="high">高品質 · 遠くの地形も表示</option></select></label><p>音はこの端末で操作した後に再生されます。設定はブラウザに保存されます。端末の「視差効果を減らす」設定にも対応しています。</p></dialog>
   <dialog id="instructions-dialog" class="instructions-dialog">
     <button id="close-instructions" class="icon-button" aria-label="AI指示を閉じる">×</button>

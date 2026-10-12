@@ -22,7 +22,7 @@ export class InstructionInterpreter {
   constructor(private config: Config = {}) { this.mode = config.apiKey?.trim() ? 'llm' : 'rules'; }
   async interpret(text: string, village: VillageState): Promise<Interpretation> {
     if (!text.trim() || text.length > 500) throw new Error('指示は1〜500文字で入力してください。');
-    if (this.mode === 'rules') return { commands: parseRules(text, village.residents), source: 'rules', notice: 'API未設定のため、日本語のルール解析で受け付けました。' };
+    if (this.mode === 'rules') return { commands: parseRules(text, village.residents), source: 'rules', notice: '日本語のローカル解析で受け付けました。' };
     const now = (this.config.now ?? Date.now)();
     this.calls = this.calls.filter(t => now - t < 60_000);
     if (this.busy || this.calls.length >= 6) throw new Error('AIが混み合っています。少し待ってから送信してください。');

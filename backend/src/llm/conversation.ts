@@ -3,6 +3,7 @@ import { ACTION_LABELS, type Resident, type VillageState } from '../../../shared
 interface Config { apiKey?: string; model?: string; timeoutMs?: number; fetch?: typeof fetch; now?: () => number }
 export interface Reply { answer: string; source: 'rules' | 'llm' }
 export function localReply(text: string, resident: Resident, village: VillageState): string {
+  if (/判断|考え|なぜ|理由|スコア/.test(text) && resident.ai.scores.length) return `今の目標は「${resident.goal}」です。${resident.reason}。候補の点数は住民の判断欄で確認できます。`.slice(0, 500);
   if (/覚えて(?!いる|る|ます)|remember(?!ed)/i.test(text)) return `覚えておきます。「${text.slice(0, 180)}」と伝えてくれましたね。また話しかけてください。`;
   if (/前に|さっき|記憶|思い出|覚えている|名前は|話した/.test(text)) {
     const previous = resident.conversations.filter(c => !/前に|さっき|記憶|思い出|覚えている|名前は[？?]|話した/.test(c.question)).at(-1) ?? resident.conversations.at(-1);
