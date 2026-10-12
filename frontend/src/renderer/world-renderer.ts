@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { WorldCamera } from '../camera/controls';
 import { Block, CHUNK, SIZE, getBlock, inside, type Edit } from '../../../shared/world';
-import type { VillageState } from '../../../shared/village';
+import type { Resident, VillageState } from '../../../shared/village';
 import { VillageRenderer } from './village-renderer';
 import { WorldEffects } from './effects';
 import { DioramaEnvironment } from './environment';
@@ -20,6 +20,9 @@ export class WorldRenderer {
   readonly effects: WorldEffects;
   settings: GraphicsSettings = { style: 'diorama', quality: 'auto', shadows: true, ao: true, distance: 'standard', preview: 'world', grass: 'lush' };
   private models: WorldModels;
+  private following: string | null = null;
+  private followTarget = new THREE.Vector3();
+  onFollow: (resident: Resident | null) => void = () => {};
   private editing = false;
   private hidden: number[] = [];
   private environment: DioramaEnvironment;
@@ -33,6 +36,7 @@ export class WorldRenderer {
   private cpuTimes: number[] = [];
   private benchmark?: { durations: number[]; cpu: number[]; warmupUntil: number; elapsed: number };
   private shadowAt = 0;
+  private lastShadowKey = '';
   private worker?: Worker;
   private jobId = 0;
   private jobs = new Map<string, number>();
@@ -72,6 +76,7 @@ export class WorldRenderer {
     this.postUnavailable = !this.renderer.extensions.has('EXT_color_buffer_float');
     container.appendChild(this.renderer.domElement);
     this.controls = new WorldCamera(this.camera, this.renderer.domElement); this.controls.home();
+    this.controls.onPan = () => this.stopFollowing();
     this.village = new VillageRenderer(this.scene);
     this.models = new WorldModels(this.scene);
     this.effects = new WorldEffects(this.scene); this.village.onEffect = (kind, position) => this.effects.emit(kind, position);
@@ -138,7 +143,14 @@ export class WorldRenderer {
     });
     const copy = data.slice(); this.worker.postMessage({ data: copy, requests, hidden: this.hidden }, [copy.buffer]); return ready;
   }
-  updateVillage(state: VillageState, snap = false) { this.village.update(state, snap); this.models.update(state); }
+  updateVillage(state: VillageState, snap = false) {
+    this.village.update(state, snap); this.models.update(state);
+    if (this.following) {
+      const r = state.residents.find(r => r.id === this.following);
+      if (r) this.onFollow(r); else this.stopFollowing();
+    }
+  }
+  stopFollowing() { if (this.following) { this.following = null; this.renderer.shadowMap.needsUpdate = true; this.onFollow(null); } }
   rebuild(cx: number, cz: number) {
     if (!this.data || cx < 0 || cz < 0 || cx >= SIZE / CHUNK || cz >= SIZE / CHUNK) return;
     this.dirty.add(`${cx},${cz}`);
@@ -194,6 +206,7 @@ export class WorldRenderer {
     }
   }
   setEditing(editing: boolean) {
+    if (editing) this.stopFollowing();
     if (editing === this.editing) return;
     this.editing = editing; this.models.setEditing(editing);
     this.village.setGraphicStyle(editing ? 'classic' : this.settings.style);
@@ -235,6 +248,9 @@ export class WorldRenderer {
   }
   measure() { this.benchmark = { durations: [], cpu: [], warmupUntil: performance.now() + 1000, elapsed: 0 }; }
   focusVillage(state: VillageState, residentId?: string) {
+    this.stopFollowing();
+    const resident = state.residents.find(r => r.id === residentId);
+    if (resident) { this.following = resident.id; this.village.select(resident.id); this.onFollow(resident); }
     const p = state.residents.find(r => r.id === residentId)?.position ?? state.camp;
     this.controls.target.set(p.x, p.y + (residentId ? .75 : 0), p.z);
     if (!residentId && state.huts.length) {
@@ -248,7 +264,9 @@ export class WorldRenderer {
   pickResident(clientX: number, clientY: number) {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.raycaster.setFromCamera(new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -(clientY - rect.top) / rect.height * 2 + 1), this.camera);
-    const meshes = [...this.chunks.values()].filter(group => group.visible).flatMap(group => group.children.filter(mesh => mesh.userData.solid));
+    const diorama = this.settings.style === 'diorama' && !this.editing;
+    const meshes = [...this.chunks.values()].filter(group => group.visible).flatMap(group => group.children.filter(mesh => diorama ? mesh.userData.kind === 'diorama' : mesh.userData.solid));
+    if (diorama) meshes.push(...this.models.occluders());
     const terrain = this.raycaster.intersectObjects(meshes, false)[0];
     return this.village.pick(this.raycaster, terrain?.distance ?? Infinity);
   }
@@ -282,6 +300,11 @@ export class WorldRenderer {
     const visualTime = previewMinute(this.settings.preview, this.time), hour = (visualTime % 1440) / 60;
     const delta = Math.min(0.1, frameMs / 1000);
     this.village.frame(now, delta, this.paused, this.camera, this.controls.orbit.radius); this.effects.frame(delta, this.paused); this.lastFrame = now;
+    const follow = this.following ? this.village.position(this.following) : undefined;
+    if (follow) {
+      this.followTarget.copy(follow); this.followTarget.y += .9;
+      this.controls.target.lerp(this.followTarget, 1 - Math.exp(-delta * 8)); this.controls.update();
+    }
     const presentation = this.models.refresh();
     if (presentation) {
       this.hidden = presentation.hidden;
@@ -307,13 +330,15 @@ export class WorldRenderer {
     this.water.opacity = 0.68 + Math.sin(now / 1800) * 0.035;
     // Frustum culling is enabled on each mesh; mobile limits distant chunks as well.
     const distance = this.settings.distance === 'far' ? 220 : this.settings.distance === 'near' ? 44 : this.profile.distance;
-    this.models.frame(this.controls.target, this.controls.orbit.radius, distance);
+    this.models.frame(this.controls.target, this.controls.orbit.radius, distance, visualTime, delta, this.paused, follow);
     for (const group of this.chunks.values()) {
       const { cx, cz } = group.userData;
       group.visible = Math.hypot(cx * CHUNK + 8 - this.controls.target.x, cz * CHUNK + 8 - this.controls.target.z) < Math.max(distance, this.controls.orbit.radius * .8) + CHUNK;
     }
     this.renderer.info.reset();
-    if (this.renderer.shadowMap.enabled && now - this.shadowAt > 66) { this.renderer.shadowMap.needsUpdate = true; this.shadowAt = now; }
+    // Paused scenes keep their shadow map until the camera or lighting changes.
+    const shadowKey = `${Math.round(this.camera.position.x * 10)}:${Math.round(this.camera.position.y * 10)}:${Math.round(this.camera.position.z * 10)}:${Math.floor(visualTime)}`;
+    if (this.renderer.shadowMap.enabled && now - this.shadowAt > (this.profile.shadowSize < 2048 ? 100 : 66) && (!this.paused || shadowKey !== this.lastShadowKey)) { this.renderer.shadowMap.needsUpdate = true; this.shadowAt = now; this.lastShadowKey = shadowKey; }
     if (this.post) this.post.render(delta); else this.renderer.render(this.scene, this.camera);
     this.frames++;
     const cpuMs = performance.now() - now;

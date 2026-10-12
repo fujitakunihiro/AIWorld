@@ -7,6 +7,7 @@ import { LifeUI } from './ui/life-ui';
 import { VillageAudio } from './audio';
 import { OverlayUI } from './ui/overlay-ui';
 import { GraphicsUI } from './ui/graphics-ui';
+import { ACTION_LABELS } from '../../shared/village';
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 type Mode = 'observe' | 'place' | 'remove';
 let mode: Mode = 'observe', material: BlockId = Block.Grass;
@@ -146,7 +147,14 @@ try {
   renderer.onGraphicNotice = text => graphicsUI.notice(text);
   graphicsUI.apply();
   lifeUI.applySettings();
-  lifeUI.onMapFocus = (x, z) => { renderer.controls.target.set(x, 10, z); renderer.controls.orbit.radius = innerWidth < 700 ? 65 : 45; renderer.controls.update(); };
+  let followed: string | null = null;
+  renderer.onFollow = resident => {
+    followed = resident?.id ?? null; $('resident-follow').hidden = !resident;
+    if (resident) { $('follow-name').textContent = `${resident.name} · ${resident.job}`; $('follow-action').textContent = `追跡中 · ${ACTION_LABELS[resident.action]}`; }
+  };
+  $('follow-details').onclick = () => { if (followed) villageUI.open(followed); };
+  $('stop-follow').onclick = () => renderer.stopFollowing();
+  lifeUI.onMapFocus = (x, z) => { renderer.stopFollowing(); renderer.controls.target.set(x, 10, z); renderer.controls.orbit.radius = innerWidth < 700 ? 65 : 45; renderer.controls.update(); };
   lifeUI.onHistoryResident = id => villageUI.open(id);
   villageUI.onFocus = (state, id) => { setMode('observe'); renderer.focusVillage(state, id); };
   villageUI.onSelect = id => { renderer.village.select(id); lifeUI.select(id); };
@@ -161,7 +169,7 @@ try {
   renderer.controls.onLongPress = () => { overlayUI.edit(true); setMode('place'); toast('配置ツールを開きました。素材を選んでタップしてください。'); };
   $('zoom-in').onclick = () => renderer.controls.zoom(0.82); $('zoom-out').onclick = () => renderer.controls.zoom(1.22);
   $('rotate').onclick = () => { renderer.controls.orbit.theta += Math.PI / 4; renderer.controls.update(); };
-  $('home').onclick = () => renderer.controls.home();
+  $('home').onclick = () => { renderer.stopFollowing(); renderer.controls.home(); };
   updateHint(); setConnection(false); connect();
 } catch (error) {
   $('loading-message').textContent = '3D描画を開始できません。WebGLが利用できるブラウザで開いてください。';

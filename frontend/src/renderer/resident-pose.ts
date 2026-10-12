@@ -14,7 +14,16 @@ export function workTool(resident: Resident, resource?: Resource): ResidentTool 
 export interface ResidentPose {
   legs: [number, number]; arms: [number, number]; upperY: number; lean: number; headTurn: number; headNod: number;
   legY: number; legScale: number; tool: ResidentTool; showTool: boolean; cargo: Resource | null; cargoScale: number;
+  blink: number; smile: number; worry: number;
 }
+export function residentMood(r: Resident): 'calm' | 'happy' | 'tired' | 'worried' {
+  if (r.health < 40 || r.hunger > 75) return 'worried';
+  if (r.action === 'resting' || r.energy < 25) return 'tired';
+  if (r.action === 'socializing' || r.speech) return 'happy';
+  return 'calm';
+}
+// Pixel size, rather than population or randomness, determines animation detail.
+export function animationInterval(pixels: number, selected = false) { return selected || pixels >= 28 ? 0 : pixels >= 12 ? .1 : .25; }
 // Only presentation state is derived here. The action, inventory, and task are read-only.
 // time is a per-resident animation clock; the renderer freezes it while paused.
 export function residentPose(r: Resident, time: number, reduced: boolean, resource?: Resource): ResidentPose {
@@ -23,9 +32,12 @@ export function residentPose(r: Resident, time: number, reduced: boolean, resour
   const total = r.inventory.food + r.inventory.wood + r.inventory.stone;
   const cargo = total > 0 ? r.inventory.food > 0 ? 'food' : r.inventory.stone > 0 ? 'stone' : 'wood' : null;
   const tool = workTool(r, resource), working = ['building', 'gathering', 'farming'].includes(r.action);
+  const mood = residentMood(r), cycle = 3.2 + seed % 23 / 10, blinkTime = (t + phase) % cycle;
+  const blink = reduced ? 0 : Math.max(0, 1 - Math.abs(blinkTime - .12) / .12);
   const pose: ResidentPose = { legs: [0, 0], arms: [0, 0], upperY: .64 + breath, lean: 0,
     headTurn: reduced ? 0 : Math.sin(t * .65 + phase) * .07, headNod: 0, legY: .6, legScale: 1,
-    tool, showTool: !cargo && (working || ['idle', 'exploring'].includes(r.action)), cargo, cargoScale: Math.min(1, .8 + total / 40) };
+    tool, showTool: !cargo && (working || ['idle', 'exploring'].includes(r.action)), cargo, cargoScale: Math.min(1, .8 + total / 40),
+    blink: Math.max(blink, mood === 'tired' ? r.action === 'resting' ? .85 : .35 : 0), smile: mood === 'happy' ? 1 : 0, worry: mood === 'worried' ? 1 : 0 };
   if (r.action === 'resting') {
     pose.upperY = .48 + breath; pose.legY = .45; pose.legScale = .75; pose.legs = [-.25, -.25];
     pose.lean = .08; pose.arms = [-.3, -.3]; pose.headNod = .12; pose.showTool = false;

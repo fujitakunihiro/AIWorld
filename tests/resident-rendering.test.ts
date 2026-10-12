@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { Simulation } from '../backend/src/simulation/engine';
 import { generateWorld } from '../shared/world';
 import type { Action, Resident } from '../shared/village';
-import { residentPose, residentRole, workTool } from '../frontend/src/renderer/resident-pose';
+import { animationInterval, residentMood, residentPose, residentRole, workTool } from '../frontend/src/renderer/resident-pose';
 import { ResidentModelLibrary } from '../frontend/src/renderer/resident-model';
 const resident = () => new Simulation(generateWorld(73129)).state.residents[0];
 
@@ -62,4 +62,27 @@ test('pause freezes the displayed pose, active rigs stay compact, and hidden too
   const bounds = new THREE.Box3().setFromObject(rig.head); assert.ok(bounds.max.y < 2);
   assert.equal(rig.arms[1].scale.y, 1, 'tools use unscaled shoulder pivots');
   library.release(rig); library.dispose();
+});
+
+test('expressions explain real needs and conversation, blinking stays bounded and reduced motion is still', () => {
+  const r = { ...resident(), health: 100, energy: 80, hunger: 10, action: 'idle' as const, speech: null }, before = structuredClone(r);
+  assert.equal(residentMood(r), 'calm');
+  assert.equal(residentMood({ ...r, energy: 10 }), 'tired');
+  assert.equal(residentMood({ ...r, action: 'socializing' }), 'happy');
+  assert.equal(residentMood({ ...r, hunger: 90, action: 'socializing' }), 'worried');
+  assert.equal(residentMood({ ...r, health: 20 }), 'worried');
+  const values = Array.from({ length: 600 }, (_, i) => residentPose(r, i / 60, false).blink);
+  assert.ok(values.some(v => v > .8) && values.some(v => v === 0)); assert.ok(values.every(v => v >= 0 && v <= 1));
+  assert.equal(residentPose(r, 30, true).blink, 0); assert.equal(residentPose({ ...r, action: 'resting' }, 30, true).blink, .85);
+  const library = new ResidentModelLibrary(), rig = library.create(r), mesh = rig.head.children[0] as THREE.Mesh;
+  library.pose(rig, residentPose({ ...r, action: 'socializing' }, 1, false));
+  assert.equal(mesh.morphTargetInfluences![1], 1);
+  const weights = mesh.morphTargetInfluences!.slice();
+  library.pose(rig, residentPose({ ...r, hunger: 90 }, 2, false), 0); assert.deepEqual(mesh.morphTargetInfluences, weights);
+  assert.deepEqual(r, before); library.release(rig); library.dispose();
+});
+
+test('nearby and selected residents retain smooth animation while small distant residents use fewer updates', () => {
+  assert.equal(animationInterval(60), 0); assert.equal(animationInterval(20), .1); assert.equal(animationInterval(6), .25);
+  assert.equal(animationInterval(6, true), 0);
 });

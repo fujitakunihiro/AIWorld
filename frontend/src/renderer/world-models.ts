@@ -20,7 +20,12 @@ export class WorldModels {
   private editing = false;
   private style: GraphicStyle = 'diorama';
   private profile?: QualityProfile;
-  constructor(scene: THREE.Scene) { scene.add(this.root); }
+  private smoke = new THREE.InstancedMesh(this.kit.round, new THREE.MeshBasicMaterial({ color: '#e6dbc9', transparent: true, opacity: .16, depthWrite: false }), 60);
+  private smokeTransform = new THREE.Object3D();
+  private smokeTime = 0;
+  private smokeElapsed = 1;
+  private reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  constructor(scene: THREE.Scene) { scene.add(this.root); this.smoke.count = 0; this.smoke.computeBoundingSphere(); this.smoke.userData.skipAO = true; this.root.add(this.smoke); }
   world(data: Uint8Array) {
     this.data = data; this.state = undefined; this.topology = ''; this.dirty = true;
     for (const item of this.structures.values()) { this.kit.release(item.group); this.root.remove(item.group); }
@@ -55,6 +60,11 @@ export class WorldModels {
     this.root.visible = this.style === 'diorama' && !this.editing;
   }
   setEditing(editing: boolean) { this.editing = editing; this.root.visible = this.style === 'diorama' && !editing; }
+  occluders() {
+    const meshes: THREE.Mesh[] = [];
+    this.root.traverseVisible(o => { if (o instanceof THREE.Mesh && !o.userData.skipAO) meshes.push(o); });
+    return meshes;
+  }
   private clearNature() {
     for (const sector of this.sectors.values()) {
       sector.traverse(o => { if (o instanceof THREE.InstancedMesh) o.dispose(); }); this.root.remove(sector);
@@ -111,6 +121,7 @@ export class WorldModels {
       const key = `${h.kind}:${h.x}:${h.y}:${h.z}:${progress}:${h.entranceStep}:${h.upgrading}`;
       const visual = h.upgrading && progress < .35 ? { ...h, kind: 'hut' as const } : h;
       if (this.structures.get(h.id)?.key !== key) this.put(h.id, key, this.kit.building(visual), [h.x, h.y, h.z], h.upgrading ? 1 : progress);
+      this.structures.get(h.id)!.group.userData.building = h.kind !== 'farm';
       if (h.kind === 'farm') {
         const id = `${h.id}-crops`; active.add(id);
         const crop = h.crop, growth = Math.round((crop?.growth ?? 0) * 10) / 10, count = crop?.stage === 'ripe' ? Math.ceil(crop.remaining / 32 * 9) : 9;
@@ -165,7 +176,8 @@ export class WorldModels {
     }
     for (const [id, item] of this.structures) if (!active.has(id)) { this.kit.release(item.group); this.root.remove(item.group); this.structures.delete(id); }
   }
-  frame(target: THREE.Vector3, radius: number, distance: number) {
+  frame(target: THREE.Vector3, radius: number, distance: number, time = 720, delta = 0, paused = false, follow?: THREE.Vector3) {
+    this.kit.light(time);
     for (const group of this.sectors.values()) {
       const center = group.userData.center as THREE.Vector3, d = Math.hypot(center.x - target.x, center.z - target.z);
       group.visible = d < Math.max(distance, radius * .8) + 32;
@@ -174,6 +186,24 @@ export class WorldModels {
     for (const { group } of this.structures.values()) {
       // Bridges already carry world-space geometry, so mesh frustum culling handles them.
       group.visible = group.userData.modelId.startsWith('bridge-') || Math.hypot(group.position.x - target.x, group.position.z - target.z) < Math.max(distance, radius * .8) + 16;
+      const inside = !!follow && radius < 50 && group.userData.building && follow.x > group.position.x && follow.x < group.position.x + 4 && follow.z > group.position.z && follow.z < group.position.z + 4 && follow.y >= group.position.y - .2 && follow.y < group.position.y + 3.5;
+      for (const mesh of group.children) if (mesh.userData.roof) mesh.visible = !inside;
     }
+    if (!paused && !this.reduced) this.smokeTime += delta;
+    this.smokeElapsed += delta;
+    this.smoke.visible = this.root.visible && !this.reduced && (this.profile?.shadowSize ?? 0) > 0;
+    if (!this.smoke.visible || this.smokeElapsed < .1) return;
+    this.smokeElapsed = 0; let count = 0;
+    for (const h of this.state?.huts ?? []) {
+      const group = this.structures.get(h.id)?.group;
+      if (!group?.visible || h.status !== 'complete' || !['house', 'hut'].includes(h.kind) || !this.state?.residents.some(r => r.home === h.id) || group.children.some(o => o.userData.roof && !o.visible)) continue;
+      for (let i = 0; i < 3 && count < 60; i++) {
+        const age = (this.smokeTime * .35 + i / 3 + (h.x + h.z) % 7 / 7) % 1;
+        this.smokeTransform.position.set(h.x + 3.15 + Math.sin(this.smokeTime * .4 + i) * age * .35, h.y + 5.15 + age * 1.7, h.z + .85 + age * .4);
+        this.smokeTransform.scale.setScalar((.12 + age * .28) * Math.sin(Math.PI * age));
+        this.smokeTransform.updateMatrix(); this.smoke.setMatrixAt(count++, this.smokeTransform.matrix);
+      }
+    }
+    this.smoke.count = count; this.smoke.instanceMatrix.needsUpdate = true; this.smoke.computeBoundingSphere();
   }
 }

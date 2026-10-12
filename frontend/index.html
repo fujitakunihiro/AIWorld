@@ -10,6 +10,10 @@
 <body>
   <div id="world" aria-label="編集できる128×128の3D世界"></div>
   <div id="resident-labels" aria-hidden="true"></div>
+  <div id="resident-follow" class="resident-follow" hidden aria-label="観察している住民">
+    <button id="follow-details" aria-label="観察している住民の詳細"><strong id="follow-name"></strong><span id="follow-action"></span></button>
+    <button id="stop-follow" aria-label="住民の追跡を終了">×</button>
+  </div>
   <header class="topbar">
     <a class="brand" href="/" aria-label="AI WORLD ホーム"><span class="brand-mark">◈</span> AI WORLD</a>
     <span id="day" class="day-label">1日目</span>

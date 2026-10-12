@@ -10,6 +10,7 @@ export class WorldCamera {
   onTap: (x: number, y: number) => void = () => {};
   onHover: (x: number, y: number) => void = () => {};
   onLongPress: () => void = () => {};
+  onPan: () => void = () => {};
   constructor(readonly camera: PerspectiveCamera, readonly element: HTMLCanvasElement) {
     element.addEventListener('contextmenu', e => e.preventDefault());
     element.addEventListener('pointerdown', e => {
@@ -49,6 +50,7 @@ export class WorldCamera {
     this.update();
   }
   pan(dx: number, dy: number) {
+    this.onPan();
     const scale = this.orbit.radius / Math.max(this.element.clientHeight, 300);
     const t = this.orbit.theta;
     this.target.x += (-dx * Math.cos(t) - dy * Math.sin(t)) * scale;

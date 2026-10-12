@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Hut } from '../../../shared/village';
+import { lightingAt } from './graphics';
 
 export interface ModelPart { geometry: THREE.BufferGeometry; color: string; matrix: THREE.Matrix4; stage: number }
 // Original geometry built from primitives; shared resources belong to this kit.
@@ -20,6 +21,11 @@ export class ModelKit {
     if (!material) { material = new THREE.MeshStandardMaterial({ color, roughness: .92, metalness: 0, flatShading: true,
       side: color === '#7d9754' || color === '#84965b' ? THREE.DoubleSide : THREE.FrontSide }); this.materials.set(color, material); }
     return material;
+  }
+  light(time: number) {
+    const glow = (1 - Math.sqrt(lightingAt(time).daylight)) ** 3;
+    const windows = this.material('#628e94'); windows.emissive.set('#ffc777'); windows.emissiveIntensity = glow * 1.8;
+    windows.color.set('#628e94').lerp(new THREE.Color('#f4c777'), glow);
   }
   transform(p: number[], s: number[], rotation: number[] = [0, 0, 0]) {
     this.object.position.set(p[0], p[1], p[2]); this.object.scale.set(s[0], s[1], s[2]);
@@ -54,13 +60,16 @@ export class ModelKit {
   assemble(parts: ModelPart[], progress = 1) {
     const byColor = new Map<string, THREE.BufferGeometry[]>(), group = new THREE.Group();
     for (const part of parts) if (part.stage <= progress) {
-      const list = byColor.get(part.color) ?? [];
+      // Roof pieces can be hidden while following a resident indoors.
+      const roof = part.stage >= .7 && part.matrix.elements[13] >= 3;
+      const key = `${part.color}:${roof}`, list = byColor.get(key) ?? [];
       const geometry = part.geometry.index ? part.geometry.toNonIndexed() : part.geometry.clone();
-      list.push(geometry.applyMatrix4(part.matrix)); byColor.set(part.color, list);
+      list.push(geometry.applyMatrix4(part.matrix)); byColor.set(key, list);
     }
-    for (const [color, list] of byColor) {
+    for (const [key, list] of byColor) {
+      const [color, roof] = key.split(':');
       const geometry = mergeGeometries(list)!; list.forEach(g => g.dispose());
-      const mesh = new THREE.Mesh(geometry, this.material(color)); mesh.castShadow = mesh.receiveShadow = true; group.add(mesh);
+      const mesh = new THREE.Mesh(geometry, this.material(color)); mesh.castShadow = mesh.receiveShadow = true; mesh.userData.roof = roof === 'true'; group.add(mesh);
     }
     return group;
   }

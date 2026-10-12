@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import type { Resident, VillageState } from '../../../shared/village';
+import type { Resident, Resource, VillageState } from '../../../shared/village';
 import type { EffectKind } from './effects';
 import type { GraphicStyle } from './graphics';
 import { ResidentModelLibrary, type ResidentRig } from './resident-model';
-import { residentPose } from './resident-pose';
-interface Figure { group: THREE.Group; classic: THREE.Group; rig: ResidentRig; animationTime: number; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident; label: HTMLElement; speech: HTMLElement }
+import { animationInterval, residentPose } from './resident-pose';
+interface Figure { group: THREE.Group; classic: THREE.Group; rig: ResidentRig; animationTime: number; poseElapsed: number; poseDirty: boolean; resource?: Resource; workTarget?: { x: number; z: number }; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident; label: HTMLElement; speech: HTMLElement }
 export class VillageRenderer {
   showBubbles = true;
   onEffect: (kind: EffectKind, position: Resident['position']) => void = () => {};
@@ -64,7 +64,7 @@ export class VillageRenderer {
     const label = document.createElement('div'); label.className = 'resident-label';
     const name = document.createElement('strong'); name.textContent = r.name; label.append(name);
     const speech = document.createElement('span'); label.append(speech); this.labels.append(label);
-    const figure = { group, classic, rig, animationTime: 0, legs, arms, cargo, resident: r, target: group.position.clone(), label, speech };
+    const figure: Figure = { group, classic, rig, animationTime: 0, poseElapsed: 0, poseDirty: true, legs, arms, cargo, resident: r, target: group.position.clone(), label, speech };
     this.figureStyle(figure); return figure;
   }
   update(state: VillageState, snap = false) {
@@ -96,7 +96,12 @@ export class VillageRenderer {
       if (figure.rig.cacheKey !== this.characters.signature(r)) {
         this.characters.release(figure.rig); figure.rig = this.characters.create(r); figure.group.add(figure.rig.group); this.figureStyle(figure);
       }
+      figure.poseDirty ||= figure.resident.action !== r.action || figure.resident.job !== r.job;
       figure.resident = r; figure.target.set(r.position.x, r.position.y, r.position.z);
+      const node = state.nodes.find(n => n.id === r.task?.targetId), hut = state.huts.find(h => h.id === r.task?.targetId);
+      const bridge = state.bridges.find(b => b.id === r.task?.targetId), block = bridge?.blocks[Math.min(bridge.progress, bridge.blocks.length - 1)];
+      figure.resource = node?.kind;
+      figure.workTarget = hut ? { x: hut.x + 2, z: hut.z + 2 } : node?.position ?? (block ? { x: block.x + .5, z: block.z + .5 } : undefined);
       figure.speech.textContent = r.speech?.text ?? '';
       if (snap || figure.group.position.distanceTo(figure.target) > 6) figure.group.position.copy(figure.target);
       if (snap) this.characters.pose(figure.rig, residentPose(r, figure.animationTime, this.reduced, state.nodes.find(n => n.id === r.task?.targetId)?.kind));
@@ -153,6 +158,7 @@ export class VillageRenderer {
     this.updatePropsVisibility();
   }
   select(id: string | null) { this.selected = id; }
+  position(id: string) { return this.figures.get(id)?.group.position; }
   pick(raycaster: THREE.Raycaster, terrainDistance: number) {
     // Raycaster does not skip invisible objects by itself. Only the active rig is selectable.
     const meshes: THREE.Object3D[] = [];
@@ -172,27 +178,29 @@ export class VillageRenderer {
       if (!paused) figure.group.position.lerp(figure.target, 1 - Math.exp(-delta * 16));
       const moving = !this.reduced && figure.resident.action === 'moving';
       const working = !this.reduced && (figure.resident.action === 'gathering' || figure.resident.action === 'building' || figure.resident.action === 'farming');
-      if (working && !paused && figure.resident.task) {
-        const hut = this.previous?.huts.find(h => h.id === figure.resident.task?.targetId);
-        const node = this.previous?.nodes.find(n => n.id === figure.resident.task?.targetId);
-        const bridge = this.previous?.bridges.find(b => b.id === figure.resident.task?.targetId);
-        const block = bridge?.blocks[Math.min(bridge.progress, bridge.blocks.length - 1)];
-        const p = hut ? { x: hut.x + 2, z: hut.z + 2 } : node?.position ?? (block ? { x: block.x + .5, z: block.z + .5 } : undefined);
+      if (working && !paused) {
+        const p = figure.workTarget;
         if (p) figure.group.rotation.y = Math.atan2(p.x - figure.group.position.x, p.z - figure.group.position.z);
       }
-      for (let i = 0; i < 2; i++) {
+      if (this.style === 'classic') for (let i = 0; i < 2; i++) {
         figure.legs[i].rotation.x = moving ? Math.sin(figure.animationTime * 8.33 + i * Math.PI) * 0.5 : 0;
         figure.arms[i].rotation.x = working ? -0.7 + Math.sin(figure.animationTime * 5.56) * 0.55 : moving ? Math.sin(figure.animationTime * 8.33 + (1 - i) * Math.PI) * 0.35 : 0;
       }
-      figure.classic.scale.y = figure.resident.action === 'resting' ? .75 : 1;
-      if (this.style === 'diorama') {
-        const resource = this.previous?.nodes.find(n => n.id === figure.resident.task?.targetId)?.kind;
-        this.characters.pose(figure.rig, residentPose(figure.resident, figure.animationTime, this.reduced, resource), paused ? 0 : this.reduced ? 1 : 1 - Math.exp(-delta * 18));
+      if (this.style === 'classic') figure.classic.scale.y = figure.resident.action === 'resting' ? .75 : 1;
+      this.projected.copy(figure.group.position); this.projected.y += 1; this.projected.project(camera);
+      const inView = this.projected.z > -1 && this.projected.z < 1 && Math.abs(this.projected.x) < 1.15 && Math.abs(this.projected.y) < 1.15;
+      const pixels = innerHeight * 1.8 / (2 * Math.tan(camera.fov * Math.PI / 360) * Math.max(1, camera.position.distanceTo(figure.group.position)));
+      const interval = animationInterval(pixels, this.selected === figure.resident.id);
+      figure.poseElapsed += delta;
+      if (this.style === 'diorama' && inView && (figure.poseDirty || figure.poseElapsed >= interval)) {
+        this.characters.pose(figure.rig, residentPose(figure.resident, figure.animationTime, this.reduced, figure.resource), paused ? 0 : this.reduced || interval > 0 ? 1 : 1 - Math.exp(-figure.poseElapsed * 18));
+        figure.poseElapsed = 0; figure.poseDirty = false;
       }
       const speaking = this.showBubbles && !!figure.resident.speech && radius < 120 && bubbles < 4;
       this.projected.copy(figure.group.position); this.projected.y += 2.15; this.projected.project(camera);
       const visible = (speaking || this.selected === figure.resident.id) && radius < 120 && this.projected.z > -1 && this.projected.z < 1 && Math.abs(this.projected.x) < .93 && Math.abs(this.projected.y) < .9;
-      figure.label.hidden = !visible; figure.speech.hidden = !speaking;
+      if (figure.label.hidden !== !visible) figure.label.hidden = !visible;
+      if (figure.speech.hidden !== !speaking) figure.speech.hidden = !speaking;
       if (visible) { if (speaking) bubbles++; figure.label.style.transform = `translate(-50%, -100%) translate(${(this.projected.x + 1) / 2 * innerWidth}px, ${(1 - this.projected.y) / 2 * innerHeight}px)`; }
     }
     const selected = this.selected ? this.figures.get(this.selected) : null;

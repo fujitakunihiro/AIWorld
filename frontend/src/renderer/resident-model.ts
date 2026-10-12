@@ -7,7 +7,7 @@ export interface ResidentRig {
   group: THREE.Group; upper: THREE.Group; head: THREE.Group; arms: THREE.Group[]; legs: THREE.Group[];
   tools: Record<ResidentTool, THREE.Mesh>; cargo: THREE.Mesh; cacheKey: string;
 }
-interface Part { geometry: THREE.BufferGeometry; color: string; p: number[]; s: number[]; rotation?: number[] }
+interface Part { geometry: THREE.BufferGeometry; color: string; p: number[]; s: number[]; rotation?: number[]; feature?: 'eye' | 'mouth' }
 interface Template { head: THREE.BufferGeometry; body: THREE.BufferGeometry; arm: THREE.BufferGeometry; leg: THREE.BufferGeometry; users: number }
 // Rounded original miniature characters. One shared vertex-color material for all body parts.
 export class ResidentModelLibrary {
@@ -42,6 +42,22 @@ export class ResidentModelLibrary {
     result.computeBoundingSphere(); return result;
   }
   private mesh(geometry: THREE.BufferGeometry) { const mesh = new THREE.Mesh(geometry, this.material); mesh.castShadow = mesh.receiveShadow = true; return mesh; }
+  private face(parts: Part[]) {
+    const geometry = this.bake(parts), source = geometry.getAttribute('position');
+    const targets = [source.clone(), source.clone(), source.clone()]; let offset = 0;
+    for (const part of parts) {
+      const count = part.geometry.index?.count ?? part.geometry.getAttribute('position').count;
+      for (let i = offset; i < offset + count; i++) {
+        if (part.feature === 'eye') targets[0].setY(i, .035 + (source.getY(i) - .035) * .06);
+        if (part.feature === 'mouth') {
+          const curve = .038 * ((source.getX(i) / .043) ** 2 - .35);
+          targets[1].setY(i, source.getY(i) + curve); targets[2].setY(i, source.getY(i) - curve);
+        }
+      }
+      offset += count;
+    }
+    geometry.morphAttributes.position = targets; return geometry;
+  }
   private template(r: Resident, role: ResidentRole): Template {
     const seed = residentSeed(r.id), skin = this.skinColors[seed % 4], hair = this.hairColors[Math.floor(seed % 16 / 4)];
     const head: Part[] = [], body: Part[] = [], arm: Part[] = [], leg: Part[] = [];
@@ -51,11 +67,14 @@ export class ResidentModelLibrary {
       this.round(head, skin, [side * .31, .025, 0], [.068, .09, .055]);
       this.round(head, hair, [side * .22, .11, .22], [.12, .065, .065], [0, 0, side * .25]);
       this.round(head, '#393d38', [side * .11, .035, .274], [.037, .05, .018]);
+      head[head.length - 1].feature = 'eye';
       this.round(head, '#fff3d5', [side * .115, .051, .29], [.009, .012, .006]);
+      head[head.length - 1].feature = 'eye';
       this.round(head, '#d9a18c', [side * .19, -.055, .245], [.048, .023, .015]);
     }
     this.round(head, skin, [0, -.025, .294], [.043, .052, .037]);
     this.round(head, '#aa775f', [0, -.1, .271], [.043, .013, .012]);
+    head[head.length - 1].feature = 'mouth';
     if (role === 'farmer') {
       this.tube(head, '#d7bd7c', [0, .25, 0], [.43, .07, .4]); this.round(head, '#d7bd7c', [0, .29, -.025], [.28, .16, .27]);
       this.tube(head, '#98724a', [0, .32, -.02], [.276, .055, .266]);
@@ -86,7 +105,7 @@ export class ResidentModelLibrary {
     this.tube(leg, '#566469', [0, -.2, 0], [.095, .4, .095]);
     this.round(leg, '#69523e', [0, -.47, .045], [.117, .075, .18]);
     this.tube(leg, '#80664a', [0, -.405, .01], [.108, .11, .108]);
-    return { head: this.bake(head), body: this.bake(body), arm: this.bake(arm), leg: this.bake(leg), users: 0 };
+    return { head: this.face(head), body: this.bake(body), arm: this.bake(arm), leg: this.bake(leg), users: 0 };
   }
   private tool(kind: ResidentTool) {
     let geometry = this.toolGeometry.get(kind); if (geometry) return geometry;
@@ -135,6 +154,8 @@ export class ResidentModelLibrary {
     const lerp = (a: number, b: number) => THREE.MathUtils.lerp(a, b, blend);
     rig.upper.position.y = lerp(rig.upper.position.y, pose.upperY); rig.upper.rotation.x = lerp(rig.upper.rotation.x, pose.lean);
     rig.head.rotation.x = lerp(rig.head.rotation.x, pose.headNod); rig.head.rotation.y = lerp(rig.head.rotation.y, pose.headTurn);
+    const face = rig.head.children[0] as THREE.Mesh;
+    for (const [i, value] of [pose.blink, pose.smile, pose.worry].entries()) face.morphTargetInfluences![i] = lerp(face.morphTargetInfluences![i], value);
     for (let i = 0; i < 2; i++) {
       rig.arms[i].rotation.x = lerp(rig.arms[i].rotation.x, pose.arms[i]); rig.legs[i].rotation.x = lerp(rig.legs[i].rotation.x, pose.legs[i]);
       rig.legs[i].position.y = lerp(rig.legs[i].position.y, pose.legY); rig.legs[i].scale.y = lerp(rig.legs[i].scale.y, pose.legScale);

@@ -70,12 +70,41 @@ test('baked tile models keep the doorway walkable and construction progress hide
   const simulation = new Simulation(generateWorld(73129)), h = simulation.state.huts[0], kit = new ModelKit();
   const parts = kit.building({ ...h, kind: 'house' }), planned = kit.assemble(parts, 0), early = kit.assemble(parts, .2), complete = kit.assemble(parts);
   assert.equal(planned.children.length, 0); assert.ok(early.children.length < complete.children.length);
-  assert.ok(complete.children.length <= 12, `one draw call per material: ${complete.children.length}`);
+  assert.ok(complete.children.length <= 16, `bounded material and roof batches: ${complete.children.length}`);
   const box = new THREE.Box3().setFromObject(complete); assert.ok(box.max.y < 5.2);
   complete.updateMatrixWorld(true);
   const ray = new THREE.Raycaster(new THREE.Vector3(1.5, 1.7, 6), new THREE.Vector3(0, 0, -1));
   const hit = ray.intersectObject(complete, true)[0]; assert.ok(hit && hit.point.z < 3, 'no new door blocks the original entrance');
   for (const g of [planned, early, complete]) kit.release(g); kit.dispose();
+});
+
+test('night windows and indoor roof cutaway are presentation only and recover when following ends', () => {
+  const data = generateWorld(73129), simulation = new Simulation(data), scene = new THREE.Scene(), models = new WorldModels(scene);
+  const h = simulation.state.huts[0]; h.status = 'complete'; h.progress = h.total;
+  for (const e of buildingBlocks(h)) data[index(e.x, e.y, e.z)] = e.block;
+  simulation.state.residents[0].home = h.id;
+  const before = data.slice(), state = JSON.stringify(simulation.state);
+  models.world(data); models.update(simulation.state); models.refresh();
+  const settings = { style: 'diorama' as const, quality: 'high' as const, shadows: true, ao: true, distance: 'standard' as const, preview: 'world' as const, grass: 'lush' as const };
+  models.configure(settings, QUALITY_PROFILES.high);
+  const building = models.root.children.find(o => o.userData.modelId === h.id)!;
+  const roofs = building.children.filter(o => o.userData.roof); assert.ok(roofs.length > 0);
+  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 720, 1);
+  const pane = building.children.find(o => o instanceof THREE.Mesh && (o.material as THREE.MeshStandardMaterial).color.getHexString() === '628e94') as THREE.Mesh;
+  assert.ok(pane); const material = pane.material as THREE.MeshStandardMaterial; assert.equal(material.emissiveIntensity, 0);
+  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 1320, 1, false, new THREE.Vector3(h.x + 2, h.y + 1, h.z + 2));
+  assert.ok(material.emissiveIntensity > 1); assert.ok(roofs.every(o => !o.visible));
+  assert.ok(roofs.every(o => !models.occluders().includes(o as THREE.Mesh)), 'hidden roofs cannot block selecting an indoor resident');
+  const smoke = models.root.children.find(o => o instanceof THREE.InstancedMesh && o.userData.skipAO) as THREE.InstancedMesh;
+  assert.equal(smoke.count, 0, 'cutaway also hides the chimney smoke');
+  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 1320, 1);
+  assert.ok(roofs.every(o => o.visible)); assert.equal(smoke.count, 3);
+  assert.ok(roofs.every(o => models.occluders().includes(o as THREE.Mesh)));
+  const matrix = new THREE.Matrix4(); smoke.getMatrixAt(0, matrix);
+  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 1320, 1, true);
+  const paused = new THREE.Matrix4(); smoke.getMatrixAt(0, paused); assert.deepEqual(paused, matrix);
+  models.configure(settings, QUALITY_PROFILES.low); models.frame(new THREE.Vector3(), 16, 80, 1320, 1); assert.equal(smoke.visible, false);
+  assert.deepEqual(data, before); assert.equal(JSON.stringify(simulation.state), state);
 });
 
 test('style/quality changes and repeated state updates reuse instance geometry and restore model visibility', () => {

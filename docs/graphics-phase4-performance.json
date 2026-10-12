@@ -1,0 +1,35 @@
+{
+  "date": "2026-10-12",
+  "device": "Windows PC / Codex in-app Chromium / AMD Radeon Graphics / DPR 1",
+  "simulation": "1x",
+  "warmupSeconds": 1,
+  "sampleSeconds": 10,
+  "measurements": [
+    {
+      "view": "village",
+      "quality": "high",
+      "viewport": "1280x720",
+      "result": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.8 ms · CPU描画 9.8 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "metrics": "60.0 FPS · フレーム95% 17.6 ms · CPU描画 9.5 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 623 · 三角形 166,920 · 影 2048 · AO ON\nジオメトリ 379 · テクスチャ 29\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "view": "islands",
+      "quality": "high",
+      "viewport": "1280x720",
+      "result": "10.0秒 / 601フレーム\n平均 60.1 FPS · フレーム95% 20.0 ms · CPU描画 11.4 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "metrics": "60.0 FPS · フレーム95% 17.6 ms · CPU描画 11.2 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 974 · 三角形 260,370 · 影 2048 · AO ON\nジオメトリ 379 · テクスチャ 29\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "view": "village",
+      "quality": "auto-medium",
+      "viewport": "390x844",
+      "result": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.7 ms · CPU描画 8.4 ms\nジオラマ · medium · 390×844 · 影 1024 · AO ON",
+      "metrics": "60.0 FPS · フレーム95% 17.6 ms · CPU描画 8.6 ms\n品質 中 · 390×844 · 解像度倍率 1.00\n描画呼び出し 480 · 三角形 127,244 · 影 1024 · AO ON\nジオメトリ 379 · テクスチャ 29\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "layout": {
+        "scrollWidth": 390,
+        "width": 390
+      }
+    }
+  ],
+  "iphone": "not tested"
+}
