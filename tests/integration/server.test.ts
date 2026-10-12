@@ -10,6 +10,24 @@ import { randomUUID } from 'node:crypto';
 import { WorldStore } from '../../backend/src/database/store';
 import { Simulation } from '../../backend/src/simulation/engine';
 import { type ServerMessage, type WorldSnapshot } from '../../shared/world';
+test('native UE world endpoint is a read-only, complete base + snapshot and uses the same guarded socket', { timeout: 25000 }, async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ai-world-native-')), path = join(dir, 'world.sqlite');
+  const running = await start(path); const client = new Client(running.port);
+  try {
+    await client.wait('snapshot');client.send({ type: 'speed', speed: 0 });
+    let clock = await client.wait('clock');while(clock.type !== 'clock' || clock.speed !== 0)clock=await client.wait('clock');
+    const scene = await (await fetch(`http://localhost:${running.port}/api/unreal/world`)).json() as { format: number; size: number; height: number; base: string; snapshot: WorldSnapshot; nativeSession: string; trees: { hidden: number[]; expected: number[] }[] };
+    assert.equal(scene.format,1);assert.equal(scene.size,384);assert.equal(Buffer.from(scene.base,'base64').length,scene.size*scene.size*scene.height);
+    assert.equal(scene.snapshot.speed,0);assert.equal(scene.snapshot.village!.residents.length,5);assert.ok(scene.trees.length);
+    const native = new WebSocket(`ws://localhost:${running.port}/native-socket`, { headers: { 'X-AI-World-Session': scene.nativeSession }, origin: 'http://localhost' });
+    try {const snapshot=await new Promise<WorldSnapshot>((resolve,reject)=>{native.once('message',v=>resolve(JSON.parse(v.toString())));native.once('error',reject);});assert.deepEqual(snapshot,scene.snapshot);}finally{native.close();}
+    const rejected = new WebSocket(`ws://localhost:${running.port}/native-socket`,{origin:`http://localhost:${running.port}`,headers:{'X-AI-World-Session':'wrong'}});
+    await new Promise<void>((resolve,reject)=>{rejected.on('unexpected-response',(_,r)=>{assert.equal(r.statusCode,403);r.resume();rejected.terminate();resolve();});rejected.on('open',()=>reject(new Error('Native route accepted wrong token')));rejected.on('error',()=>{});});
+    const observer=new Client(running.port);
+    try {const snapshot=await observer.wait('snapshot') as WorldSnapshot;assert.deepEqual(snapshot,scene.snapshot);}finally{observer.ws.close();}
+    assert.equal((await fetch(`http://localhost:${running.port}/api/unreal/world`, { method: 'POST' })).status,404);
+  } finally {client.ws.close();await stop(running.child);rmSync(dir,{recursive:true,force:true});}
+});
 test('resident conversation is saved once, synchronized to another client and remembered after restarting while paused', { timeout: 25000 }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'ai-world-chat-')), path = join(dir, 'world.sqlite');
   let running: Awaited<ReturnType<typeof start>> | undefined; const clients: Client[] = [];

@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { WorldStore } from './database/store';
 import { commandSchema } from '../../shared/schema';
@@ -8,7 +9,11 @@ import { InstructionInterpreter } from './llm/interpreter';
 import type { InstructionResult } from '../../shared/instructions';
 import { ConversationService } from './llm/conversation';
 import type { ConversationResult } from '../../shared/conversation';
+import { unrealScene } from './presentation/unreal';
 const seed = Number(process.env.WORLD_SEED ?? 73129);
+// Native UE's libwebsockets supplies its own Origin. A non-browser-only header
+// authenticates the native route without weakening the browser Origin check.
+const nativeSession = randomBytes(32).toString('hex');
 if (!Number.isSafeInteger(seed) || seed < 0 || seed > 2147483647) throw new Error('WORLD_SEEDは0〜2147483647の整数で指定してください。');
 const store = new WorldStore(process.env.DB_PATH ?? '/data/world.sqlite', seed);
 const simulation = new Simulation(store.data, store.village);
@@ -78,13 +83,18 @@ const server = createServer((req, res) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'GET' && req.url === '/api/health') res.end(JSON.stringify({ ok: true, version: SAVE_VERSION, revision: store.revision, residents: simulation.state.residents.length }));
+  else if (req.method === 'GET' && req.url === '/api/unreal/world') {
+    res.end(JSON.stringify({ ...unrealScene(store.base, store.data, simulation.state), snapshot: store.snapshot(), nativeSession }));
+  }
   else { res.statusCode = 404; res.end(JSON.stringify({ error: 'Not found' })); }
 });
 const wss = new WebSocketServer({ noServer: true, maxPayload: 2048 });
 server.on('upgrade', (req, socket, head) => {
   let trusted = false;
   try { trusted = !!req.headers.origin && new URL(req.headers.origin).host === req.headers.host; } catch { /* Invalid origin. */ }
-  if (req.url !== '/socket' || !trusted || wss.clients.size >= 32) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
+  const candidate = req.headers['x-ai-world-session'];
+  const native = req.url === '/native-socket' && typeof candidate === 'string' && /^[a-f0-9]{64}$/.test(candidate) && timingSafeEqual(Buffer.from(candidate), Buffer.from(nativeSession));
+  if (!(req.url === '/socket' && trusted || native) || wss.clients.size >= 32) { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
   wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws));
 });
 function broadcast(message: unknown) {

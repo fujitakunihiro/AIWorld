@@ -4,3 +4,13 @@ dist/
 *.sqlite*
 test-results/
 /backups/
+unreal/**/Binaries/
+unreal/**/Intermediate/
+unreal/**/Saved/
+unreal/**/DerivedDataCache/
+unreal/**/.vs/
+unreal/**/*.sln
+unreal/**/*.suo
+unreal/AIWorld/Content/Data/models.json
+unreal/.toolchain/
+unreal/Builds/

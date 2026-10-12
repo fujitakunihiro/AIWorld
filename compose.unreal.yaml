@@ -1,0 +1,5 @@
+# Native UE clients use the existing authoritative simulation and its existing volume.
+services:
+  backend:
+    ports:
+      - "127.0.0.1:3001:3001"
