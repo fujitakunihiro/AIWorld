@@ -117,7 +117,7 @@ test('rules support development commands and newcomer names, but absent resident
   const s = fresh(); assert.throws(() => s.acceptInstruction(randomUUID(), '不在', { source: 'rules', notice: '', commands: [{ action: 'rest', target: 'new-1' }] }), /いません/);
 });
 
-test('a crowded Phase 3 village upgrades an existing hut into housing and retains its residents', () => {
+test('a crowded Phase 3 village adds city housing and retains its residents', () => {
   const s = fresh();
   for (let i = 0; i < 1600 && s.state.huts.filter(h => h.status === 'complete').length < 3; i++) s.step(.25, 480 + i / 4);
   s.acceptInstruction(randomUUID(), '小屋を追加', { source: 'rules', notice: '', commands: [{ action: 'build', building: 'hut', count: 1, location: 'village' }] });
@@ -125,9 +125,9 @@ test('a crowded Phase 3 village upgrades an existing hut into housing and retain
   s.state.resources.food = 200; // Existing saves with abundant food must still complete their first harvest.
   advance(s, 1600);
   assert.equal(s.state.civilization.level, 2); assert.ok(s.state.residents.length > 5);
-  const house = s.state.huts.find(h => h.kind === 'house' && h.upgrading && h.status === 'complete'); assert.ok(house);
+  const house = s.state.huts.find(h => h.kind === 'house' && h.status === 'complete'); assert.ok(house);
   assert.deepEqual(s.state.residents.slice(0, 5).map(r => r.home), homes);
-  assert.deepEqual(house.cost, { food: 0, wood: 24, stone: 12 });
+  assert.deepEqual(house.cost, house.upgrading ? { food: 0, wood: 24, stone: 12 } : { food: 0, wood: 48, stone: 20 });
   assert.ok(villageSchema.safeParse(s.state).success);
 });
 

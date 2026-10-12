@@ -1,4 +1,4 @@
-import { ARC, ARC_VOXELS, Block, CAROUSEL, CAROUSEL_VOXELS, EIFFEL, FRENCH_BUILDINGS, FRENCH_VOXELS, HEIGHT, PARIS_BRIDGE_VOXELS, SIZE, eiffelVoxels, getBlock, index, type Edit } from '../../../shared/world';
+import { ARC, ARC_VOXELS, Block, CAROUSEL, CAROUSEL_VOXELS, EIFFEL, FRENCH_BUILDINGS, FRENCH_VOXELS, HEIGHT, LOUVRE, NOTRE_DAME, PARIS_BRIDGE_VOXELS, SIZE, eiffelVoxels, getBlock, index, type Edit } from '../../../shared/world';
 import type { Hut, VillageState } from '../../../shared/village';
 
 export interface TreeModel { x: number; y: number; z: number; height: number; variant: number; hidden: number[] }
@@ -38,6 +38,8 @@ export function planModels(data: Uint8Array, state?: VillageState): ModelPlan {
   for (let z = -18; z <= 18; z++) for (let x = -18; x <= 18; x++) reserve(EIFFEL.x + x, EIFFEL.z + z);
   for (let z = -8; z <= 8; z++) for (let x = -13; x <= 13; x++) reserve(ARC.x + x, ARC.z + z);
   for (let z = -8; z <= 8; z++) for (let x = -8; x <= 8; x++) reserve(CAROUSEL.x + x, CAROUSEL.z + z);
+  for (let z = -28; z <= 28; z++) for (let x = -32; x <= 32; x++) reserve(LOUVRE.x + x, LOUVRE.z + z);
+  for (let z = -21; z <= 21; z++) for (let x = -15; x <= 15; x++) reserve(NOTRE_DAME.x + x, NOTRE_DAME.z + z);
   for (const e of PARIS_BRIDGE_VOXELS) for (let z = -1; z <= 1; z++) for (let x = -1; x <= 1; x++) reserve(e.x + x, e.z + z);
   for (const b of FRENCH_BUILDINGS) for (let z = -1; z <= 6; z++) for (let x = -1; x <= 6; x++) reserve(b.x + x, b.z + z);
   for (const hut of state?.huts ?? []) {

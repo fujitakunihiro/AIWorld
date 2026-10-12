@@ -1,4 +1,4 @@
-param([string]$EngineRoot='D:\Epic Games\UE_5.8', [switch]$Editor, [switch]$SkipServer)
+param([string]$EngineRoot='D:\Epic Games\UE_5.8', [switch]$Editor, [switch]$SkipServer, [ValidateSet('paris','camp','all')][string]$View='paris')
 $ErrorActionPreference='Stop'
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $project=& (Join-Path $PSScriptRoot 'Get-AIWorldProject.ps1')
@@ -7,6 +7,12 @@ if(-not (Test-Path -LiteralPath $binary)){throw "Unreal Engine not found: $Engin
 if(-not (Test-Path -LiteralPath (Join-Path $repo 'unreal\AIWorld\Binaries\Win64\UnrealEditor-AIWorld.dll'))){
     & (Join-Path $PSScriptRoot 'Build-AIWorldUE.ps1') -EngineRoot $EngineRoot
 }
+Push-Location -LiteralPath $repo
+try {
+    if(-not(Test-Path -LiteralPath 'node_modules\tsx')){& npm.cmd ci;if($LASTEXITCODE -ne 0){throw 'Dependency install failed'}}
+    & node --import tsx tools/export-unreal.ts
+    if($LASTEXITCODE -ne 0){throw 'Model export failed'}
+} finally {Pop-Location}
 if(-not $SkipServer){
     Push-Location -LiteralPath $repo
     try{& docker compose -f compose.yaml -f compose.unreal.yaml up --build -d backend;if($LASTEXITCODE -ne 0){throw 'Simulation startup failed'}}finally{Pop-Location}
@@ -15,6 +21,6 @@ if(-not $SkipServer){
     if(-not $ready){throw 'Simulation did not become healthy'}
 }
 # A visible game/editor window is the result explicitly requested by the player.
-$launchArgs=@('"'+$project+'"','-NoSplash','-dx11')
+$launchArgs=@('"'+$project+'"','-NoSplash','-dx11',"-AIWorldView=$View")
 if(-not $Editor){$launchArgs+=@('-game','-windowed','-ResX=1440','-ResY=900')}
 Start-Process -FilePath $binary -ArgumentList $launchArgs

@@ -1,17 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Block, SIZE, HEIGHT, generateWorld, getBlock, index, inside } from '../shared/world';
+import { ARC, Block, EIFFEL, HEIGHT, NOTRE_DAME, SIZE, generateWorld, getBlock, inCite, index, inside, riverCenter } from '../shared/world';
 import { commandSchema } from '../shared/schema';
-import { createHash } from 'node:crypto';
-test('expansion preserves every voxel of the original island for existing seeds', () => {
-  for (const [seed, expected] of [[73129, '981b7e8bdfa96f349bd95bbe5c1b2c0458de2c64a0ad45bdc58c4853d554ca62'], [100, '123eb6b0cb0441e238f9a82b8b1c09df20ac66d4bc9552a600275903f61139d5']] as const) {
-    const expanded = generateWorld(seed), original = new Uint8Array(64 * 64 * HEIGHT);
-    for (let y = 0; y < HEIGHT; y++) for (let z = 0; z < 64; z++) for (let x = 0; x < 64; x++) original[x + 64 * (z + 64 * y)] = getBlock(expanded, x, y, z);
-    // Hashes captured from the committed Phase 4 generator before migration.
-    assert.equal(createHash('sha256').update(original).digest('hex'), expected);
-    assert.equal(getBlock(expanded, 99, 10, 38), Block.Grass);
-    assert.equal(getBlock(expanded, 33, 10, 98), Block.Grass);
-  }
+test('the regenerated world uses a continuous Paris street plan around the Seine', () => {
+  const world = generateWorld(73129);
+  assert.equal(getBlock(world, 32, 8, 40), Block.Grass, 'the existing starter clearing stays open');
+  for (const [x, z] of [[100, 258], [148, 98], [266, 156], [194, 194]])
+    assert.notEqual(getBlock(world, x, 8, z), Block.Water, 'landmarks have a walkable site');
+  assert.equal(EIFFEL.x, 104); assert.equal(ARC.z, 98); assert.equal(NOTRE_DAME.z, 194);
+  const riverX = Math.round(riverCenter(120));
+  assert.equal(getBlock(world, riverX, 6, 120), Block.Water);
+  assert.equal(getBlock(world, riverX - 30, 8, 120), Block.Stone);
+  assert.equal(getBlock(world, riverX + 30, 8, 120), Block.Stone);
 });
 test('384×384×32 terrain is deterministic and changes with seed', () => {
   const world = generateWorld(73129);
@@ -20,19 +20,16 @@ test('384×384×32 terrain is deterministic and changes with seed', () => {
   assert.notDeepEqual(world, generateWorld(100));
   assert.ok([...world].every(block => block >= 0 && block <= 8));
 });
-test('terrain contains forest, river, mountain, beach, ocean, and a flat building site', () => {
+test('terrain contains parks, a navigable Seine, quays, and flat building sites', () => {
   const world = generateWorld(73129);
-  for (const block of [Block.Grass, Block.Dirt, Block.Stone, Block.Sand, Block.Wood, Block.Leaves, Block.Water]) assert.ok(world.includes(block));
-  for (let z = 0; z < 64; z++) {
-    const x = Math.round(24 + Math.sin(z / 8) * 3);
-    assert.equal(getBlock(world, x, 5, z), Block.Water);
-  }
+  for (const block of [Block.Grass, Block.Dirt, Block.Stone, Block.Sand, Block.Wood, Block.Leaves, Block.Water, Block.Brick]) assert.ok(world.includes(block));
+  for (let z = 30; z < SIZE - 30; z += 30) if (!inCite(riverCenter(z), z)) assert.equal(getBlock(world, Math.round(riverCenter(z)), 6, z), Block.Water);
   for (let x = 29; x <= 39; x++) for (let z = 35; z <= 45; z++) {
-    assert.equal(getBlock(world, x, 10, z), Block.Grass);
-    assert.equal(getBlock(world, x, 11, z), Block.Air);
+    assert.equal(getBlock(world, x, 8, z), Block.Grass);
+    assert.equal(getBlock(world, x, 9, z), Block.Air);
   }
-  assert.equal(getBlock(world, 0, 5, 0), Block.Water);
-  assert.notEqual(getBlock(world, 43, 16, 23), Block.Air);
+  assert.equal(getBlock(world, 0, 8, 0), Block.Stone);
+  assert.equal(getBlock(world, 43, 14, 23), Block.Air);
 });
 test('bounds and indexing cannot alias invalid positions', () => {
   const world = generateWorld(4);

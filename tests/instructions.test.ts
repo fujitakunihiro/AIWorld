@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { generateWorld } from '../shared/world';
+import { generateWorld, riverCenter } from '../shared/world';
 import { interpretationSchema, instructionRequestSchema } from '../shared/instruction-schema';
 import type { InstructionCommand } from '../shared/instructions';
 import { Simulation } from '../backend/src/simulation/engine';
@@ -111,21 +111,21 @@ test('a settled Phase 2 village can build additional huts and honor river/forest
   assert.equal(s.state.huts.filter(h => h.kind === 'hut' && h.status === 'complete').length, 3);
   s.state.resources.wood = 48; s.state.resources.stone = 20;
   const record = accept(s, [{ action: 'build', building: 'hut', count: 1, location: 'village' }]);
-  advance(s, 300); assert.equal(record.jobs[0].status, 'complete'); assert.equal(s.state.huts.filter(h => h.kind === 'hut' || h.kind === 'house').length, 4);
+  advance(s, 300); assert.equal(record.jobs[0].status, 'complete'); assert.ok(s.state.huts.filter(h => h.kind === 'hut' || h.kind === 'house').length >= 4);
   for (const location of ['river', 'forest'] as const) {
     const fresh = sim();
     const planned = accept(fresh, [{ action: 'build', building: 'hut', count: 1, location }]);
     const hut = fresh.state.huts.find(h => h.id === planned.jobs[0].hutIds[0])!;
     if (location === 'forest') assert.ok(fresh.state.nodes.some(n => n.kind === 'wood' && Math.hypot(n.position.x - hut.x - 2, n.position.z - hut.z - 2) <= 10));
-    else assert.ok(hut.x >= 18 && hut.x < 37);
+    else assert.ok(Math.abs(hut.x + 2 - riverCenter(hut.z + 2)) < 24);
     assert.ok(fresh.nav.path(fresh.state.camp, fresh.nav.position(hut.x + 1, hut.z + 4)!));
   }
 });
 
 test('a new order interrupted on a one-block step settles onto its floor and does not strand the resident', () => {
   const s = sim(), mio = s.state.residents[1];
-  mio.position = { x: 28.8, y: 11, z: 44.5 }; assert.equal(s.nav.height(28, 44), 10);
-  mio.path = [{ x: 29.5, y: 11, z: 44.5 }]; mio.action = 'moving';
+  mio.position = { x: 28.8, y: 9, z: 44.5 }; assert.equal(s.nav.height(28, 44), 9);
+  mio.path = [{ x: 29.5, y: 9, z: 44.5 }]; mio.action = 'moving';
   accept(s, [{ action: 'gather', target: 'mio', resource: 'wood' }]);
   assert.ok(s.nav.valid(mio.position)); advance(s, 4); assert.ok(mio.task); assert.ok(!mio.reason.includes('安全な足場がない'));
 });

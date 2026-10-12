@@ -267,8 +267,8 @@ export class WorldRenderer {
     this.controls.orbit.set(innerWidth < 700 ? 78 : 55, .98, .68); this.controls.update();
   }
   focusParis() {
-    this.stopFollowing(); this.controls.target.set(250, 12, 132);
-    this.controls.orbit.set(innerWidth < 700 ? 285 : 180, .92, .52); this.controls.update();
+    this.stopFollowing(); this.controls.target.set(SIZE / 2, 10, SIZE / 2);
+    this.controls.orbit.set(innerWidth < 700 ? 560 : 490, .92, .52); this.controls.update();
   }
   pickResident(clientX: number, clientY: number) {
     const rect = this.renderer.domElement.getBoundingClientRect();

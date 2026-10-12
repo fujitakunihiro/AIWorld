@@ -14,7 +14,9 @@ test('model planning is deterministic and preserves every saved terrain byte and
   const data = generateWorld(73129), simulation = new Simulation(data), before = data.slice(), village = JSON.stringify(simulation.state);
   const a = planModels(data, simulation.state), b = planModels(data, simulation.state);
   assert.deepEqual(a, b); assert.deepEqual(data, before); assert.equal(JSON.stringify(simulation.state), village);
-  assert.ok(a.trees.length > 50); assert.ok(a.decorations.some(d => d.kind === 'grass'));
+  // Paris reserves its dense building blocks and monuments, so validate the
+  // remaining park trees without carrying over the old island-map threshold.
+  assert.ok(a.trees.length > 25); assert.ok(a.decorations.some(d => d.kind === 'grass'));
   const display = presentationWorld(data, a.hidden), hidden = new Set(a.hidden);
   for (let i = 0; i < data.length; i++) assert.equal(display[i], hidden.has(i) ? Block.Air : data[i]);
   for (const t of a.trees) assert.equal(getBlock(display, Math.floor(t.x), t.y - 1, Math.floor(t.z)), getBlock(data, Math.floor(t.x), t.y - 1, Math.floor(t.z)));

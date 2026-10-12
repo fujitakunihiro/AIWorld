@@ -1,10 +1,10 @@
-# AI WORLD — はじまりの島
+# AI WORLD — パリと自律する住民
 
 **Unreal Engine版への移行:** Windows用のUE 5.8プロジェクトを追加しました。起動は `.\unreal\scripts\Start-AIWorldUE.ps1`、初回ビルドは `.\unreal\scripts\Build-AIWorldUE.ps1` です。現在の世界と住民AI・SQLiteを引き継ぎ、UEのネイティブ3D画面と操作で遊べます。[起動方法・移行構成・検証](docs/unreal-migration.md) を参照してください。
 
 プレイヤーが世界を創造し、AI住民が文明を築くファンタジーゲームの **Phase 1〜6** です。384×384の世界で、5人の住民から始まる村が採集して小屋を建て、農業・住宅・移住へ発展します。住民と会話し、記憶や世界の歴史を読みながら、文明を見守れます。自然言語で建築・農業・採集・休息を指示でき、会話も指示も外部APIを使わずに遊べます。キャラクター、地形、演出、Web Audioの効果音は独自制作です。
 
-グラフィックリメイク **Phase 5** の新大陸をさらに384×384へ拡張しました。エッフェル塔の街と東の新市街地に計163棟のフランス風建物を配置し、運河を渡る石橋2本、凱旋門、回転木馬、船を加えました。右上の「メニュー」から「パリの全景」を選ぶか「地図」から移動できます。旧ボクセル表示でも街と記念物が見え、元の村の橋や住民AIは引き続き動きます。[パリのジオラマ・検証結果](docs/paris-diorama.md) / [最初のフランス街区](docs/french-city.md) / [Phase 5の新大陸](docs/graphics-phase5.md) / [Phase 4の表情・観察](docs/graphics-phase4.md) / [Phase 3の住民](docs/graphics-phase3.md) / [Phase 2の街](docs/graphics-phase2.md) / [Phase 1の光・水面](docs/graphics-phase1.md)を参照してください。
+ワールドは384×384の連続したパリ市街へ再構成しました。蛇行するセーヌ川、シテ島、エッフェル塔、放射状の大通りを持つ凱旋門広場、ルーヴル美術館、ノートルダム大聖堂を配置し、川を石橋6本で渡れます。ハウスマン様式の街区を4つの大きな描画地区にまとめ、住民AIと地形編集には従来どおりの座標系を使います。旧セーブでは住民、村の建物、資源、時計、手編集を残して地形を移行します。[パリの再構成と検証](docs/paris-diorama.md) / [最初のフランス街区](docs/french-city.md) / [グラフィック・Phase 5](docs/graphics-phase5.md) / [Phase 6の自律行動](docs/phase6.md)を参照してください。
 
 ![セーヌ川を挟んだパリのジオラマ](docs/screenshots/paris-diorama.png)
 

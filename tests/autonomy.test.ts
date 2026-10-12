@@ -7,8 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { Simulation } from '../backend/src/simulation/engine';
 import { WorldStore } from '../backend/src/database/store';
 import { villageSchema } from '../backend/src/database/village-schema';
-import { Block, generateWorld, getBlock, SAVE_VERSION } from '../shared/world';
-import { ISLANDS } from '../backend/src/buildings/bridge';
+import { Block, PARIS_BRIDGES, bridgeCenter, generateWorld, getBlock, SAVE_VERSION } from '../shared/world';
 import { evaluateUtility, type UtilityContext } from '../backend/src/agents/utility';
 const fresh = () => new Simulation(generateWorld(73129));
 function advance(s: Simulation, minutes: number) { const edits = []; for (let i = 0; i < minutes * 4; i++) edits.push(...s.step(.25, 480 + s.state.elapsed)); return edits; }
@@ -109,16 +108,15 @@ test('blocked construction is detected as stagnant and retains the one-time mate
   assert.ok(s.state.residents.some(r => r.ai.history.some(e => e.outcome === 'failed' && e.text.includes('停滞'))));
   assert.ok(task.failure.includes('停滞')); assert.ok(task.retryAt > s.state.elapsed); assert.equal(task.assignees.length, 0);
 });
-test('bridges are built from the shore, connect every island and preserve the original terrain', () => {
-  const s = fresh(); s.state.resources = { food: 2000, wood: 2000, stone: 2000 };
-  const original = s.data.slice(), edits = advance(s, 2000);
-  assert.ok(s.state.bridges.filter(b => b.status === 'complete').length >= 3, diagnostic(s));
-  for (const island of ISLANDS) {
-    const target = s.nav.nearest({ x: island.x + .5, y: 7, z: island.z + .5 })!;
-    assert.ok(s.nav.path(s.state.camp, target), `${island.name}: ${diagnostic(s)}`);
+test('Paris stone bridges connect the continuous districts across the Seine', () => {
+  const s = fresh(), start = s.nav.position(80, 180)!, east = s.nav.position(300, 180)!;
+  assert.ok(start && east); assert.ok(s.nav.path(start, east));
+  for (const z of PARIS_BRIDGES) {
+    const west = s.nav.position(Math.floor(bridgeCenter(z) - 24), z)!;
+    const eastBank = s.nav.position(Math.ceil(bridgeCenter(z) + 24), z)!;
+    assert.ok(west && eastBank); assert.ok(s.nav.path(west, eastBank), `bridge at ${z}`);
   }
-  for (const bridge of s.state.bridges) { assert.equal(bridge.progress, bridge.blocks.length); for (const e of bridge.blocks) { assert.equal(getBlock(s.data, e.x, e.y, e.z), Block.Wood); assert.equal(getBlock(original, e.x, e.y, e.z), Block.Air); } }
-  assert.ok(edits.some(e => s.state.bridges.some(b => b.blocks.some(p => p.x === e.x && p.z === e.z))));
+  assert.equal(s.state.bridges.length, 0, 'permanent city bridges do not create redundant construction tasks');
 });
 test('a Phase 5 save migrates personal traits and the job board without losing the existing world', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ai-world-ai-migrate-')), path = join(dir, 'world.sqlite');

@@ -117,12 +117,12 @@ export class LifeUI {
     $('bridge-list').replaceChildren();
     for (const bridge of state.bridges) {
       const row = add('article', $('bridge-list'), 'growth-site', ''); add('strong', row, '', bridge.name);
-      add('p', row, '', `${bridge.status === 'complete' ? '完成 · 島へ歩いて渡れます' : bridge.materialsReserved ? '建設中 · 木材を確保済み' : `材料待ち · 木材 ${state.resources.wood}/${bridge.cost.wood}`} · ${bridge.progress}/${bridge.blocks.length}`);
+      add('p', row, '', `${bridge.status === 'complete' ? '完成 · 川を渡れます' : bridge.materialsReserved ? '建設中 · 木材を確保済み' : `材料待ち · 木材 ${state.resources.wood}/${bridge.cost.wood}`} · ${bridge.progress}/${bridge.blocks.length}`);
       const progress = add('progress', row, '', '') as HTMLProgressElement; progress.max = 1; progress.value = bridge.progress / bridge.blocks.length;
       const focus = add('button', row, 'event-link', '橋を近くで見る ↗') as HTMLButtonElement;
       const block = bridge.blocks[Math.floor(bridge.blocks.length / 2)]; focus.onclick = () => { ($('tasks-dialog') as HTMLDialogElement).close(); this.onMapFocus(block.x, block.z); };
     }
-    if (!state.bridges.length) add('p', $('bridge-list'), '', '島への道を調べています。未接続の島があれば橋を計画します。');
+    if (!state.bridges.length) add('p', $('bridge-list'), '', 'セーヌ川の石橋で両岸を行き来できます。');
     $('task-list').replaceChildren();
     const tasks = state.tasks.filter(t => t.status === 'running' || t.kind !== 'gather' && t.status !== 'complete').sort((a, b) => Number(b.status === 'running') - Number(a.status === 'running') || b.priority - a.priority);
     for (const task of tasks) {

@@ -5,27 +5,27 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { WorldStore } from '../backend/src/database/store';
-import { Block, getBlock, SAVE_VERSION } from '../shared/world';
+import { Block, getBlock, riverCenter, SAVE_VERSION } from '../shared/world';
 import { Simulation } from '../backend/src/simulation/engine';
 import { hutBlocks } from '../backend/src/buildings/hut';
 test('edits, original seed, version, revision and clock survive reopening SQLite', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ai-world-')), path = join(dir, 'world.sqlite');
   try {
     const store = new WorldStore(path, 73129);
-    store.edit({ type: 'edit', x: 32, y: 11, z: 40, block: Block.Wood, expected: 0 });
-    store.edit({ type: 'edit', x: 32, y: 10, z: 40, block: 0, expected: Block.Grass });
+    store.edit({ type: 'edit', x: 0, y: 11, z: 0, block: Block.Wood, expected: 0 });
+    store.edit({ type: 'edit', x: 0, y: 8, z: 0, block: 0, expected: Block.Stone });
     store.time = 2000; store.speed = 5; store.close();
     const restored = new WorldStore(path, 123);
     assert.equal(restored.seed, 73129); assert.equal(restored.revision, 2); assert.equal(restored.time, 2000); assert.equal(restored.speed, 5);
-    assert.equal(getBlock(restored.data, 32, 11, 40), Block.Wood);
-    assert.equal(getBlock(restored.data, 32, 10, 40), Block.Air);
+    assert.equal(getBlock(restored.data, 0, 11, 0), Block.Wood);
+    assert.equal(getBlock(restored.data, 0, 8, 0), Block.Air);
     assert.equal(restored.snapshot().edits.length, 2); restored.close();
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 test('restoring a generated block removes its stored difference', () => {
   const store = new WorldStore(':memory:', 73129);
-  store.edit({ type: 'edit', x: 32, y: 10, z: 40, block: 0, expected: 1 });
-  store.edit({ type: 'edit', x: 32, y: 10, z: 40, block: 1, expected: 0 });
+  store.edit({ type: 'edit', x: 40, y: 8, z: 40, block: 0, expected: 1 });
+  store.edit({ type: 'edit', x: 40, y: 8, z: 40, block: 1, expected: 0 });
   assert.equal(store.edits().length, 0); assert.equal(store.revision, 2); store.close();
 });
 test('invalid, conflicting, occupied, empty and bedrock edits do not mutate the database', () => {
@@ -40,9 +40,10 @@ test('invalid, conflicting, occupied, empty and bedrock edits do not mutate the 
 });
 test('water replacement can be undone without losing the original water', () => {
   const store = new WorldStore(':memory:', 73129);
-  store.edit({ type: 'edit', x: 1, y: 5, z: 1, block: Block.Sand, expected: Block.Water });
-  store.edit({ type: 'edit', x: 1, y: 5, z: 1, block: Block.Water, expected: Block.Sand });
-  assert.equal(store.edits().length, 0); assert.equal(getBlock(store.data, 1, 5, 1), Block.Water); store.close();
+  const x = Math.round(riverCenter(120)), z = 120;
+  store.edit({ type: 'edit', x, y: 6, z, block: Block.Sand, expected: Block.Water });
+  store.edit({ type: 'edit', x, y: 6, z, block: Block.Water, expected: Block.Sand });
+  assert.equal(store.edits().length, 0); assert.equal(getBlock(store.data, x, 6, z), Block.Water); store.close();
 });
 test('unknown save versions are refused instead of silently overwritten', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ai-world-')), path = join(dir, 'world.sqlite');
@@ -104,20 +105,20 @@ test('Phase 4 migration preserves edited terrain and village coordinates; new is
   const dir = mkdtempSync(join(tmpdir(), 'ai-world-expand-')), path = join(dir, 'world.sqlite');
   try {
     const store = new WorldStore(path, 73129), sim = new Simulation(store.data);
-    store.edit({ type: 'edit', x: 32, y: 11, z: 40, block: Block.Wood, expected: Block.Air });
+    store.edit({ type: 'edit', x: 0, y: 11, z: 0, block: Block.Wood, expected: Block.Air });
     const legacy: any = structuredClone(sim.state); legacy.version = 2; delete legacy.chronicle; delete legacy.archive;
     for (const r of legacy.residents) { delete r.conversations; delete r.speech; delete r.nextSocialAt; }
     store.close();
     const db = new DatabaseSync(path); db.prepare('INSERT INTO simulation VALUES(1,?)').run(JSON.stringify(legacy)); db.exec('UPDATE world SET version=3'); db.close();
     const migrated = new WorldStore(path, 1);
     assert.equal(migrated.snapshot().version, SAVE_VERSION); assert.equal(migrated.village!.version, 4);
-    assert.equal(getBlock(migrated.data, 32, 11, 40), Block.Wood);
+    assert.equal(getBlock(migrated.data, 0, 11, 0), Block.Wood);
     assert.deepEqual(migrated.village!.huts, legacy.huts); assert.deepEqual(migrated.village!.residents.map(r => r.position), legacy.residents.map((r: any) => r.position));
     assert.ok(migrated.village!.chronicle.some(e => /128×128/.test(e.text)));
     assert.ok(migrated.village!.chronicle.some(e => /256×256/.test(e.text)));
-    assert.match(migrated.village!.chronicle.at(-1)!.text, /384×384/);
-    migrated.edit({ type: 'edit', x: 99, y: 11, z: 38, block: Block.Wood, expected: Block.Air });
+    assert.match(migrated.village!.chronicle.at(-1)!.text, /パリ/);
+    migrated.edit({ type: 'edit', x: 2, y: 14, z: 2, block: Block.Wood, expected: Block.Air });
     const history = structuredClone(migrated.village!.chronicle); migrated.close();
-    const reopened = new WorldStore(path, 1); assert.equal(getBlock(reopened.data, 99, 11, 38), Block.Wood); assert.deepEqual(reopened.village!.chronicle, history); reopened.close();
+    const reopened = new WorldStore(path, 1); assert.equal(getBlock(reopened.data, 2, 14, 2), Block.Wood); assert.deepEqual(reopened.village!.chronicle, history); reopened.close();
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

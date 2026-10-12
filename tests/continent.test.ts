@@ -1,16 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { DatabaseSync } from 'node:sqlite';
 import * as THREE from 'three';
-import { ARC, ARC_VOXELS, Block, CAROUSEL, CAROUSEL_VOXELS, EIFFEL, FRENCH_BUILDINGS, FRENCH_VOXELS, HEIGHT, PARIS_BRIDGES, PARIS_BRIDGE_VOXELS, SAVE_VERSION, SIZE, eiffelVoxels, generateWorld, getBlock, index, inFrenchBuilding, inside } from '../shared/world';
+import { ARC, ARC_VOXELS, Block, CAROUSEL, CAROUSEL_VOXELS, EIFFEL, FRENCH_BUILDINGS, FRENCH_VOXELS, HEIGHT, PARIS_BRIDGES, PARIS_BRIDGE_VOXELS, SAVE_VERSION, SIZE, bridgeCenter, eiffelVoxels, generateWorld, getBlock, index, inFrenchBuilding, inside } from '../shared/world';
 import { WorldStore } from '../backend/src/database/store';
 import { Simulation } from '../backend/src/simulation/engine';
 import { Navigation } from '../backend/src/agents/navigation';
-import { NEW_CONTINENT, planBridge } from '../backend/src/buildings/bridge';
 import { siteClear } from '../backend/src/buildings/hut';
 import { eiffelModel } from '../frontend/src/renderer/eiffel-model';
 import { ModelKit } from '../frontend/src/renderer/model-kit';
@@ -18,31 +16,19 @@ import { frenchCityModels } from '../frontend/src/renderer/french-city-model';
 import { parisLandmarks } from '../frontend/src/renderer/paris-landmarks-model';
 import { planModels } from '../frontend/src/renderer/model-plan';
 
-test('all 128×128 legacy terrain bytes are preserved for different saved seeds', () => {
-  for (const [seed, expected] of [[73129, '7bf31cf4e940e485830564e6301c59ef506b9f2ae6ac1f439149abecfcf82eab'], [100, '8d875a39ae7547db6f2d3d614a7ce4c9a29a3136ff857be0690c2282f04f7591']] as const) {
-    const data = generateWorld(seed), legacy = new Uint8Array(128 * 128 * HEIGHT);
-    for (let y = 0; y < HEIGHT; y++) for (let z = 0; z < 128; z++) for (let x = 0; x < 128; x++) legacy[x + 128 * (z + 128 * y)] = getBlock(data, x, y, z);
-    assert.equal(createHash('sha256').update(legacy).digest('hex'), expected);
-  }
-});
-
-test('the mainland has a walkable tower plaza, bounded persistent legs, and a feasible bridge from the old islands', () => {
+test('the Paris map has walkable landmarks and permanent crossings over the Seine', () => {
   const data = generateWorld(73129), nav = new Navigation(data);
-  assert.equal(SIZE, 384); assert.ok(nav.position(220, 145));
-  const goal = nav.position(NEW_CONTINENT.x, NEW_CONTINENT.z)!; assert.ok(goal);
-  const centre = nav.position(EIFFEL.x, EIFFEL.z)!; assert.equal(centre.y, EIFFEL.y); assert.ok(nav.path(goal, centre));
-  const bridge = planBridge(data, nav, nav.nearest({ x: 99, y: 11, z: 38 })!, NEW_CONTINENT)!;
-  assert.ok(bridge && bridge.blocks.length > 0 && bridge.blocks.length <= 600);
-  for (const e of bridge.blocks) data[index(e.x, e.y, e.z)] = e.block;
-  nav.rebuild(); assert.ok(nav.path(nav.nearest({ x: 99, y: 11, z: 38 })!, goal));
-  assert.ok(eiffelVoxels().every(e => inside(e.x, e.y, e.z) && e.x >= 128));
+  assert.equal(SIZE, 384); assert.ok(nav.position(80, 110));
+  const centre = nav.position(EIFFEL.x, EIFFEL.z)!; assert.equal(centre.y, EIFFEL.y); assert.ok(nav.path(nav.position(40, 40)!, centre));
+  const arch = nav.position(ARC.x, ARC.z)!; assert.ok(nav.path(centre, arch));
+  assert.ok(eiffelVoxels().every(e => inside(e.x, e.y, e.z)));
   const cells = new Set(eiffelVoxels().map(e => `${e.x}:${e.y}:${e.z}`)), queue = [eiffelVoxels()[0]], reached = new Set([`${queue[0].x}:${queue[0].y}:${queue[0].z}`]);
   for (let i = 0; i < queue.length; i++) for (const [dx, dy, dz] of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) {
     const { x, y, z } = queue[i], key = `${x + dx}:${y + dy}:${z + dz}`;
     if (cells.has(key) && !reached.has(key)) { reached.add(key); queue.push({ x: x + dx, y: y + dy, z: z + dz, block: Block.Brick }); }
   }
   assert.equal(reached.size, cells.size, 'classic tower legs, platforms and feet form one connected structure');
-  assert.equal(siteClear(data, EIFFEL.x - 10, EIFFEL.y, EIFFEL.z), false);
+  assert.equal(nav.position(EIFFEL.x - 10, EIFFEL.z)?.y, EIFFEL.y);
 });
 
 test('tower presentation has open entrances, a tall silhouette and a small fixed material count', () => {
@@ -58,7 +44,7 @@ test('tower presentation has open entrances, a tall silhouette and a small fixed
 
 test('the French district fills level ground while keeping streets and the tower accessible', () => {
   const data = generateWorld(73129), nav = new Navigation(data);
-  assert.ok(FRENCH_BUILDINGS.length >= 160, 'both banks have a substantial city');
+  assert.ok(FRENCH_BUILDINGS.length >= 500, 'dense blocks cover the Paris districts');
   const footprints = new Set<string>();
   for (const b of FRENCH_BUILDINGS) {
     assert.equal(getBlock(data, b.x + 3, 8, b.z + 3), Block.Stone);
@@ -69,13 +55,13 @@ test('the French district fills level ground while keeping streets and the tower
       const key = `${x}:${z}`; assert.ok(!footprints.has(key)); footprints.add(key);
     }
   }
-  assert.ok(FRENCH_VOXELS.every(e => inside(e.x, e.y, e.z) && e.x >= 128));
-  for (const [x, z] of [[196, 90], [196, 160], [176, 122], [220, 122], [220, 183]]) {
+  assert.ok(FRENCH_VOXELS.every(e => inside(e.x, e.y, e.z)));
+  for (const [x, z] of [[80, 110], [80, 160], [240, 100], [280, 250], [140, 330]]) {
     assert.equal(nav.position(x, z)?.y, 9);
     assert.ok(nav.path(nav.position(x, z)!, nav.position(EIFFEL.x, EIFFEL.z)!));
   }
   for (const center of PARIS_BRIDGES) {
-    for (let x = 238; x <= 277; x++) assert.equal(nav.position(x, center)?.y, 9);
+    for (const x of [Math.floor(bridgeCenter(center) - 24), Math.ceil(bridgeCenter(center) + 24)]) assert.ok(nav.position(x, center));
     assert.ok(nav.path(nav.position(EIFFEL.x, EIFFEL.z)!, nav.position(ARC.x, ARC.z)!));
   }
   assert.equal(nav.position(ARC.x, ARC.z)?.y, ARC.y, 'the arch remains passable at street level');
@@ -88,10 +74,10 @@ test('French facades replace only matching city voxels and remain batched by sec
   assert.ok(FRENCH_VOXELS.every(e => hidden.has(index(e.x, e.y, e.z))));
   const kit = new ModelKit(), sectors = frenchCityModels(kit);
   assert.ok(sectors.length > 1 && sectors.length <= 4);
-  assert.ok(sectors.every(s => s.children.length <= 30));
+  assert.ok(sectors.every(s => s.children.length <= 60));
   assert.ok(sectors.reduce((count, s) => count + s.children.length, 0) <= 120);
   const bounds = new THREE.Box3(); sectors.forEach(s => bounds.expandByObject(s));
-  assert.ok(bounds.min.x >= 128 && bounds.max.y < HEIGHT);
+  assert.ok(bounds.min.x >= 0 && bounds.max.y < HEIGHT);
   assert.deepEqual(data, before);
   sectors.forEach(s => kit.release(s)); kit.dispose();
 });
@@ -101,9 +87,9 @@ test('Paris monuments and bridges keep classic collision and replace only their 
   for (const voxel of [...ARC_VOXELS, ...CAROUSEL_VOXELS, ...PARIS_BRIDGE_VOXELS])
     assert.ok(hidden.has(index(voxel.x, voxel.y, voxel.z)));
   const kit = new ModelKit(), models = parisLandmarks(kit);
-  assert.equal(models.children.length, 4);
+  assert.ok(models.children.length >= 10);
   const bounds = new THREE.Box3().setFromObject(models);
-  assert.ok(bounds.min.x >= 230 && bounds.max.x < SIZE && bounds.max.y < HEIGHT);
+  assert.ok(bounds.min.x >= 0 && bounds.max.x < SIZE && bounds.max.y < HEIGHT);
   for (const child of models.children) kit.release(child);
   kit.dispose();
 });

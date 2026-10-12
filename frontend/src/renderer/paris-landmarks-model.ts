@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ARC, CAROUSEL, PARIS_BRIDGES } from '../../../shared/world';
+import { ARC, CAROUSEL, LOUVRE, NOTRE_DAME, PARIS_BRIDGES, bridgeCenter, riverCenter } from '../../../shared/world';
 import { ModelKit, type ModelPart } from './model-kit';
 
 export function parisLandmarks(kit: ModelKit) {
@@ -19,28 +19,81 @@ export function parisLandmarks(kit: ModelKit) {
   const archGroup = kit.assemble(arch); archGroup.position.set(ARC.x, ARC.y, ARC.z); archGroup.scale.y = 1.4;
   archGroup.userData.modelId = ARC.id; archGroup.userData.center = new THREE.Vector3(ARC.x, ARC.y, ARC.z); root.add(archGroup);
 
+  // A compact, walkable-scale Louvre courtyard and its glass pyramid.
+  const palace: ModelPart[] = [], lx = LOUVRE.x, lz = LOUVRE.z, ly = LOUVRE.y;
+  const pb = (color: string, x: number, y: number, z: number, w: number, h: number, d: number) =>
+    kit.box(palace, color, [lx + x, ly + y, lz + z], [w, h, d]);
+  const limestone = '#d8c9ac', pale = '#eadcc1', slate = '#555a59', glass = '#72949a';
+  // Four wings surround an open courtyard, avoiding a solid collision-like mass.
+  for (const side of [-1, 1]) {
+    pb(limestone, 0, 5.1, side * 21, 48, 10.2, 8);
+    pb(limestone, side * 24, 5.1, 0, 8, 10.2, 35);
+    for (let x = -21; x <= 21; x += 4) {
+      pb(pale, x, 5.5, side * 25.1, .4, 11.1, .35);
+      pb('#75888a', x, 4.3, side * 25.2, 1.1, 2.2, .22);
+      pb('#bcae95', x, 3.05, side * 25.25, 1.25, .18, .35);
+    }
+    for (let z = -14; z <= 14; z += 4) {
+      pb(pale, side * 28.1, 5.5, z, .35, 11.1, .4);
+      pb('#75888a', side * 28.2, 4.3, z, .22, 2.2, 1.1);
+      pb('#bcae95', side * 28.2, 3.05, z, .35, .18, 1.25);
+    }
+  }
+  for (const side of [-1, 1]) pb(slate, 0, 10.45, side * 21, 49, .65, 8.8);
+  for (const side of [-1, 1]) pb(slate, side * 24, 10.45, 0, 8.8, .65, 35);
+  for (const [x, z, scale] of [[-5, -4, 5.2], [6, 5, 3.2]] as const) {
+    kit.part(palace, kit.cone, glass, [lx + x, ly + 2.15, lz + z], [scale, 2.8, scale]);
+    pb('#d7d2c7', x, .3, z, scale * 2.1, .45, scale * 2.1);
+  }
+  const palaceGroup = kit.assemble(palace); palaceGroup.userData.modelId = LOUVRE.id;
+  palaceGroup.userData.center = new THREE.Vector3(lx, ly + 4, lz); root.add(palaceGroup);
+
+  // Notre-Dame's twin west towers, high nave, crossing and flying buttresses.
+  const cathedral: ModelPart[] = [], nx = NOTRE_DAME.x, nz = NOTRE_DAME.z, ny = NOTRE_DAME.y;
+  const cb = (color: string, x: number, y: number, z: number, w: number, h: number, d: number) =>
+    kit.box(cathedral, color, [nx + x, ny + y, nz + z], [w, h, d]);
+  const cathedralStone = '#c7b99f', roof = '#4e5a59', window = '#516d77';
+  cb(cathedralStone, 0, 5.2, -1, 18, 10.4, 31);
+  cb(cathedralStone, 0, 6.2, 0, 25, 12.4, 10);
+  cb(roof, 0, 11.1, -1, 18.5, 1.3, 32);
+  cb(roof, 0, 12.2, 0, 26, 1.25, 10);
+  for (const x of [-7.5, 7.5]) {
+    cb(cathedralStone, x, 12.8, 12.4, 7, 15, 7);
+    cb(cathedralStone, x, 21, 12.4, 7.7, 1, 7.7);
+    for (let y = 8; y <= 16; y += 3) cb(window, x, y, 15.95, 1.8, 2.1, .12);
+  }
+  for (const x of [-10.4, 10.4]) for (const z of [-10, -4, 2, 8]) {
+    cb(cathedralStone, x, 4.8, z, 1.35, 9.6, 1.35);
+    cb(cathedralStone, x * 1.16, 6.2, z + 1.6, 2.7, .45, 3.4);
+  }
+  for (const z of [-12, -5, 2, 9]) cb(window, 0, 6.2, z, 2.1, 4, .16);
+  cb('#8d765d', 0, 3, 15.99, 2.4, 5.6, .16);
+  const churchGroup = kit.assemble(cathedral); churchGroup.userData.modelId = NOTRE_DAME.id;
+  churchGroup.userData.center = new THREE.Vector3(nx, ny + 9, nz); root.add(churchGroup);
+
   for (const center of PARIS_BRIDGES) {
     const parts: ModelPart[] = [];
     const b = (color: string, p: number[], s: number[]) => kit.box(parts, color, p, s);
-    b(shadow, [257.5, 8.48, center], [40, .82, 3.5]);
-    b('#d9c6a4', [257.5, 8.96, center], [40.5, .13, 3.7]);
+    const mid = bridgeCenter(center), start = mid - 25, end = mid + 25;
+    b(shadow, [mid, 8.48, center], [50, .82, 3.5]);
+    b('#d9c6a4', [mid, 8.96, center], [50.5, .13, 3.7]);
     for (const side of [-1, 1]) {
       const z = center + side * 1.84;
-      for (let x = 238; x <= 277; x += 2) b(stone, [x, 9.49, z], [.17, .95, .2]);
-      b(stone, [257.5, 9.96, z], [39.9, .22, .19]);
-      for (const pier of [244, 253, 262, 271]) b(stone, [pier, 6.38, z - side * .18], [1.45, 3.4, .65]);
+      for (let x = start; x <= end; x += 2) b(stone, [x, 9.49, z], [.17, .95, .2]);
+      b(stone, [mid, 9.96, z], [49.9, .22, .19]);
+      for (const pier of [mid - 18, mid - 6, mid + 6, mid + 18]) b(stone, [pier, 6.38, z - side * .18], [1.45, 3.4, .65]);
       // The open curved spans read as a stone bridge above the water.
-      for (let span = 0; span < 4; span++) {
-        const from = 240 + span * 9;
+      for (let span = 0; span < 5; span++) {
+        const from = start + 1 + span * 10;
         for (let i = 0; i < 8; i++) {
-          const t = (i + .5) / 8, x = from + i * 1.12;
+          const t = (i + .5) / 8, x = from + i * 1.24;
           const y = 6.05 + Math.sin(Math.PI * t) * 1.65;
-          b(trim, [x, y, z - side * .08], [1.3, .21, .24]);
+          b(trim, [x, y, z - side * .08], [1.38, .21, .24]);
         }
       }
     }
-    for (let x = 239; x <= 277; x += 2) b('#e6d4b6', [x, 9.035, center], [1.8, .02, 3.33]);
-    const group = kit.assemble(parts); group.userData.modelId = `paris-bridge-${center}`; group.userData.center = new THREE.Vector3(257, 9, center); root.add(group);
+    for (let x = start; x <= end; x += 2) b('#e6d4b6', [x, 9.035, center], [1.8, .02, 3.33]);
+    const group = kit.assemble(parts); group.userData.modelId = `paris-bridge-${center}`; group.userData.center = new THREE.Vector3(mid, 9, center); root.add(group);
   }
 
   const extras: ModelPart[] = [];
@@ -63,13 +116,14 @@ export function parisLandmarks(kit: ModelKit) {
     for (const dx of [-1, 1]) kit.box(extras, '#a95f59', [x + dx * 1.05, gy + .48, z], [.55, .14, .55]);
   }
   // Small river boats stay within the navigable water and cost only a few baked meshes.
-  for (const [x, z] of [[254, 91], [257, 136], [251, 188]]) {
+  for (const [z, dx] of [[83, -3], [143, 2], [244, -2]]) {
+    const x = riverCenter(z) + dx;
     kit.box(extras, '#6c4d3e', [x, 6.13, z], [2.6, .35, 5.4]);
     kit.box(extras, '#efe1c4', [x, 6.52, z - .3], [1.9, .45, 2.3]);
     kit.box(extras, '#4e6470', [x, 6.86, z - .3], [2.1, .1, 2.45]);
     kit.box(extras, '#b67a55', [x, 6.2, z + 2.7], [1.4, .12, .4]);
   }
-  const extrasGroup = kit.assemble(extras); extrasGroup.userData.modelId = 'paris-extras'; extrasGroup.userData.center = new THREE.Vector3(280, 9, 140); root.add(extrasGroup);
+  const extrasGroup = kit.assemble(extras); extrasGroup.userData.modelId = 'paris-extras'; extrasGroup.userData.center = new THREE.Vector3(CAROUSEL.x, 9, CAROUSEL.z); root.add(extrasGroup);
   // Temporary roof sectors are baked into the assembled geometry.
   for (const part of extras) if (part.geometry !== kit.cube && part.geometry !== kit.trunk && part.geometry !== kit.round) part.geometry.dispose();
   return root;

@@ -1,4 +1,4 @@
-import { Block, EIFFEL, HEIGHT, SIZE, getBlock, index, type Edit } from '../../../shared/world';
+import { Block, EIFFEL, HEIGHT, SIZE, getBlock, index, riverCenter, type Edit } from '../../../shared/world';
 import type { BuildingKind, Hut, Position, Resident, Resource, Resources, VillageState, VillageEvent } from '../../../shared/village';
 import { beds, BUILDING_LABELS, growthRequirements, MAX_BUILDINGS, MAX_POPULATION, RESOURCE_LABELS } from '../../../shared/village';
 import { interpretationSchema } from '../../../shared/instruction-schema';
@@ -129,7 +129,10 @@ export class Simulation {
   private findHut(location: 'village' | 'river' | 'forest', extra: Hut[], kind: BuildingKind, connectedIslands = false): Hut | null {
     const search = this.nav.search(this.state.camp);
     const river: Position[] = [];
-    if (location === 'river') for (let z = 8; z < SIZE - 8; z++) for (let x = 18; x <= 29; x++) if (getBlock(this.data, x, 5, z) === Block.Water) river.push({ x, y: 5, z });
+    if (location === 'river') for (let z = 12; z < SIZE - 12; z += 4) for (const side of [-1, 1]) {
+      const x = Math.round(riverCenter(z) + side * 15);
+      if (this.nav.position(x, z)) river.push({ x: x + .5, y: this.nav.height(x, z), z: z + .5 });
+    }
     const trees = this.state.nodes.filter(n => n.kind === 'wood' && this.nodeValid(n)).map(n => n.position);
     const landmarks = location === 'river' ? river : location === 'forest' ? trees : [this.state.camp, ...(connectedIslands ? this.state.bridges.filter(b => b.status === 'complete').map(b => b.destination) : [])];
     const proximity = (p: { x: number; z: number }) => Math.min(...landmarks.map(n => Math.hypot(n.x - p.x - 2, n.z - p.z - 2)));

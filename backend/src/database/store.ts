@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { Block, EIFFEL, SAVE_VERSION, generateWorld, index, inArc, inCarousel, inFrenchBuilding, inLandmark, inParisBridge, type Edit, type WorldSnapshot } from '../../../shared/world';
+import { Block, EIFFEL, SAVE_VERSION, generateWorld, index, inArc, inCarousel, inCulturalLandmark, inFrenchBuilding, inLandmark, inParisBridge, type Edit, type WorldSnapshot } from '../../../shared/world';
 import { editSchema } from '../../../shared/schema';
 import type { VillageState } from '../../../shared/village';
 import { villageSchema } from './village-schema';
@@ -24,7 +24,7 @@ export class WorldStore {
       CREATE TABLE IF NOT EXISTS simulation (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL);`);
     this.db.prepare('INSERT OR IGNORE INTO world VALUES (?, ?, ?, 0, 480, 1)').run('island-1', SAVE_VERSION, seed);
     const row = this.db.prepare('SELECT * FROM world WHERE id=?').get('island-1')!;
-    if (![1, 2, 3, 4, 5, 6, 7, SAVE_VERSION].includes(Number(row.version))) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
+    if (![1, 2, 3, 4, 5, 6, 7, 8, SAVE_VERSION].includes(Number(row.version))) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
     this.seed = Number(row.seed); this.revision = Number(row.revision); this.time = Number(row.time); this.speed = Number(row.speed);
     this.base = generateWorld(this.seed); this.data = this.base.slice();
     for (const edit of this.edits()) this.data[index(edit.x, edit.y, edit.z)] = edit.block;
@@ -58,6 +58,12 @@ export class WorldStore {
         this.village.chronicle.push(event);
         if (this.village.chronicle.length > 300) { const old = this.village.chronicle.shift()!; this.village.archive.count++; this.village.archive.through = old.time; this.village.archive.kinds[old.kind] = (this.village.archive.kinds[old.kind] ?? 0) + 1; }
       }
+      if (this.village && Number(row.version) < 9) {
+        const event = { id: this.village.nextEvent++, time: this.village.elapsed, kind: 'growth' as const, text: '世界を実際のパリを参考にした都市へ再構成しました。セーヌ川、シテ島、エッフェル塔、凱旋門、ルーヴル、ノートルダム大聖堂が新しい位置に整いました。', position: { x: EIFFEL.x, y: EIFFEL.y, z: EIFFEL.z } };
+        this.village.events.push(event); if (this.village.events.length > 30) this.village.events.shift();
+        this.village.chronicle.push(event);
+        if (this.village.chronicle.length > 300) { const old = this.village.chronicle.shift()!; this.village.archive.count++; this.village.archive.through = old.time; this.village.archive.kinds[old.kind] = (this.village.archive.kinds[old.kind] ?? 0) + 1; }
+      }
       this.db.exec('BEGIN IMMEDIATE');
       try {
         if (this.village) this.db.prepare('INSERT INTO simulation VALUES(1,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state').run(JSON.stringify(this.village));
@@ -67,7 +73,7 @@ export class WorldStore {
   }
   edits(): Edit[] { return this.db.prepare('SELECT x,y,z,block FROM edits ORDER BY y,z,x').all() as unknown as Edit[]; }
   snapshot(): WorldSnapshot {
-    return { type: 'snapshot', id: 'island-1', name: 'はじまりの島', version: SAVE_VERSION, seed: this.seed,
+    return { type: 'snapshot', id: 'island-1', name: 'パリ', version: SAVE_VERSION, seed: this.seed,
       revision: this.revision, edits: this.edits(), time: this.time, speed: this.speed, village: this.village };
   }
   edit(input: unknown): Edit {
@@ -78,6 +84,7 @@ export class WorldStore {
     if (inLandmark(x, z) && y >= EIFFEL.y - 2) throw new Error('エッフェル塔と基礎は保護されています。広場の外で編集してください。');
     if (inFrenchBuilding(x, z) && y >= EIFFEL.y - 2) throw new Error('フランスの街並みと基礎は保護されています。通りの外で編集してください。');
     if (inArc(x, z) && y >= EIFFEL.y - 2) throw new Error('凱旋門と基礎は保護されています。');
+    if (inCulturalLandmark(x, z) && y >= EIFFEL.y - 2) throw new Error('ルーヴル美術館とノートルダム大聖堂の敷地は保護されています。');
     if (inCarousel(x, z) && y >= EIFFEL.y - 2) throw new Error('回転木馬と広場は保護されています。');
     if (inParisBridge(x, z) && y >= 5) throw new Error('セーヌの橋は保護されています。');
     if (this.village?.huts.some(h => inHut({ x, y, z }, h))) throw new Error('住民の建物・畑と建築敷地は保護されています。周りの地形を編集してください。');

@@ -5,34 +5,56 @@ export const SEA = 5;
 import type { VillageState } from './village';
 import type { InstructionResult } from './instructions';
 import type { ConversationResult } from './conversation';
-export const SAVE_VERSION = 8;
-export const EIFFEL = { id: 'eiffel', name: 'エッフェル塔', continent: '暁の新大陸', x: 196, y: 9, z: 122, height: 22 } as const;
-export const ARC = { id: 'arc', name: '凱旋門', x: 312, y: 9, z: 113 } as const;
-export const CAROUSEL = { id: 'carousel', name: '広場の回転木馬', x: 294, y: 9, z: 144 } as const;
-export const PARIS_BRIDGES = [113, 163] as const;
+export const SAVE_VERSION = 9;
+// The map is oriented with north at the top. The Seine crosses the city north–south
+// in map space; landmark coordinates follow their real west/central/east order.
+export const EIFFEL = { id: 'eiffel', name: 'エッフェル塔', continent: 'パリ', x: 104, y: 9, z: 258, height: 22 } as const;
+export const ARC = { id: 'arc', name: '凱旋門', x: 148, y: 9, z: 98 } as const;
+export const LOUVRE = { id: 'louvre', name: 'ルーヴル美術館', x: 266, y: 9, z: 156 } as const;
+export const NOTRE_DAME = { id: 'notre-dame', name: 'ノートルダム大聖堂', x: 194, y: 9, z: 194 } as const;
+export const CAROUSEL = { id: 'carousel', name: '広場の回転木馬', x: 117, y: 9, z: 289 } as const;
+export const PARIS_BRIDGES = [52, 112, 172, 216, 276, 336] as const;
+export const riverCenter = (z: number) => 192 + Math.sin((z - 30) / 64) * 18 + Math.sin(z / 23) * 6;
+export const inCite = (x: number, z: number, margin = 0) => {
+  const dz = (z - NOTRE_DAME.z) / (17 + margin), dx = (x - riverCenter(z)) / (7 + margin);
+  return dx * dx + dz * dz <= 1;
+};
+export const bridgeCenter = (z: number) => riverCenter(z);
 export const inLandmark = (x: number, z: number, margin = 8) => Math.abs(x - EIFFEL.x) <= margin && Math.abs(z - EIFFEL.z) <= margin;
 export const inArc = (x: number, z: number, margin = 0) => Math.abs(x - ARC.x) <= 5 + margin && Math.abs(z - ARC.z) <= 3 + margin;
 export const inCarousel = (x: number, z: number, margin = 0) => Math.hypot(x - CAROUSEL.x, z - CAROUSEL.z) <= 4 + margin;
+export const inCulturalLandmark = (x: number, z: number, margin = 0) =>
+  (Math.abs(x - LOUVRE.x) <= 31 + margin && Math.abs(z - LOUVRE.z) <= 27 + margin) ||
+  (Math.abs(x - NOTRE_DAME.x) <= 15 + margin && Math.abs(z - NOTRE_DAME.z) <= 22 + margin);
 export const inParisBridge = (x: number, z: number, margin = 0) =>
-  x >= 238 - margin && x <= 277 + margin && PARIS_BRIDGES.some(center => Math.abs(z - center) <= 1 + margin);
+  PARIS_BRIDGES.some(center => Math.abs(z - center) <= 1 + margin && Math.abs(x - bridgeCenter(center)) <= 25 + margin);
 export interface FrenchBuilding { id: string; x: number; z: number; floors: 2 | 3 | 4; style: number }
-const mainlandRadius = (x: number, z: number) => Math.hypot((x - 196) / 52, (z - 139) / 94);
-const eastRadius = (x: number, z: number) => Math.hypot((x - 313) / 58, (z - 140) / 102);
-// Six-block lots leave four-block streets. The central avenues lead all the way to the tower.
+const onPark = (x: number, z: number) =>
+  (x >= EIFFEL.x - 24 && x <= EIFFEL.x + 27 && z >= EIFFEL.z - 34 && z <= EIFFEL.z + 56) ||
+  (x >= ARC.x - 20 && x <= ARC.x + 20 && z >= ARC.z - 20 && z <= ARC.z + 20) ||
+  (x > LOUVRE.x - 27 && x < LOUVRE.x + 31 && z > LOUVRE.z - 24 && z < LOUVRE.z + 23) || inCite(x, z, 2);
+const onGrandAvenue = (x: number, z: number) => {
+  if ([48, 96, 144, 240, 288, 336].some(n => Math.abs(x - n) < 3.5 || Math.abs(z - n) < 3.5)) return true;
+  // Eight broad avenues radiate from Place Charles de Gaulle.
+  const dx = x - ARC.x, dz = z - ARC.z, length = Math.hypot(dx, dz);
+  if (length < 3) return true;
+  const angle = Math.atan2(dz, dx), spoke = Math.round(angle / (Math.PI / 4)) * Math.PI / 4;
+  return Math.abs(Math.sin(angle - spoke) * length) < 2.7 && length < 140;
+};
+// Repeating six-by-six urban lots leave generous walkable streets between blocks.
 export const FRENCH_BUILDINGS: FrenchBuilding[] = (() => {
   const buildings: FrenchBuilding[] = [];
-  for (let z = 75; z <= 195; z += 10) for (let x = 158; x <= 228; x += 10) {
-    if ([[x - 2, z - 2], [x + 7, z - 2], [x - 2, z + 7], [x + 7, z + 7]].some(([px, pz]) => mainlandRadius(px, pz) > .76)) continue;
-    if (Math.abs(x + 2.5 - EIFFEL.x) <= 24 && Math.abs(z + 2.5 - EIFFEL.z) <= 24) continue;
+  for (let z = 12; z <= SIZE - 20; z += 10) for (let x = 12; x <= SIZE - 20; x += 10) {
+    // Keep the original village's starter clearing available for residents and saved homes.
+    if (x < 76 && z < 78) continue;
+    const samples = [[x, z], [x + 6, z], [x, z + 6], [x + 6, z + 6], [x + 3, z + 3]];
+    if (samples.some(([px, pz]) => Math.abs(px - riverCenter(pz)) < 23 && !inCite(px, pz))) continue;
+    if (samples.some(([px, pz]) => onPark(px, pz) || onGrandAvenue(px, pz) || inParisBridge(px, pz, 8))) continue;
+    if (Math.hypot(x + 3 - EIFFEL.x, z + 3 - EIFFEL.z) < 31 ||
+        Math.hypot(x + 3 - NOTRE_DAME.x, z + 3 - NOTRE_DAME.z) < 12 ||
+        Math.hypot(x + 3 - CAROUSEL.x, z + 3 - CAROUSEL.z) < 10) continue;
     const style = ((x * 17 + z * 11) >>> 1) % 4;
-    buildings.push({ id: `paris-${x}-${z}`, x, z, floors: style === 3 ? 2 : 3, style });
-  }
-  for (let z = 75; z <= 195; z += 8) for (let x = 278; x <= 348; x += 8) {
-    if ([[x - 2, z - 2], [x + 7, z - 2], [x - 2, z + 7], [x + 7, z + 7]].some(([px, pz]) => eastRadius(px, pz) > .78)) continue;
-    if (Math.abs(x + 2.5 - ARC.x) <= 15 && Math.abs(z + 2.5 - ARC.z) <= 15) continue;
-    if (Math.hypot(x + 2.5 - CAROUSEL.x, z + 2.5 - CAROUSEL.z) <= 11) continue;
-    const style = (Math.floor((x - 278) / 8) * 3 + Math.floor((z - 75) / 8) * 5) % 4;
-    buildings.push({ id: `paris-${x}-${z}`, x, z, floors: style === 0 ? 4 : 3, style });
+    buildings.push({ id: `paris-${x}-${z}`, x, z, floors: style === 3 ? 2 : style === 0 ? 4 : 3, style });
   }
   return buildings;
 })();
@@ -69,56 +91,34 @@ function noise(x: number, z: number, seed: number) {
 export function generateWorld(seed: number): Uint8Array {
   const data = new Uint8Array(SIZE * SIZE * HEIGHT);
   const heights = new Int8Array(SIZE * SIZE);
+  const parks: [number, number, number, number][] = [
+    [EIFFEL.x - 24, EIFFEL.z - 34, EIFFEL.x + 27, EIFFEL.z + 56],
+    [ARC.x - 20, ARC.z - 20, ARC.x + 20, ARC.z + 20],
+    [LOUVRE.x - 28, LOUVRE.z - 24, LOUVRE.x + 32, LOUVRE.z + 24],
+    [24, 28, 75, 77], // Bois de Boulogne edge and the preserved starting village clearing.
+  ];
   for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) {
-    const legacy = x < 128 && z < 128, original = x < 64 && z < 64, oldRegion = x < 256 && z < 256;
-    const centers = [[96, 32, 29, 27], [88, 94, 33, 28], [27, 96, 24, 26]];
-    const radius = legacy ? original ? Math.hypot((x - 31.5) / 28, (z - 31.5) / 26) :
-      Math.min(...centers.map(([cx, cz, rx, rz]) => Math.hypot((x - cx) / rx, (z - cz) / rz))) :
-      oldRegion ? Math.min(mainlandRadius(x, z), Math.hypot((x - 84) / 44, (z - 209) / 32), Math.hypot((x - 224) / 23, (z - 22) / 13)) :
-        Math.min(eastRadius(x, z), Math.hypot((x - 218) / 54, (z - 314) / 40), Math.hypot((x - 328) / 41, (z - 313) / 48));
-    const mountain = legacy ? original ? 9 * Math.exp(-((x - 43) ** 2 + (z - 23) ** 2) / 80) :
-      8 * Math.exp(-((x - 99) ** 2 + (z - 88) ** 2) / 180) : oldRegion ? 12 * Math.exp(-((x - 220) ** 2 + (z - 183) ** 2) / 260) :
-        8 * Math.exp(-((x - 326) ** 2 + (z - 309) ** 2) / 400);
-    let h = Math.floor(3 + Math.max(0, 1 - radius) * 9 + mountain + noise(x / 8, z / 8, seed) * 3);
-    if (radius > 1) h = Math.min(h, 3);
-    // A connected, sea-level river crosses the island; a sheltered plateau is buildable.
-    const river = 24 + Math.sin(z / 8) * 3;
-    if (original && Math.abs(x - river) < 1.6) h = Math.min(h, SEA - 1);
-    if (legacy && !original && z > 68 && Math.abs(x - (82 + Math.sin(z / 12) * 4)) < 1.8) h = Math.min(h, SEA - 1);
-    if (!legacy && mainlandRadius(x, z) >= 1 && z > 76 && z < 225 && Math.abs(x - (174 + Math.sin(z / 13) * 3)) < 1.5) h = Math.min(h, SEA - 1);
-    if (x >= 29 && x <= 39 && z >= 35 && z <= 45) h = 10;
-    if (x >= 92 && x <= 106 && z >= 31 && z <= 45) h = 10;
-    if (x >= 28 && x <= 40 && z >= 92 && z <= 104) h = 10;
-    if (!legacy && oldRegion) {
-      const r = mainlandRadius(x, z);
-      if (r <= .84) h = 8;
-      else if (r < 1) h = Math.round(8 + (h - 8) * (r - .84) / .16);
-    }
-    if (!oldRegion) {
-      const r = eastRadius(x, z);
-      if (r <= .84) h = 8;
-      else if (r < 1) h = Math.round(8 + (h - 8) * (r - .84) / .16);
-    }
+    const cx = riverCenter(z), inWater = Math.abs(x - cx) < 12 && !inCite(x, z);
+    const onIsland = inCite(x, z);
+    const h = inWater ? SEA : 8;
     heights[x + SIZE * z] = h;
-    for (let y = 0; y <= Math.max(h, SEA); y++) {
-      data[index(x, y, z)] = y > h ? Block.Water : y < h - 2 ? Block.Stone :
-        h <= SEA + 1 ? Block.Sand : y === h ? (!legacy && oldRegion && mainlandRadius(x, z) <= .76 || !oldRegion && eastRadius(x, z) <= .78) ? Block.Stone : Block.Grass : Block.Dirt;
+    const park = parks.some(([x0, z0, x1, z1]) => x >= x0 && x <= x1 && z >= z0 && z <= z1) || onIsland;
+    for (let y = 0; y <= Math.max(h, SEA + 1); y++) {
+      const block = y > h ? Block.Water : y < h - 2 ? Block.Stone :
+        inWater ? y === h ? Block.Sand : Block.Stone :
+          y === h ? park ? Block.Grass : Block.Stone : y >= h - 2 ? park ? Block.Dirt : Block.Stone : Block.Stone;
+      data[index(x, y, z)] = block;
     }
+    // Pale stone quays mark both banks and make the Seine read as a planned city river.
+    if (!inWater && Math.abs(x - cx) >= 12 && Math.abs(x - cx) <= 16 && !onIsland)
+      data[index(x, h, z)] = Block.Stone;
   }
   for (let z = 6; z < SIZE - 6; z += 3) for (let x = 6; x < SIZE - 6; x += 3) {
-    // The original 64×64 region stays byte-for-byte identical for existing saves.
-    if (x < 64 && z < 64 && (x >= 58 || z >= 58)) continue;
-    // The old tree loop stopped at 121; new canopies must not spill into old saves.
-    if (x < 128 && z < 128 && (x >= 122 || z >= 122)) continue;
-    if (x < 130 && z < 130 && (x >= 128 || z >= 128)) continue;
-    // Extending the tree grid must not alter the old 256×256 boundary.
-    if (x < 256 && z < 256 && (x >= 250 || z >= 250)) continue;
-    const h = heights[x + SIZE * z];
-    if (h <= SEA + 2 || h > 16 || hash(x, z, seed + 19) < 0.64 ||
-      (x >= 27 && x <= 41 && z >= 33 && z <= 47) ||
-      (x >= 90 && x <= 108 && z >= 29 && z <= 47) || (x >= 26 && x <= 42 && z >= 90 && z <= 106) ||
-      (!(x < 128 && z < 128) && mainlandRadius(x, z) <= .8) ||
-      (x >= 256 && eastRadius(x, z) <= .82) || inParisBridge(x, z, 4) || inArc(x, z, 5)) continue;
+    const h = heights[x + SIZE * z], inWater = h <= SEA;
+    if (inWater || inFrenchBuilding(x, z) || onPark(x, z) || onGrandAvenue(x, z) ||
+      Math.abs(x - riverCenter(z)) < 19 || inParisBridge(x, z, 5) || inLandmark(x, z, 34) || inArc(x, z, 6) || inCulturalLandmark(x, z) ||
+      (x >= 20 && x <= 60 && z >= 25 && z <= 65) ||
+      hash(x, z, seed + 19) < 0.7) continue;
     for (let y = h + 1; y <= h + 4; y++) data[index(x, y, z)] = Block.Wood;
     for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) for (let dy = 0; dy <= 2; dy++) {
       if (Math.abs(dx) + Math.abs(dz) + dy > 4) continue;
@@ -157,9 +157,10 @@ export const ARC_VOXELS: Edit[] = (() => {
 })();
 export const PARIS_BRIDGE_VOXELS: Edit[] = PARIS_BRIDGES.flatMap(center => {
   const voxels: Edit[] = [];
-  for (let x = 238; x <= 277; x++) for (let z = center - 1; z <= center + 1; z++)
+  const mid = bridgeCenter(center), start = Math.round(mid - 24), end = Math.round(mid + 24);
+  for (let x = start; x <= end; x++) for (let z = center - 1; z <= center + 1; z++)
     for (const y of [7, 8]) voxels.push({ x, y, z, block: Block.Stone });
-  for (const x of [244, 253, 262, 271]) for (const z of [center - 1, center + 1]) for (let y = SEA; y < 8; y++)
+  for (const x of [start + 6, start + 18, start + 30, start + 42]) for (const z of [center - 1, center + 1]) for (let y = SEA; y < 8; y++)
     voxels.push({ x, y, z, block: Block.Stone });
   return voxels;
 });

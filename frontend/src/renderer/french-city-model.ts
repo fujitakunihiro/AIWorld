@@ -2,15 +2,15 @@ import * as THREE from 'three';
 import { FRENCH_BUILDINGS } from '../../../shared/world';
 import { ModelKit, type ModelPart } from './model-kit';
 
-// Baked by material and 128×128 district so the expanded skyline costs few draw calls.
+// Bake larger 192×192 neighborhoods by material so the city keeps a small draw-call count.
 export function frenchCityModels(kit: ModelKit) {
   const sectors = new Map<string, { parts: ModelPart[]; x: number; z: number }>();
   const walls = ['#e7d8bc', '#d9c3aa', '#f0dec4', '#d7d5c9'];
   const roofs = ['#52616b', '#65747a', '#63616b', '#777369'];
   const awnings = ['#9d4d4d', '#496f78', '#72845d', '#a56f4e'];
   for (const lot of FRENCH_BUILDINGS) {
-    const sx = Math.floor(lot.x / 128), sz = Math.floor(lot.z / 128), key = `${sx}:${sz}`;
-    const sector = sectors.get(key) ?? { parts: [], x: sx * 128 + 64, z: sz * 128 + 64 };
+    const sx = Math.floor(lot.x / 192), sz = Math.floor(lot.z / 192), key = `${sx}:${sz}`;
+    const sector = sectors.get(key) ?? { parts: [], x: sx * 192 + 96, z: sz * 192 + 96 };
     sectors.set(key, sector);
     const parts = sector.parts, x = lot.x, z = lot.z, y = 9, wall = walls[lot.style], roof = roofs[lot.style];
     const top = y + lot.floors * 3;

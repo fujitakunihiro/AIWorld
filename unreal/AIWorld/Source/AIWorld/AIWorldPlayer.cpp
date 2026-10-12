@@ -43,7 +43,7 @@ AAIWorldScene* AAIWorldPlayer::World() const {for(TActorIterator<AAIWorldScene> 
 AAIWorldCamera* AAIWorldPlayer::View() const{return Cast<AAIWorldCamera>(GetPawn());}
 bool AAIWorldPlayer::InputBlocked() const{return HUD&&HUD->BlocksWorldInput();}
 void AAIWorldPlayer::FocusCamp(){if(auto W=World())if(auto C=View()){C->Focus(Position(Object(W->Village,TEXT("camp"))),4500);bFollow=false;}}
-void AAIWorldPlayer::FocusParis(){if(auto C=View()){C->Focus(FVector(25300,13700,1400),19000);C->Yaw=-135;bFollow=false;}}
+void AAIWorldPlayer::FocusParis(){if(auto W=World())if(auto C=View()){C->Focus(FVector(W->Grid.Size*50,W->Grid.Size*50,1400),W->Grid.Size*127);C->Yaw=-135;bFollow=false;}}
 void AAIWorldPlayer::FocusAll(){if(auto W=World())if(auto C=View()){C->Focus(FVector(W->Grid.Size*50,W->Grid.Size*50,800),W->Grid.Size*125);bFollow=false;}}
 void AAIWorldPlayer::Select(const FString& ID,bool Follow){Selected=ID;bFollow=Follow;auto W=World();if(!W)return;for(const auto& P:W->People())P.Value->Select(P.Key==ID);if(Follow)if(auto R=W->Resident(ID))if(auto C=View())C->Focus(Position(Object(R,TEXT("position")))+FVector(0,0,65),850);W->RefreshPresentation();if(HUD)HUD->ShowResident();}
 void AAIWorldPlayer::FocusItem(const TSharedPtr<FJsonObject>& Item){auto W=World();if(!W||!Item)return;const auto& IDs=Array(Item,TEXT("residentIds"));if(IDs.Num()){Select(IDs[0]->AsString());return;}const FString ID=String(Item,TEXT("buildingId"));for(const auto& V:Array(W->Village,TEXT("huts"))){auto H=V->AsObject();if(String(H,TEXT("id"))==ID){if(auto C=View())C->Focus(Position(H)+FVector(200,200,200),1600);bFollow=false;return;}}

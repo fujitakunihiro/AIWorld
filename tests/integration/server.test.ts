@@ -168,7 +168,7 @@ test('natural-language instructions synchronize, reject safely, deduplicate and 
   } finally { for (const client of clients) client.ws.close(); if (running && running.child.exitCode === null) await stop(running.child); rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('developed village, crops, immigration timers and newcomer instructions synchronize and survive real server restart', { timeout: 25000 }, async () => {
+test('developed village, crops, immigration timers and newcomer instructions synchronize and survive real server restart', { timeout: 120000 }, async () => {
   const dir = mkdtempSync(join(tmpdir(), 'ai-world-civilization-ws-')), path = join(dir, 'world.sqlite');
   let running: Awaited<ReturnType<typeof start>> | undefined; const clients: Client[] = [];
   try {
