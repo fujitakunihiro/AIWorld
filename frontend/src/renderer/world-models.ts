@@ -5,6 +5,8 @@ import type { GraphicStyle, QualityProfile, GraphicsSettings } from './graphics'
 import { ModelKit, type ModelPart } from './model-kit';
 import { planModels, bridgeEdges, type ModelPlan } from './model-plan';
 import { eiffelModel } from './eiffel-model';
+import { frenchCityModels } from './french-city-model';
+import { parisLandmarks } from './paris-landmarks-model';
 
 export class WorldModels {
   readonly root = new THREE.Group();
@@ -26,8 +28,10 @@ export class WorldModels {
   private smokeTime = 0;
   private smokeElapsed = 1;
   private monument = eiffelModel(this.kit);
+  private city = frenchCityModels(this.kit);
+  private landmarks = parisLandmarks(this.kit);
   private reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  constructor(scene: THREE.Scene) { scene.add(this.root); this.smoke.count = 0; this.smoke.computeBoundingSphere(); this.smoke.userData.skipAO = true; this.root.add(this.smoke, this.monument); }
+  constructor(scene: THREE.Scene) { scene.add(this.root); this.smoke.count = 0; this.smoke.computeBoundingSphere(); this.smoke.userData.skipAO = true; this.root.add(this.smoke, this.monument, ...this.city, this.landmarks); }
   world(data: Uint8Array) {
     this.data = data; this.state = undefined; this.topology = ''; this.dirty = true;
     for (const item of this.structures.values()) { this.kit.release(item.group); this.root.remove(item.group); }
@@ -180,6 +184,14 @@ export class WorldModels {
   }
   frame(target: THREE.Vector3, radius: number, distance: number, time = 720, delta = 0, paused = false, follow?: THREE.Vector3) {
     this.kit.light(time);
+    for (const group of this.city) {
+      const center = group.userData.center as THREE.Vector3;
+      group.visible = Math.hypot(center.x - target.x, center.z - target.z) < Math.max(distance, radius * .8) + 128;
+    }
+    for (const group of this.landmarks.children) {
+      const center = group.userData.center as THREE.Vector3;
+      group.visible = Math.hypot(center.x - target.x, center.z - target.z) < Math.max(distance, radius * .8) + 48;
+    }
     for (const group of this.sectors.values()) {
       const center = group.userData.center as THREE.Vector3, d = Math.hypot(center.x - target.x, center.z - target.z);
       group.visible = d < Math.max(distance, radius * .8) + 32;

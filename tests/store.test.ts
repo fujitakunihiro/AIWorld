@@ -114,7 +114,8 @@ test('Phase 4 migration preserves edited terrain and village coordinates; new is
     assert.equal(getBlock(migrated.data, 32, 11, 40), Block.Wood);
     assert.deepEqual(migrated.village!.huts, legacy.huts); assert.deepEqual(migrated.village!.residents.map(r => r.position), legacy.residents.map((r: any) => r.position));
     assert.ok(migrated.village!.chronicle.some(e => /128×128/.test(e.text)));
-    assert.match(migrated.village!.chronicle.at(-1)!.text, /256×256/);
+    assert.ok(migrated.village!.chronicle.some(e => /256×256/.test(e.text)));
+    assert.match(migrated.village!.chronicle.at(-1)!.text, /384×384/);
     migrated.edit({ type: 'edit', x: 99, y: 11, z: 38, block: Block.Wood, expected: Block.Air });
     const history = structuredClone(migrated.village!.chronicle); migrated.close();
     const reopened = new WorldStore(path, 1); assert.equal(getBlock(reopened.data, 99, 11, 38), Block.Wood); assert.deepEqual(reopened.village!.chronicle, history); reopened.close();

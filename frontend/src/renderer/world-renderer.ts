@@ -13,7 +13,7 @@ const palette: Record<number, string> = { 1: '#85ae62', 2: '#a47a50', 3: '#909a9
 const dioramaPalette: Record<number, string> = { 1: '#8caa6a', 2: '#a28a69', 3: '#969c95', 4: '#e4d1a0', 5: '#a88560', 6: '#628657', 7: '#ffffff', 8: '#bd927b' };
 export class WorldRenderer {
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1600);
+  readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 2200);
   readonly renderer: THREE.WebGLRenderer;
   readonly controls: WorldCamera;
   readonly village: VillageRenderer;
@@ -130,9 +130,10 @@ export class WorldRenderer {
     this.worker = new Worker(new URL('./mesh-worker.ts', import.meta.url), { type: 'module' });
     const requests: { cx: number; cz: number; id: number }[] = [];
     for (let cz = 0; cz < SIZE / CHUNK; cz++) for (let cx = 0; cx < SIZE / CHUNK; cx++) { const id = ++this.jobId; requests.push({ cx, cz, id }); this.jobs.set(`${cx},${cz}`, id); }
-    requests.sort((a, b) => Math.hypot(a.cx * CHUNK + 8 - center.x, a.cz * CHUNK + 8 - center.z) - Math.hypot(b.cx * CHUNK + 8 - center.x, b.cz * CHUNK + 8 - center.z));
-    let initial = requests.length;
-    const initialIds = new Set(requests.map(r => r.id));
+    requests.sort((a, b) => Math.hypot(a.cx * CHUNK + CHUNK / 2 - center.x, a.cz * CHUNK + CHUNK / 2 - center.z) - Math.hypot(b.cx * CHUNK + CHUNK / 2 - center.x, b.cz * CHUNK + CHUNK / 2 - center.z));
+    // Let the nearby streets appear first; distant sectors continue streaming in.
+    const initialIds = new Set(requests.slice(0, Math.min(80, requests.length)).map(r => r.id));
+    let initial = initialIds.size;
     const ready = new Promise<void>((resolve, reject) => {
       this.worker!.onerror = () => reject(new Error('地形を描画できませんでした。ページを再読み込みしてください。'));
       this.worker!.onmessage = (event: MessageEvent<{ cx: number; cz: number; id: number; solid: WorkerMesh; water: WorkerMesh; diorama: WorkerMesh }>) => {
@@ -265,6 +266,10 @@ export class WorldRenderer {
     this.stopFollowing(); this.controls.target.set(EIFFEL.x, EIFFEL.y + EIFFEL.height * .42, EIFFEL.z);
     this.controls.orbit.set(innerWidth < 700 ? 78 : 55, .98, .68); this.controls.update();
   }
+  focusParis() {
+    this.stopFollowing(); this.controls.target.set(250, 12, 132);
+    this.controls.orbit.set(innerWidth < 700 ? 285 : 180, .92, .52); this.controls.update();
+  }
   pickResident(clientX: number, clientY: number) {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.raycaster.setFromCamera(new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -(clientY - rect.top) / rect.height * 2 + 1), this.camera);
@@ -339,7 +344,7 @@ export class WorldRenderer {
     for (const group of this.chunks.values()) {
       const { cx, cz } = group.userData;
       // Match the 32×32 nature sectors so a visible tree always has its terrain below it.
-      const sectorSize = CHUNK * 2, x = Math.floor(cx / 2) * sectorSize + sectorSize / 2, z = Math.floor(cz / 2) * sectorSize + sectorSize / 2;
+      const sectorSize = CHUNK, x = cx * sectorSize + sectorSize / 2, z = cz * sectorSize + sectorSize / 2;
       group.visible = Math.hypot(x - this.controls.target.x, z - this.controls.target.z) < Math.max(distance, this.controls.orbit.radius * .8) + sectorSize;
     }
     this.renderer.info.reset();

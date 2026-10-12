@@ -62,5 +62,7 @@ export function eiffelModel(kit: ModelKit) {
     for (const dx of [-.7, .7]) kit.box(parts, dark, [sx * 8.5 + dx, .23, sz * 13.5], [.12, .45, .4]);
   }
   const group = kit.assemble(parts); column.dispose(); group.position.set(EIFFEL.x, EIFFEL.y, EIFFEL.z);
+  // Visual-only miniature exaggeration makes the landmark readable above the Paris rooftops.
+  group.scale.y = 1.85;
   group.userData.modelId = EIFFEL.id; return group;
 }
