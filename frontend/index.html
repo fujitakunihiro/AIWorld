@@ -108,16 +108,17 @@
     <button id="close-settings" class="icon-button dialog-close" aria-label="設定を閉じる">×</button>
     <div class="eyebrow">MAKE YOURSELF AT HOME</div><h2>心地よい、世界の眺め方。</h2>
     <div class="graphics-options">
-      <label for="graphic-style">世界の描き方<select id="graphic-style"><option value="diorama">ジオラマ · 温かな光と水面</option><option value="classic">旧ボクセル · 以前の描画</option></select></label>
+      <label for="graphic-style">世界の描き方<select id="graphic-style"><option value="diorama">ジオラマ · 丸い樹木と瓦屋根</option><option value="classic">旧ボクセル · 以前の描画</option></select></label>
       <label for="render-quality">描画品質<select id="render-quality"><option value="auto">自動 · FPSに合わせて調整</option><option value="low">低 · 影とポストエフェクトなし</option><option value="medium">中 · 軽い影と AO</option><option value="high">高 · 細かな影と AO</option></select></label>
       <label for="light-preview">光のプレビュー<select id="light-preview"><option value="world">世界の時刻に合わせる</option><option value="day">昼 · 12:00</option><option value="evening">夕方 · 17:30</option><option value="night">夜 · 22:00</option></select></label>
     </div>
     <p class="graphics-help">描き方と光を切り替えて、同じ場所を比較できます。光のプレビューは住民や世界の時刻を変更しません。</p>
-    <details class="graphics-detail"><summary>影・描画距離・ポストエフェクト</summary>
+    <details class="graphics-detail"><summary>草・影・描画距離・ポストエフェクト</summary>
       <label class="setting-row"><span><strong>柔らかな影</strong><small>太陽と月による地形・建物・住民の影</small></span><input id="render-shadows" type="checkbox" checked /></label>
       <label class="setting-row"><span><strong>Ambient Occlusion（AO）</strong><small>物の重なりに淡い陰影を加えます</small></span><input id="render-ao" type="checkbox" checked /></label>
+      <label class="quality-setting" for="render-grass">草と花の密度<select id="render-grass"><option value="off">なし</option><option value="sparse">少なめ</option><option value="lush">豊か</option></select></label>
       <label class="quality-setting" for="render-distance">描画距離<select id="render-distance"><option value="near">近く · 村の観察向け</option><option value="standard">標準 · 品質に合わせる</option><option value="far">遠く · すべての島</option></select></label>
-      <p>低品質では影と AO を停止します。島全体へズームを戻すと、距離設定に合わせて表示範囲も広がります。</p>
+      <p>草と花は品質に応じて密度と表示距離を抑えます。低品質では影と AO を停止します。島全体へズームを戻すと、距離設定に合わせて表示範囲も広がります。</p>
     </details>
     <details class="graphics-detail"><summary>この端末の描画性能</summary>
       <pre id="graphics-metrics" class="graphics-metrics">描画を計測しています…</pre>

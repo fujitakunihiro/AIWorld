@@ -11,8 +11,9 @@ export class GraphicsUI {
     select('graphic-style', ['diorama', 'classic'], 'diorama');
     select('render-quality', ['auto', 'low', 'medium', 'high'], 'auto', 'ai-world-quality');
     select('render-distance', ['near', 'standard', 'far'], 'standard');
+    select('render-grass', ['off', 'sparse', 'lush'], 'lush');
     for (const id of ['render-shadows', 'render-ao']) $<HTMLInputElement>(id).checked = localStorage.getItem(`ai-world-${id}`) !== 'off';
-    for (const id of ['graphic-style', 'render-quality', 'render-distance', 'render-shadows', 'render-ao', 'light-preview']) $(id).onchange = () => this.apply();
+    for (const id of ['graphic-style', 'render-quality', 'render-distance', 'render-grass', 'render-shadows', 'render-ao', 'light-preview']) $(id).onchange = () => this.apply();
     $('measure-graphics').onclick = () => {
       this.measuring = true; $('measure-graphics').setAttribute('disabled', '');
       $('graphics-benchmark').textContent = '1秒間の準備後、10秒間の描画を測定します。設定とカメラをそのままにしてください。';
@@ -25,10 +26,12 @@ export class GraphicsUI {
       quality: $<HTMLSelectElement>('render-quality').value as GraphicsSettings['quality'],
       distance: $<HTMLSelectElement>('render-distance').value as GraphicsSettings['distance'],
       preview: $<HTMLSelectElement>('light-preview').value as GraphicsSettings['preview'],
+      grass: $<HTMLSelectElement>('render-grass').value as GraphicsSettings['grass'],
       shadows: $<HTMLInputElement>('render-shadows').checked, ao: $<HTMLInputElement>('render-ao').checked
     };
-    for (const [id, value] of [['graphic-style', settings.style], ['quality', settings.quality], ['render-distance', settings.distance], ['render-shadows', settings.shadows ? 'on' : 'off'], ['render-ao', settings.ao ? 'on' : 'off']]) localStorage.setItem(`ai-world-${id}`, value);
+    for (const [id, value] of [['graphic-style', settings.style], ['quality', settings.quality], ['render-distance', settings.distance], ['render-grass', settings.grass], ['render-shadows', settings.shadows ? 'on' : 'off'], ['render-ao', settings.ao ? 'on' : 'off']]) localStorage.setItem(`ai-world-${id}`, value);
     const disabled = settings.style === 'classic';
+    $<HTMLSelectElement>('render-grass').disabled = disabled;
     for (const id of ['render-shadows', 'render-ao']) $<HTMLInputElement>(id).disabled = disabled || settings.quality === 'low';
     if (this.measuring) this.benchmark(null);
     this.onChange(settings);

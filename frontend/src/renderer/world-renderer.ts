@@ -6,6 +6,7 @@ import { VillageRenderer } from './village-renderer';
 import { WorldEffects } from './effects';
 import { DioramaEnvironment } from './environment';
 import { DioramaPostProcessing } from './post-processing';
+import { WorldModels } from './world-models';
 import { QUALITY_PROFILES, effectiveQuality, lightingAt, previewMinute, summarizeFrames, type GraphicsSettings, type QualityProfile, type RenderMetrics, type Benchmark } from './graphics';
 interface WorkerMesh { positions: Float32Array; normals: Float32Array; blocks: Uint8Array; indices: Uint32Array }
 const palette: Record<number, string> = { 1: '#85ae62', 2: '#a47a50', 3: '#909a9e', 4: '#e9d39c', 5: '#aa8057', 6: '#548b54', 7: '#77bec7', 8: '#c6886b' };
@@ -17,7 +18,10 @@ export class WorldRenderer {
   readonly controls: WorldCamera;
   readonly village: VillageRenderer;
   readonly effects: WorldEffects;
-  settings: GraphicsSettings = { style: 'diorama', quality: 'auto', shadows: true, ao: true, distance: 'standard', preview: 'world' };
+  settings: GraphicsSettings = { style: 'diorama', quality: 'auto', shadows: true, ao: true, distance: 'standard', preview: 'world', grass: 'lush' };
+  private models: WorldModels;
+  private editing = false;
+  private hidden: number[] = [];
   private environment: DioramaEnvironment;
   private post?: DioramaPostProcessing;
   private profile: QualityProfile = QUALITY_PROFILES.high;
@@ -69,6 +73,7 @@ export class WorldRenderer {
     container.appendChild(this.renderer.domElement);
     this.controls = new WorldCamera(this.camera, this.renderer.domElement); this.controls.home();
     this.village = new VillageRenderer(this.scene);
+    this.models = new WorldModels(this.scene);
     this.effects = new WorldEffects(this.scene); this.village.onEffect = (kind, position) => this.effects.emit(kind, position);
     this.scene.background = new THREE.Color('#dfeef0'); this.scene.fog = new THREE.Fog('#dfeef0', 380, 700);
     this.scene.add(this.sun, this.ambient); this.sun.position.set(45, 75, 20);
@@ -110,8 +115,10 @@ export class WorldRenderer {
     geometry.setAttribute('color', geometry.getAttribute(`${this.settings.style}Color`)); geometry.setIndex(new THREE.BufferAttribute(mesh.indices, 1));
     geometry.computeBoundingSphere(); return geometry;
   }
-  setWorld(data: Uint8Array, center = { x: 34, z: 40 }): Promise<void> {
+  setWorld(data: Uint8Array, center = { x: 34, z: 40 }, state?: VillageState): Promise<void> {
     this.data = data;
+    this.models.world(data); if (state) this.models.update(state);
+    this.hidden = this.models.refresh()?.hidden ?? [];
     this.environment.world(data);
     this.worker?.terminate(); this.jobs.clear(); this.dirty.clear(); this.pendingEdits = [];
     for (const group of this.chunks.values()) { group.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); }); this.scene.remove(group); } this.chunks.clear();
@@ -123,32 +130,35 @@ export class WorldRenderer {
     const initialIds = new Set(requests.map(r => r.id));
     const ready = new Promise<void>((resolve, reject) => {
       this.worker!.onerror = () => reject(new Error('地形を描画できませんでした。ページを再読み込みしてください。'));
-      this.worker!.onmessage = (event: MessageEvent<{ cx: number; cz: number; id: number; solid: WorkerMesh; water: WorkerMesh }>) => {
-        const { cx, cz, id, solid, water } = event.data;
-        if (this.jobs.get(`${cx},${cz}`) === id) this.applyChunk(cx, cz, { solid, water });
+      this.worker!.onmessage = (event: MessageEvent<{ cx: number; cz: number; id: number; solid: WorkerMesh; water: WorkerMesh; diorama: WorkerMesh }>) => {
+        const { cx, cz, id, solid, water, diorama } = event.data;
+        if (this.jobs.get(`${cx},${cz}`) === id) this.applyChunk(cx, cz, { solid, water, diorama });
         if (initialIds.delete(id) && --initial === 0) resolve();
       };
     });
-    const copy = data.slice(); this.worker.postMessage({ data: copy, requests }, [copy.buffer]); return ready;
+    const copy = data.slice(); this.worker.postMessage({ data: copy, requests, hidden: this.hidden }, [copy.buffer]); return ready;
   }
+  updateVillage(state: VillageState, snap = false) { this.village.update(state, snap); this.models.update(state); }
   rebuild(cx: number, cz: number) {
     if (!this.data || cx < 0 || cz < 0 || cx >= SIZE / CHUNK || cz >= SIZE / CHUNK) return;
     this.dirty.add(`${cx},${cz}`);
   }
-  private applyChunk(cx: number, cz: number, result: { solid: WorkerMesh; water: WorkerMesh }) {
+  private applyChunk(cx: number, cz: number, result: { solid: WorkerMesh; water: WorkerMesh; diorama: WorkerMesh }) {
     const key = `${cx},${cz}`, old = this.chunks.get(key);
     if (old) { old.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); }); this.scene.remove(old); }
     const group = new THREE.Group(); group.userData.cx = cx; group.userData.cz = cz;
     for (const [kind, mesh] of Object.entries(result)) {
       if (!mesh.indices.length) continue;
-      const object = new THREE.Mesh(this.geometry(mesh), this.material(kind === 'solid'));
-      object.castShadow = object.receiveShadow = kind === 'solid'; object.userData.skipAO = kind === 'water';
-      object.userData.solid = kind === 'solid'; group.add(object);
+      const object = new THREE.Mesh(this.geometry(mesh), this.material(kind !== 'water'));
+      object.castShadow = object.receiveShadow = kind !== 'water'; object.userData.skipAO = kind === 'water';
+      object.userData.solid = kind === 'solid'; object.userData.kind = kind; group.add(object);
     }
     this.chunks.set(key, group); this.scene.add(group);
+    this.syncChunkStyle(group);
     this.renderer.shadowMap.needsUpdate = true;
   }
   changed(edit: Edit) {
+    this.models.terrain();
     if (this.data) this.environment.edits(this.data, [edit]);
     this.pendingEdits.push(edit);
     const cx = Math.floor(edit.x / CHUNK), cz = Math.floor(edit.z / CHUNK);
@@ -159,6 +169,7 @@ export class WorldRenderer {
     if (edit.z % CHUNK === CHUNK - 1) this.rebuild(cx, cz + 1);
   }
   changedBatch(edits: Edit[]) {
+    this.models.terrain();
     if (this.data) this.environment.edits(this.data, edits);
     this.pendingEdits.push(...edits);
     for (const edit of edits.slice(-12)) if (edit.block !== Block.Air) this.effects.block(edit, palette[edit.block]);
@@ -173,22 +184,37 @@ export class WorldRenderer {
     for (const key of chunks) { const [x, z] = key.split(',').map(Number); this.rebuild(x, z); }
   }
   private material(solid: boolean) { return this.settings.style === 'classic' ? (solid ? this.solid : this.water) : (solid ? this.environment.solid : this.environment.water); }
+  private syncChunkStyle(group: THREE.Group) {
+    const classic = this.settings.style === 'classic' || this.editing;
+    for (const object of group.children) if (object instanceof THREE.Mesh) {
+      const kind = object.userData.kind;
+      object.visible = kind === 'water' || (classic ? kind === 'solid' : kind === 'diorama');
+      object.material = this.material(kind !== 'water');
+      object.geometry.setAttribute('color', object.geometry.getAttribute(`${this.settings.style}Color`));
+    }
+  }
+  setEditing(editing: boolean) {
+    if (editing === this.editing) return;
+    this.editing = editing; this.models.setEditing(editing);
+    this.village.setGraphicStyle(editing ? 'classic' : this.settings.style);
+    for (const group of this.chunks.values()) this.syncChunkStyle(group);
+    this.renderer.shadowMap.needsUpdate = true;
+  }
   setGraphics(settings: GraphicsSettings) {
     const styleChanged = settings.style !== this.settings.style;
     const changed = JSON.stringify(settings) !== JSON.stringify(this.settings);
     if (changed && this.benchmark) { this.benchmark = undefined; this.onBenchmark(null); }
     this.settings = settings; this.slowFrames = 0; this.downgrade = 0;
     if (styleChanged) {
-      for (const group of this.chunks.values()) for (const object of group.children) if (object instanceof THREE.Mesh) {
-        object.material = this.material(object.userData.solid); object.geometry.setAttribute('color', object.geometry.getAttribute(`${settings.style}Color`));
-      }
-      this.village.setGraphicStyle(settings.style);
+      for (const group of this.chunks.values()) this.syncChunkStyle(group);
+      this.village.setGraphicStyle(this.editing ? 'classic' : settings.style);
     }
     this.configureGraphics();
   }
   private configureGraphics() {
     const effective = effectiveQuality(this.settings.quality, innerWidth < 700, this.downgrade);
     this.profile = QUALITY_PROFILES[effective];
+    this.models.configure(this.settings, this.profile);
     const remake = this.settings.style === 'diorama';
     this.ratio = Math.min(devicePixelRatio, this.profile.pixelRatio); this.renderer.setPixelRatio(this.ratio);
     this.renderer.toneMapping = remake ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
@@ -256,9 +282,14 @@ export class WorldRenderer {
     const visualTime = previewMinute(this.settings.preview, this.time), hour = (visualTime % 1440) / 60;
     const delta = Math.min(0.1, frameMs / 1000);
     this.village.frame(now, delta, this.paused, this.camera, this.controls.orbit.radius); this.effects.frame(delta, this.paused); this.lastFrame = now;
+    const presentation = this.models.refresh();
+    if (presentation) {
+      this.hidden = presentation.hidden;
+      for (const key of presentation.chunks) { const [cx, cz] = key.split(',').map(Number); this.rebuild(cx, cz); }
+    }
     if (this.dirty.size && this.worker) {
       const requests = [...this.dirty].map(key => { const [cx, cz] = key.split(',').map(Number), id = ++this.jobId; this.jobs.set(key, id); return { cx, cz, id }; });
-      this.worker.postMessage({ edits: this.pendingEdits, requests }); this.dirty.clear(); this.pendingEdits = [];
+      this.worker.postMessage({ edits: this.pendingEdits, requests, hidden: this.hidden }); this.dirty.clear(); this.pendingEdits = [];
     }
     if (this.settings.style === 'classic') {
       const light = Math.max(0.12, Math.sin((hour - 6) / 24 * Math.PI * 2));
@@ -276,6 +307,7 @@ export class WorldRenderer {
     this.water.opacity = 0.68 + Math.sin(now / 1800) * 0.035;
     // Frustum culling is enabled on each mesh; mobile limits distant chunks as well.
     const distance = this.settings.distance === 'far' ? 220 : this.settings.distance === 'near' ? 44 : this.profile.distance;
+    this.models.frame(this.controls.target, this.controls.orbit.radius, distance);
     for (const group of this.chunks.values()) {
       const { cx, cz } = group.userData;
       group.visible = Math.hypot(cx * CHUNK + 8 - this.controls.target.x, cz * CHUNK + 8 - this.controls.target.z) < Math.max(distance, this.controls.orbit.radius * .8) + CHUNK;

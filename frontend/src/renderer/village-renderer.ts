@@ -30,7 +30,14 @@ export class VillageRenderer {
     material.color.set(color);
     if (this.style === 'diorama') { const hsl = { h: 0, s: 0, l: 0 }; material.color.getHSL(hsl); material.color.setHSL(hsl.h, hsl.s * .88, hsl.l); }
   }
-  setGraphicStyle(style: GraphicStyle) { this.style = style; for (const [color, material] of this.materials) this.tint(material, color); }
+  setGraphicStyle(style: GraphicStyle) {
+    this.style = style; for (const [color, material] of this.materials) this.tint(material, color);
+    this.updatePropsVisibility();
+  }
+  private updatePropsVisibility() {
+    for (const [id, node] of this.nodes) node.visible = this.style === 'classic' && !!this.previous?.nodes.find(n => n.id === id && n.remaining > 0);
+    for (const [id, field] of this.fields) field.group.visible = this.style === 'classic' && this.previous?.huts.find(h => h.id === id)?.status === 'complete';
+  }
   private box(parent: THREE.Object3D, color: string, size: number[], p: number[]) {
     const mesh = new THREE.Mesh(this.cube, this.material(color)); mesh.castShadow = mesh.receiveShadow = true; mesh.scale.set(size[0], size[1], size[2]); mesh.position.set(p[0], p[1], p[2]); parent.add(mesh); return mesh;
   }
@@ -128,6 +135,7 @@ export class VillageRenderer {
       }
       group.visible = node.remaining > 0; group.scale.setScalar(node.remaining > 0 ? 0.65 + 0.35 * node.remaining / node.capacity : 1);
     }
+    this.updatePropsVisibility();
   }
   select(id: string | null) { this.selected = id; }
   pick(raycaster: THREE.Raycaster, terrainDistance: number) {

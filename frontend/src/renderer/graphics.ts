@@ -3,13 +3,13 @@ export type Quality = 'auto' | 'low' | 'medium' | 'high';
 export type LightPreview = 'world' | 'day' | 'evening' | 'night';
 export interface GraphicsSettings {
   style: GraphicStyle; quality: Quality; shadows: boolean; ao: boolean;
-  distance: 'near' | 'standard' | 'far'; preview: LightPreview;
+  distance: 'near' | 'standard' | 'far'; preview: LightPreview; grass: 'off' | 'sparse' | 'lush';
 }
-export interface QualityProfile { pixelRatio: number; shadowSize: number; aoScale: number; aoSamples: number; distance: number }
+export interface QualityProfile { pixelRatio: number; shadowSize: number; aoScale: number; aoSamples: number; distance: number; grassDensity: number; decorationDistance: number }
 export const QUALITY_PROFILES: Record<Exclude<Quality, 'auto'>, QualityProfile> = {
-  low: { pixelRatio: 1, shadowSize: 0, aoScale: 0, aoSamples: 8, distance: 48 },
-  medium: { pixelRatio: 1.25, shadowSize: 1024, aoScale: .5, aoSamples: 8, distance: 80 },
-  high: { pixelRatio: 1.75, shadowSize: 2048, aoScale: .5, aoSamples: 16, distance: 180 }
+  low: { pixelRatio: 1, shadowSize: 0, aoScale: 0, aoSamples: 8, distance: 48, grassDensity: .12, decorationDistance: 28 },
+  medium: { pixelRatio: 1.25, shadowSize: 1024, aoScale: .5, aoSamples: 8, distance: 80, grassDensity: .45, decorationDistance: 55 },
+  high: { pixelRatio: 1.75, shadowSize: 2048, aoScale: .5, aoSamples: 16, distance: 180, grassDensity: 1, decorationDistance: 90 }
 };
 export function effectiveQuality(quality: Quality, mobile: boolean, downgrade = 0): Exclude<Quality, 'auto'> {
   if (quality !== 'auto') return quality;

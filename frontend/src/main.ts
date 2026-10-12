@@ -41,6 +41,7 @@ function updateHint() {
 function setMode(next: Mode) {
   mode = next; document.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
   $('palette').classList.toggle('editing', mode === 'place');
+  renderer?.setEditing(mode !== 'observe');
   renderer?.highlight(null); updateHint();
 }
 function setConnection(connected: boolean) {
@@ -80,9 +81,9 @@ function connect() {
         if (message.version !== SAVE_VERSION) throw new Error('保存バージョンが一致しません。ページを再読み込みしてください。');
         world = generateWorld(message.seed);
         for (const edit of message.edits) world[index(edit.x, edit.y, edit.z)] = edit.block;
-        const renderReady = renderer.setWorld(world, message.village?.camp); lifeUI.setWorld(world);
+        const renderReady = renderer.setWorld(world, message.village?.camp, message.village ?? undefined); lifeUI.setWorld(world);
         clock(message.time, message.speed);
-        if (message.village) { villageUI.update(message.village); lifeUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village, true); }
+        if (message.village) { villageUI.update(message.village); lifeUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.updateVillage(message.village, true); }
         await renderReady; if (ws !== socket || ws.readyState !== WebSocket.OPEN) return;
         ready = true; history = []; clearPending(); setConnection(true); reconnectDelay = 1000; $('loading').classList.add('hidden'); $('loading').setAttribute('aria-hidden', 'true');
         $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
@@ -100,7 +101,7 @@ function connect() {
         renderer.changedBatch(message.edits); $('save-state').textContent = `✓ 保存済み · #${message.revision}`;
         lifeUI.terrain(message.edits);
       } else if (message.type === 'village') {
-        villageUI.update(message.village); lifeUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.village.update(message.village); clock(message.time, message.speed);
+        villageUI.update(message.village); lifeUI.update(message.village); instructionUI.update(message.village, message.speed === 0); renderer.updateVillage(message.village); clock(message.time, message.speed);
       } else if (message.type === 'instruction-result') instructionUI.result(message);
       else if (message.type === 'conversation-result') { lifeUI.result(message); if (message.ok) audio.play('harvest'); }
       else if (message.type === 'instruction-config') instructionUI.configure(message.mode);
