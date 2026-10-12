@@ -4,6 +4,7 @@ import type { VillageState } from '../../../shared/village';
 import type { GraphicStyle, QualityProfile, GraphicsSettings } from './graphics';
 import { ModelKit, type ModelPart } from './model-kit';
 import { planModels, bridgeEdges, type ModelPlan } from './model-plan';
+import { eiffelModel } from './eiffel-model';
 
 export class WorldModels {
   readonly root = new THREE.Group();
@@ -24,8 +25,9 @@ export class WorldModels {
   private smokeTransform = new THREE.Object3D();
   private smokeTime = 0;
   private smokeElapsed = 1;
+  private monument = eiffelModel(this.kit);
   private reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  constructor(scene: THREE.Scene) { scene.add(this.root); this.smoke.count = 0; this.smoke.computeBoundingSphere(); this.smoke.userData.skipAO = true; this.root.add(this.smoke); }
+  constructor(scene: THREE.Scene) { scene.add(this.root); this.smoke.count = 0; this.smoke.computeBoundingSphere(); this.smoke.userData.skipAO = true; this.root.add(this.smoke, this.monument); }
   world(data: Uint8Array) {
     this.data = data; this.state = undefined; this.topology = ''; this.dirty = true;
     for (const item of this.structures.values()) { this.kit.release(item.group); this.root.remove(item.group); }
@@ -182,6 +184,7 @@ export class WorldModels {
       const center = group.userData.center as THREE.Vector3, d = Math.hypot(center.x - target.x, center.z - target.z);
       group.visible = d < Math.max(distance, radius * .8) + 32;
       for (const object of group.children) if (object.userData.decoration) object.visible = d < Math.max(this.profile?.decorationDistance ?? 60, radius * .4) + 24;
+      if (radius > 220) for (const object of group.children) if (object.userData.decoration) object.visible = false;
     }
     for (const { group } of this.structures.values()) {
       // Bridges already carry world-space geometry, so mesh frustum culling handles them.

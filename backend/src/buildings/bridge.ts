@@ -1,8 +1,9 @@
-import { Block, SEA, SIZE, getBlock, type Edit } from '../../../shared/world';
+import { Block, EIFFEL, SEA, SIZE, getBlock, type Edit } from '../../../shared/world';
 import type { Position } from '../../../shared/village';
 import type { Bridge } from '../../../shared/autonomy';
 import type { Navigation } from '../agents/navigation';
 export const ISLANDS = [{ id: 'east', name: '東の島', x: 96, z: 38 }, { id: 'south', name: '南東の島', x: 96, z: 96 }, { id: 'west', name: '南西の島', x: 34, z: 98 }, { id: 'river', name: '川の向こう岸', x: 14, z: 32 }];
+export const NEW_CONTINENT = { id: 'mainland', name: EIFFEL.continent, x: EIFFEL.x - 10, z: EIFFEL.z };
 // Find a shortest walkable connection, adding wood only above open water.
 // Multisource Dijkstra starts at every cell connected to the village.
 export function planBridge(data: Uint8Array, nav: Navigation, camp: Position, island: typeof ISLANDS[number]): Bridge | null {

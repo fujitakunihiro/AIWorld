@@ -1,4 +1,4 @@
-import { Block, getBlock, inside, type Edit } from '../../../shared/world';
+import { Block, getBlock, inLandmark, inside, type Edit } from '../../../shared/world';
 import type { Hut } from '../../../shared/village';
 export const HUT_COST = { food: 0, wood: 24, stone: 8 };
 export function hutBlocks(hut: Pick<Hut, 'x' | 'y' | 'z'>): Edit[] {
@@ -21,6 +21,7 @@ export function inHut(edit: Pick<Edit, 'x' | 'y' | 'z'>, hut: Hut) {
 }
 export function siteClear(data: Uint8Array, x: number, y: number, z: number) {
   for (let dz = 0; dz < 4; dz++) for (let dx = 0; dx < 4; dx++) {
+    if (inLandmark(x + dx, z + dz, 18)) return false;
     if (!inside(x + dx, y + 4, z + dz)) return false;
     const floor = getBlock(data, x + dx, y - 1, z + dz);
     if (floor !== Block.Grass && floor !== Block.Dirt && floor !== Block.Stone && floor !== Block.Sand) return false;

@@ -13,7 +13,7 @@ test('expansion preserves every voxel of the original island for existing seeds'
     assert.equal(getBlock(expanded, 33, 10, 98), Block.Grass);
   }
 });
-test('128×128×32 terrain is deterministic and changes with seed', () => {
+test('256×256×32 terrain is deterministic and changes with seed', () => {
   const world = generateWorld(73129);
   assert.equal(world.length, SIZE * SIZE * HEIGHT);
   assert.deepEqual(world, generateWorld(73129));

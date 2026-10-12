@@ -26,6 +26,8 @@ export class ModelKit {
     const glow = (1 - Math.sqrt(lightingAt(time).daylight)) ** 3;
     const windows = this.material('#628e94'); windows.emissive.set('#ffc777'); windows.emissiveIntensity = glow * 1.8;
     windows.color.set('#628e94').lerp(new THREE.Color('#f4c777'), glow);
+    const beacon = this.material('#f1d195'); beacon.emissive.set('#ffd18a'); beacon.emissiveIntensity = glow * 2;
+    const towerTrim = this.material('#af8a62'); towerTrim.emissive.set('#f4bf76'); towerTrim.emissiveIntensity = glow * .22;
   }
   transform(p: number[], s: number[], rotation: number[] = [0, 0, 0]) {
     this.object.position.set(p[0], p[1], p[2]); this.object.scale.set(s[0], s[1], s[2]);

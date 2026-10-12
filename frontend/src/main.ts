@@ -170,6 +170,7 @@ try {
   $('zoom-in').onclick = () => renderer.controls.zoom(0.82); $('zoom-out').onclick = () => renderer.controls.zoom(1.22);
   $('rotate').onclick = () => { renderer.controls.orbit.theta += Math.PI / 4; renderer.controls.update(); };
   $('home').onclick = () => { renderer.stopFollowing(); renderer.controls.home(); };
+  for (const id of ['visit-continent', 'map-continent']) $(id).onclick = () => { overlayUI.close(); setMode('observe'); renderer.focusContinent(); toast('暁の新大陸 · エッフェル塔の広場'); };
   updateHint(); setConnection(false); connect();
 } catch (error) {
   $('loading-message').textContent = '3D描画を開始できません。WebGLが利用できるブラウザで開いてください。';

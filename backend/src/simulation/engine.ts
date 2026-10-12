@@ -1,4 +1,4 @@
-import { Block, HEIGHT, SIZE, getBlock, index, type Edit } from '../../../shared/world';
+import { Block, EIFFEL, HEIGHT, SIZE, getBlock, index, type Edit } from '../../../shared/world';
 import type { BuildingKind, Hut, Position, Resident, Resource, Resources, VillageState, VillageEvent } from '../../../shared/village';
 import { beds, BUILDING_LABELS, growthRequirements, MAX_BUILDINGS, MAX_POPULATION, RESOURCE_LABELS } from '../../../shared/village';
 import { interpretationSchema } from '../../../shared/instruction-schema';
@@ -51,6 +51,7 @@ export class Simulation {
       task: null, path: [], work: 0, decisionIn: i * 0.5, home: null, order: null
     })), resources: { food: 12, wood: 0, stone: 0 }, nodes: [], huts: [], camp,
       events: [{ id: 1, time: 0, kind: 'arrival', text: '5人の住民が島に到着しました。まずは小屋の材料を集めます。' }], nextEvent: 2, elapsed: 0, nextPlan: 0, instructions: [] };
+    this.event('256×256の世界が広がり、暁の新大陸にエッフェル塔の広場が完成しました。', 'growth', { position: { x: EIFFEL.x, y: EIFFEL.y, z: EIFFEL.z } });
     // Natural trees remain standing: these are renewable gathering sites, not infinite inventory.
     for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) {
       if (this.state.nodes.filter(n => n.kind === 'wood').length >= 36) break;

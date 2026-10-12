@@ -3,7 +3,7 @@ import { beds, MAX_POPULATION, RESOURCE_LABELS, type Position, type Resident, ty
 import { UTILITY_LABELS, type UtilityAction, type UtilityScore, type VillageTask } from '../../../shared/autonomy';
 import { evaluateUtility, type UtilityContext } from './utility';
 import type { Navigation } from './navigation';
-import { ISLANDS, planBridge } from '../buildings/bridge';
+import { ISLANDS, NEW_CONTINENT, planBridge } from '../buildings/bridge';
 const empty = (): Resources => ({ food: 0, wood: 0, stone: 0 });
 const distance = (a: Position, b: Position) => Math.hypot(a.x - b.x, a.z - b.z);
 interface Hooks {
@@ -39,7 +39,7 @@ export class Autonomy {
     if (s.resources.wood < needed.wood) issues.push('木材不足');
     if (s.resources.stone < needed.stone) issues.push('石材不足');
     const reachable = this.hooks.nav.search(s.camp);
-    const disconnected = ISLANDS.filter(i => { const p = this.hooks.nav.nearest({ x: i.x + .5, y: 7, z: i.z + .5 }); return p && reachable.parents[Math.floor(p.x) + SIZE * Math.floor(p.z)] < 0; });
+    const disconnected = [...ISLANDS, NEW_CONTINENT].filter(i => { const p = this.hooks.nav.position(i.x, i.z); return p && reachable.parents[Math.floor(p.x) + SIZE * Math.floor(p.z)] < 0; });
     if (disconnected.length) issues.push('島への道がない');
     for (const issue of issues.filter(i => !s.issues.includes(i))) this.hooks.event(`村の課題を検知：${issue}。住民が必要な仕事を選びます。`, 'task', { position: s.camp });
     s.issues = issues;

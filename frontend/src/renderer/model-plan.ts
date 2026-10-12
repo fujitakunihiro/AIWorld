@@ -1,4 +1,4 @@
-import { Block, HEIGHT, SIZE, getBlock, index, type Edit } from '../../../shared/world';
+import { Block, EIFFEL, HEIGHT, SIZE, eiffelVoxels, getBlock, index, type Edit } from '../../../shared/world';
 import type { Hut, VillageState } from '../../../shared/village';
 
 export interface TreeModel { x: number; y: number; z: number; height: number; variant: number; hidden: number[] }
@@ -31,6 +31,8 @@ export function planModels(data: Uint8Array, state?: VillageState): ModelPlan {
   const trees: TreeModel[] = [], decorations: Decoration[] = [], hidden = new Set<number>();
   const occupied = new Set<number>();
   const reserve = (x: number, z: number) => { if (x >= 0 && z >= 0 && x < SIZE && z < SIZE) occupied.add(x + z * SIZE); };
+  for (const e of eiffelVoxels()) if (getBlock(data, e.x, e.y, e.z) === e.block) hidden.add(index(e.x, e.y, e.z));
+  for (let z = -18; z <= 18; z++) for (let x = -18; x <= 18; x++) reserve(EIFFEL.x + x, EIFFEL.z + z);
   for (const hut of state?.huts ?? []) {
     for (let z = -1; z <= 4; z++) for (let x = -1; x <= 4; x++) reserve(hut.x + x, hut.z + z);
     const voxels = buildingVoxels(hut), built = hut.status === 'complete' || hut.upgrading ? voxels : voxels.slice(0, hut.progress);

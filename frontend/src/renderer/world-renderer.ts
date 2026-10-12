@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { WorldCamera } from '../camera/controls';
-import { Block, CHUNK, SIZE, getBlock, inside, type Edit } from '../../../shared/world';
+import { Block, CHUNK, EIFFEL, SIZE, getBlock, inside, type Edit } from '../../../shared/world';
 import type { Resident, VillageState } from '../../../shared/village';
 import { VillageRenderer } from './village-renderer';
 import { WorldEffects } from './effects';
@@ -13,7 +13,7 @@ const palette: Record<number, string> = { 1: '#85ae62', 2: '#a47a50', 3: '#909a9
 const dioramaPalette: Record<number, string> = { 1: '#8caa6a', 2: '#a28a69', 3: '#969c95', 4: '#e4d1a0', 5: '#a88560', 6: '#628657', 7: '#ffffff', 8: '#bd927b' };
 export class WorldRenderer {
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 800);
+  readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1600);
   readonly renderer: THREE.WebGLRenderer;
   readonly controls: WorldCamera;
   readonly village: VillageRenderer;
@@ -261,6 +261,10 @@ export class WorldRenderer {
     this.controls.orbit.radius = residentId ? (window.innerWidth < 700 ? 24 : 16) : (window.innerWidth < 700 ? 68 : 48);
     this.controls.update();
   }
+  focusContinent() {
+    this.stopFollowing(); this.controls.target.set(EIFFEL.x, EIFFEL.y + EIFFEL.height * .42, EIFFEL.z);
+    this.controls.orbit.set(innerWidth < 700 ? 78 : 55, .98, .68); this.controls.update();
+  }
   pickResident(clientX: number, clientY: number) {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.raycaster.setFromCamera(new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -(clientY - rect.top) / rect.height * 2 + 1), this.camera);
@@ -329,11 +333,14 @@ export class WorldRenderer {
     this.clouds.position.x = Math.sin(now / 90000) * 10;
     this.water.opacity = 0.68 + Math.sin(now / 1800) * 0.035;
     // Frustum culling is enabled on each mesh; mobile limits distant chunks as well.
-    const distance = this.settings.distance === 'far' ? 220 : this.settings.distance === 'near' ? 44 : this.profile.distance;
+    const distance = this.settings.distance === 'far' ? SIZE * 2 : this.settings.distance === 'near' ? 44 : this.profile.distance;
+    const fog = this.scene.fog as THREE.Fog; fog.near = Math.max(180, this.controls.orbit.radius * .9 + 100); fog.far = Math.max(700, this.controls.orbit.radius + SIZE * 2);
     this.models.frame(this.controls.target, this.controls.orbit.radius, distance, visualTime, delta, this.paused, follow);
     for (const group of this.chunks.values()) {
       const { cx, cz } = group.userData;
-      group.visible = Math.hypot(cx * CHUNK + 8 - this.controls.target.x, cz * CHUNK + 8 - this.controls.target.z) < Math.max(distance, this.controls.orbit.radius * .8) + CHUNK;
+      // Match the 32×32 nature sectors so a visible tree always has its terrain below it.
+      const sectorSize = CHUNK * 2, x = Math.floor(cx / 2) * sectorSize + sectorSize / 2, z = Math.floor(cz / 2) * sectorSize + sectorSize / 2;
+      group.visible = Math.hypot(x - this.controls.target.x, z - this.controls.target.z) < Math.max(distance, this.controls.orbit.radius * .8) + sectorSize;
     }
     this.renderer.info.reset();
     // Paused scenes keep their shadow map until the camera or lighting changes.

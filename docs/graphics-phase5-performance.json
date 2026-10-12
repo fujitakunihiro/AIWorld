@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-12",
+  "device": "Windows / Codex in-app Chromium / AMD Radeon Graphics / DPR 1",
+  "simulation": "1x",
+  "warmupSeconds": 1,
+  "sampleSeconds": 10,
+  "measurements": [
+    {
+      "view": "eiffel",
+      "quality": "high",
+      "viewport": "1280x720",
+      "result": "10.0秒 / 601フレーム\n平均 60.0 FPS · フレーム95% 17.6 ms · CPU描画 10.7 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "metrics": "60.0 FPS · フレーム95% 17.6 ms · CPU描画 10.4 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 716 · 三角形 241,212 · 影 2048 · AO ON\nジオメトリ 742 · テクスチャ 29\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "view": "world",
+      "quality": "high",
+      "viewport": "1280x720",
+      "result": "10.0秒 / 570フレーム\n平均 57.0 FPS · フレーム95% 23.5 ms · CPU描画 15.5 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "metrics": "55.1 FPS · フレーム95% 24.6 ms · CPU描画 16.5 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 2173 · 三角形 485,994 · 影 2048 · AO ON\nジオメトリ 738 · テクスチャ 29\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "view": "world",
+      "quality": "medium",
+      "viewport": "1280x720",
+      "result": "10.0秒 / 562フレーム\n平均 56.2 FPS · フレーム95% 22.6 ms · CPU描画 14.6 ms\nジオラマ · medium · 1280×720 · 影 1024 · AO ON",
+      "metrics": "59.7 FPS · フレーム95% 20.3 ms · CPU描画 13.6 ms\n品質 中 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 1684 · 三角形 370,510 · 影 1024 · AO ON\nジオメトリ 740 · テクスチャ 29\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "view": "eiffel",
+      "quality": "auto-medium",
+      "viewport": "390x844",
+      "result": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.5 ms · CPU描画 6.4 ms\nジオラマ · medium · 390×844 · 影 1024 · AO ON",
+      "metrics": "60.0 FPS · フレーム95% 17.6 ms · CPU描画 6.4 ms\n品質 中 · 390×844 · 解像度倍率 1.00\n描画呼び出し 383 · 三角形 166,484 · 影 1024 · AO ON\nジオメトリ 742 · テクスチャ 29\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "layout": {
+        "scrollWidth": 390,
+        "width": 390
+      }
+    }
+  ],
+  "iphone": "not tested"
+}

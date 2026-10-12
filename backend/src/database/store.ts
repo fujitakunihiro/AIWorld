@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { Block, SAVE_VERSION, generateWorld, index, type Edit, type WorldSnapshot } from '../../../shared/world';
+import { Block, EIFFEL, SAVE_VERSION, generateWorld, index, inLandmark, type Edit, type WorldSnapshot } from '../../../shared/world';
 import { editSchema } from '../../../shared/schema';
 import type { VillageState } from '../../../shared/village';
 import { villageSchema } from './village-schema';
@@ -24,7 +24,7 @@ export class WorldStore {
       CREATE TABLE IF NOT EXISTS simulation (id INTEGER PRIMARY KEY CHECK(id=1), state TEXT NOT NULL);`);
     this.db.prepare('INSERT OR IGNORE INTO world VALUES (?, ?, ?, 0, 480, 1)').run('island-1', SAVE_VERSION, seed);
     const row = this.db.prepare('SELECT * FROM world WHERE id=?').get('island-1')!;
-    if (![1, 2, 3, 4, SAVE_VERSION].includes(Number(row.version))) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
+    if (![1, 2, 3, 4, 5, SAVE_VERSION].includes(Number(row.version))) { this.db.close(); throw new Error('未対応の保存バージョンです。データを保護するため起動を停止しました。'); }
     this.seed = Number(row.seed); this.revision = Number(row.revision); this.time = Number(row.time); this.speed = Number(row.speed);
     this.base = generateWorld(this.seed); this.data = this.base.slice();
     for (const edit of this.edits()) this.data[index(edit.x, edit.y, edit.z)] = edit.block;
@@ -36,6 +36,12 @@ export class WorldStore {
     if (row.version !== SAVE_VERSION) {
       if (this.village && Number(row.version) < 4) {
         const event = { id: this.village.nextEvent++, time: this.village.elapsed, kind: 'growth' as const, text: '世界が128×128に広がりました。はじまりの島を残し、新しい森・山・平地を持つ島々が加わりました。' };
+        this.village.events.push(event); if (this.village.events.length > 30) this.village.events.shift();
+        this.village.chronicle.push(event);
+        if (this.village.chronicle.length > 300) { const old = this.village.chronicle.shift()!; this.village.archive.count++; this.village.archive.through = old.time; this.village.archive.kinds[old.kind] = (this.village.archive.kinds[old.kind] ?? 0) + 1; }
+      }
+      if (this.village && Number(row.version) < 6) {
+        const event = { id: this.village.nextEvent++, time: this.village.elapsed, kind: 'growth' as const, text: '世界が256×256に広がりました。暁の新大陸とエッフェル塔の広場が加わりました。', position: { x: EIFFEL.x, y: EIFFEL.y, z: EIFFEL.z } };
         this.village.events.push(event); if (this.village.events.length > 30) this.village.events.shift();
         this.village.chronicle.push(event);
         if (this.village.chronicle.length > 300) { const old = this.village.chronicle.shift()!; this.village.archive.count++; this.village.archive.through = old.time; this.village.archive.kinds[old.kind] = (this.village.archive.kinds[old.kind] ?? 0) + 1; }
@@ -57,6 +63,7 @@ export class WorldStore {
     const i = index(x, y, z), current = this.data[i];
     if (current !== expected) throw new Error('別の操作でこのブロックが変わりました。もう一度選んでください。');
     if (y === 0) throw new Error('島の基盤（高さ0）は編集できません。');
+    if (inLandmark(x, z) && y >= EIFFEL.y - 2) throw new Error('エッフェル塔と基礎は保護されています。広場の外で編集してください。');
     if (this.village?.huts.some(h => inHut({ x, y, z }, h))) throw new Error('住民の建物・畑と建築敷地は保護されています。周りの地形を編集してください。');
     if (this.village?.bridges.some(b => b.blocks.some(e => e.x === x && e.z === z && y >= e.y - 1 && y <= e.y + 2))) throw new Error('橋と建設予定の通路は保護されています。');
     if (this.village?.residents.some(r => Math.floor(r.position.x) === x && Math.floor(r.position.z) === z && y >= r.position.y - 1 && y < r.position.y + 2)) throw new Error('住民の足場や体と重なる位置は編集できません。');

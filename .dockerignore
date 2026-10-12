@@ -4,3 +4,4 @@ dist
 .env
 *.sqlite*
 test-results
+backups

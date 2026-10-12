@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#eff4e9" />
-  <meta name="description" content="128×128の島々で、AI住民が会話と記憶を重ねて文明を育てる、AI WORLD。" />
+  <meta name="description" content="256×256の島々と新大陸で、AI住民が文明を育てる、AI WORLD。新大陸のエッフェル塔を見に行こう。" />
   <title>AI WORLD — はじまりの島</title>
 </head>
 <body>
-  <div id="world" aria-label="編集できる128×128の3D世界"></div>
+  <div id="world" aria-label="編集できる256×256の3D世界"></div>
   <div id="resident-labels" aria-hidden="true"></div>
   <div id="resident-follow" class="resident-follow" hidden aria-label="観察している住民">
     <button id="follow-details" aria-label="観察している住民の詳細"><strong id="follow-name"></strong><span id="follow-action"></span></button>
@@ -29,7 +29,8 @@
       <div class="eyebrow">YOUR FIRST WORLD <span>01</span></div>
       <h1>はじまりの島<span class="tiny-leaf">✦</span></h1>
       <p>ここから、世界が育っていく。</p>
-      <div class="world-tags"><span>128 × 128</span><span>温帯の島々</span></div>
+      <div class="world-tags"><span>256 × 256</span><span>島々と暁の新大陸</span></div>
+      <button id="visit-continent" class="continent-button">♜ 新大陸のエッフェル塔を見る ↗</button>
       <div class="resource-bar" aria-label="村の人口と共有資源"><span id="population">住民 —</span><span id="resource-food">食料 —</span><span id="resource-wood">木材 —</span><span id="resource-stone">石材 —</span></div>
       <button id="civilization" class="civilization-badge" aria-label="村の発展を開く"><span id="civilization-label">Lv.1 集落</span><span>村の発展 ↗</span></button>
       <button id="open-history" class="history-button">世界の歴史 ↗</button>
@@ -57,7 +58,7 @@
       <button id="home" aria-label="島全体を表示">⌂</button>
     </div>
     <div class="scene-caption"><span class="live-dot"></span><span id="village-event">5人の暮らしが始まります</span><span id="fps"></span></div>
-    <section id="map-card" class="map-card" hidden><div class="panel-heading"><strong>世界を見渡す</strong><button id="close-map" aria-label="地図を閉じる">×</button></div><canvas id="minimap" width="256" height="256" aria-label="128×128の世界地図。クリックでその場所へ移動"></canvas><small>タップで移動 · 金色は村</small></section>
+    <section id="map-card" class="map-card" hidden><div class="panel-heading"><strong>世界を見渡す</strong><button id="close-map" aria-label="地図を閉じる">×</button></div><canvas id="minimap" width="256" height="256" aria-label="256×256の世界地図。クリックでその場所へ移動"></canvas><small>タップで移動 · 金色は村 · ♜は塔</small><button id="map-continent" class="continent-button">新大陸とエッフェル塔 ↗</button></section>
     <nav class="action-bar" aria-label="世界の操作">
       <button id="start-building"><span>⌂</span>村を見る</button>
       <button id="residents"><span>♧</span>住民</button>

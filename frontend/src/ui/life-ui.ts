@@ -1,4 +1,4 @@
-import { Block, HEIGHT, SIZE, getBlock, type Edit } from '../../../shared/world';
+import { Block, EIFFEL, HEIGHT, SIZE, getBlock, type Edit } from '../../../shared/world';
 import { EVENT_LABELS, type VillageState } from '../../../shared/village';
 import { UTILITY_LABELS } from '../../../shared/autonomy';
 import type { ConversationResult } from '../../../shared/conversation';
@@ -146,9 +146,11 @@ export class LifeUI {
   private map() {
     if ($('map-card').hidden) return;
     const context = $<HTMLCanvasElement>('minimap').getContext('2d')!; context.imageSmoothingEnabled = false; context.drawImage(this.baseMap, 0, 0, 256, 256);
-    context.strokeStyle = '#fff9'; const span = Math.min(128, this.target.radius * .6); context.strokeRect((this.target.x - span / 2) * 2, (this.target.z - span / 2) * 2, span * 2, span * 2);
+    const scale = 256 / SIZE;
+    context.strokeStyle = '#fff9'; const span = Math.min(SIZE, this.target.radius * .6); context.strokeRect((this.target.x - span / 2) * scale, (this.target.z - span / 2) * scale, span * scale, span * scale);
+    context.fillStyle = '#fff3cc'; context.font = 'bold 13px sans-serif'; context.textAlign = 'center'; context.fillText('♜', EIFFEL.x * scale, EIFFEL.z * scale + 4);
     if (!this.state) return;
-    context.fillStyle = '#ffe4a1'; context.fillRect(this.state.camp.x * 2 - 4, this.state.camp.z * 2 - 4, 8, 8);
-    context.fillStyle = '#fff'; for (const resident of this.state.residents) context.fillRect(resident.position.x * 2 - 1, resident.position.z * 2 - 1, 3, 3);
+    context.fillStyle = '#ffe4a1'; context.fillRect(this.state.camp.x * scale - 4, this.state.camp.z * scale - 4, 8, 8);
+    context.fillStyle = '#fff'; for (const resident of this.state.residents) context.fillRect(resident.position.x * scale - 1, resident.position.z * scale - 1, 3, 3);
   }
 }
