@@ -54,6 +54,9 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInterface> Vertex;
     UPROPERTY() TObjectPtr<UMaterialInterface> Color;
     UPROPERTY() TObjectPtr<UMaterialInterface> Water;
+    UPROPERTY() TObjectPtr<UMaterialInterface> Stone;
+    UPROPERTY() TObjectPtr<UMaterialInterface> Slate;
+    UPROPERTY() TObjectPtr<UMaterialInterface> TerrainMaterial;
     UPROPERTY() TObjectPtr<ADirectionalLight> Sun;
     UPROPERTY() TObjectPtr<ASkyLight> Sky;
     UPROPERTY() TObjectPtr<AExponentialHeightFog> Fog;
@@ -81,6 +84,6 @@ private:
     void DirtyEdit(const TSharedPtr<FJsonObject>& Edit);
     void AllDirty();
     void BuildChunk(int32 Key);
-    void DrawStructure(const FString& ID, const FString& Key, const AIWorld::FMesh& Mesh);
+    void DrawStructure(const FString& ID, const FString& Key, const AIWorld::FMesh& Mesh, UMaterialInterface* Surface=nullptr);
     AIWorld::FMesh Primitive(const FString& Name,const FVector& P,const FVector& Scale,const FLinearColor& Color) const;
 };

@@ -39,18 +39,21 @@ void AAIWorldScene::BeginPlay() {
     Vertex=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_Vertex.M_Vertex"));
     Color=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_Color.M_Color"));
     Water=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_Water.M_Water"));
+    Stone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_Stone.M_Stone"));
+    Slate=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_Slate.M_Slate"));
+    TerrainMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_Terrain.M_Terrain"));
     LoadAssets();
     Effects=NewObject<UInstancedStaticMeshComponent>(this);AddInstanceComponent(Effects);Effects->SetupAttachment(RootComponent);Effects->SetStaticMesh(LoadObject<UStaticMesh>(nullptr,TEXT("/Engine/BasicShapes/Sphere.Sphere")));Effects->SetMaterial(0,ColorMaterial(TEXT("#e6b977")));Effects->SetCollisionEnabled(ECollisionEnabled::NoCollision);Effects->SetCastShadow(false);Effects->RegisterComponent();
     Sun=GetWorld()->SpawnActor<ADirectionalLight>();Sun->GetLightComponent()->SetMobility(EComponentMobility::Movable);Sun->SetActorRotation(FRotator(-48,-35,0));
-    auto SunComponent=CastChecked<UDirectionalLightComponent>(Sun->GetLightComponent());SunComponent->SetAtmosphereSunLight(true);SunComponent->SetLightSourceAngle(3);Sun->SetActorLocation(FVector(0,0,5000));
+    auto SunComponent=CastChecked<UDirectionalLightComponent>(Sun->GetLightComponent());SunComponent->SetAtmosphereSunLight(true);SunComponent->SetLightSourceAngle(5);Sun->SetActorLocation(FVector(0,0,5000));
     GetWorld()->SpawnActor<ASkyAtmosphere>();
     Sky=GetWorld()->SpawnActor<ASkyLight>();Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);Sky->SetActorLocation(FVector(19200,19200,100000));Sky->GetLightComponent()->SetIntensity(1.4f);
     Sky->GetLightComponent()->RecaptureSky();
     Fog=GetWorld()->SpawnActor<AExponentialHeightFog>();Fog->GetComponent()->SetFogDensity(.007f);Fog->GetComponent()->SetFogHeightFalloff(.2f);
     auto Post=GetWorld()->SpawnActor<APostProcessVolume>();Post->bUnbound=true;
     auto& P=Post->Settings;P.bOverride_AutoExposureMethod=true;P.AutoExposureMethod=EAutoExposureMethod::AEM_Manual;
-    P.bOverride_AutoExposureBias=true;P.AutoExposureBias=10;
-    P.bOverride_AmbientOcclusionIntensity=true;P.AmbientOcclusionIntensity=.65f;
+    P.bOverride_AutoExposureBias=true;P.AutoExposureBias=9.6f;
+    P.bOverride_AmbientOcclusionIntensity=true;P.AmbientOcclusionIntensity=.9f;
     P.bOverride_AmbientOcclusionRadius=true;P.AmbientOcclusionRadius=120;
     P.bOverride_BloomIntensity=true;P.BloomIntensity=.2f;
     P.bOverride_VignetteIntensity=true;P.VignetteIntensity=.18f;
@@ -64,7 +67,16 @@ void AAIWorldScene::EndPlay(const EEndPlayReason::Type Reason) {
 void AAIWorldScene::LoadAssets() {
     FString Text;if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Data/models.json")))){Status=TEXT("モデル未生成: Export-Unreal を実行してください。");return;}
     Assets=Parse(Text);if(!Assets)return;
-    for(const auto& V:Array(Assets,TEXT("statics"))) {FMesh M;if(DecodeMesh(V->AsObject(),M))StaticModels.Add(NewMesh(M,Vertex));}
+    for(const auto& V:Array(Assets,TEXT("statics"))) {
+        FMesh M;if(!DecodeMesh(V->AsObject(),M))continue;
+        FLinearColor Avg=FLinearColor::Black;for(const auto& C:M.Colors)Avg+=C;
+        if(M.Colors.Num())Avg/=M.Colors.Num();
+        UMaterialInterface* Surface=Vertex;
+        const float Luma=.2126f*Avg.R+.7152f*Avg.G+.0722f*Avg.B;
+        if(Avg.B>Avg.R*.96f && Avg.B>Avg.G*1.045f && Luma>.035f && Luma<.55f)Surface=Slate;
+        else if(Avg.R>.18f && Avg.G>.16f && Avg.G>Avg.B*1.035f && Avg.R>Avg.G*.83f && Avg.G>Avg.R*.66f && Luma<.83f)Surface=Stone;
+        StaticModels.Add(NewMesh(M,Surface));
+    }
     auto Buildings=Object(Assets,TEXT("buildings"));if(Buildings)for(const auto& Pair:Buildings->Values) {
         auto& Parts=BuildingTemplates.FindOrAdd(FString(Pair.Key.ToView()));for(const auto& V:Pair.Value->AsArray()) {FNativePart Part;Part.Stage=Number(V->AsObject(),TEXT("stage"));if(DecodeMesh(V->AsObject(),Part.Mesh))Parts.Add(MoveTemp(Part));}
     }
@@ -132,7 +144,7 @@ void AAIWorldScene::DirtyEdit(const TSharedPtr<FJsonObject>& E) {
 void AAIWorldScene::AllDirty(){const int32 Count=Grid.Size/Grid.Chunk;for(int32 I=0;I<Count*Count;I++)Dirty.Add(I);}
 void AAIWorldScene::BuildChunk(int32 Key) {
     const int32 Count=Grid.Size/Grid.Chunk;FMesh Solid,Sea;MeshChunk(Grid,Key%Count,Key/Count,bClassic,Solid,Sea);
-    if(Terrain.Num()<=Key)Terrain.SetNum(Key+1);auto C=Terrain[Key];if(!C){C=NewMesh(Solid,Vertex,Quality>0);Terrain[Key]=C;}
+    if(Terrain.Num()<=Key)Terrain.SetNum(Key+1);auto C=Terrain[Key];if(!C){C=NewMesh(Solid,TerrainMaterial?TerrainMaterial:Vertex,Quality>0);Terrain[Key]=C;}
     else C->CreateMeshSection_LinearColor(0,Solid.Positions,Solid.Indices,Solid.Normals,{},Solid.Colors,{},false);
     C->CreateMeshSection_LinearColor(1,Sea.Positions,Sea.Indices,Sea.Normals,{},Sea.Colors,{},false);C->SetMaterial(1,Water);
 }
@@ -141,9 +153,10 @@ FMesh AAIWorldScene::Primitive(const FString& Name,const FVector& P,const FVecto
     for(auto& V:M.Positions)V=V*Scale+P;for(auto& C:M.Colors)C=Tint;
     for(auto& N:M.Normals)N=FVector(N.X/Scale.X,N.Y/Scale.Y,N.Z/Scale.Z).GetSafeNormal();return M;
 }
-void AAIWorldScene::DrawStructure(const FString& ID,const FString& Key,const FMesh& M) {
+void AAIWorldScene::DrawStructure(const FString& ID,const FString& Key,const FMesh& M,UMaterialInterface* Surface) {
     if(StructureKeys.FindRef(ID)==Key)return;StructureKeys.Add(ID,Key);auto& C=Structures.FindOrAdd(ID);
-    if(!C)C=NewMesh(M,Vertex);else C->CreateMeshSection_LinearColor(0,M.Positions,M.Indices,M.Normals,{},M.Colors,{},false);
+    UMaterialInterface* Applied=Surface?Surface:Vertex.Get();
+    if(!C)C=NewMesh(M,Applied);else {C->CreateMeshSection_LinearColor(0,M.Positions,M.Indices,M.Normals,{},M.Colors,{},false);C->SetMaterial(0,Applied);}
     C->SetVisibility(!bClassic);
 }
 void AAIWorldScene::SyncVillage() {
@@ -168,7 +181,7 @@ void AAIWorldScene::SyncVillage() {
             const int32 N=String(Crop,TEXT("stage"))==TEXT("ripe")?FMath::CeilToInt(Number(Crop,TEXT("remaining"))/32*9):9;
             for(int32 I=0;I<N;I++) {const FVector At=P+FVector(1+I%3,1+I/3,.12)*Unit;Mesh.Append(Primitive(TEXT("grass"),At,FVector(1.2,1.2,.5+Growth*1.5),FLinearColor(.3f,.45f,.18f)));Mesh.Append(Primitive(TEXT("cone"),At+FVector(0,0,80*(.25+Growth*.75)),FVector(.18,.18,.2+Growth*.3),FLinearColor(.65f,.48f,.16f)));}
         }
-        DrawStructure(ID,Key,Mesh);
+        DrawStructure(ID,Key,Mesh,Kind==TEXT("farm")?Vertex.Get():(Stone?Stone.Get():Vertex.Get()));
     }
     for(const auto& V:Array(Village,TEXT("nodes"))) {
         auto N=V->AsObject();const FString Kind=String(N,TEXT("kind"));if(Kind==TEXT("wood"))continue;
@@ -216,7 +229,15 @@ void AAIWorldScene::RebuildNature() {
         if(!Valid){for(const auto& H:Hidden)Grid.StaticHidden.Remove(H->AsNumber());continue;}
         for(const auto& H:Hidden)Grid.StaticHidden.Add(H->AsNumber());
         const FVector P=Position(T);const double H=Number(T,TEXT("height"));Put(TEXT("Cylinder"),TEXT("#987452"),P+FVector(0,0,H*43),FVector(.5,.5,H*.86));
-        if(Number(T,TEXT("variant"))==0) {Put(TEXT("Sphere"),TEXT("#76965b"),P+FVector(0,0,(H+.3)*Unit),FVector(3.8,3.7,3.3));Put(TEXT("Sphere"),TEXT("#8aaa68"),P+FVector(-65,25,(H+1.25)*Unit),FVector(2.5,2.3,2));}
+        if(Number(T,TEXT("variant"))==0) {
+            const double Seed=P.X*.017+P.Y*.031;const double Turn=FMath::Frac(FMath::Abs(FMath::Sin(Seed)*43758.5453))*2*PI;
+            const TCHAR* Leaves[]={TEXT("#60744a"),TEXT("#718751"),TEXT("#849757")};
+            Put(TEXT("Sphere"),Leaves[FMath::FloorToInt(Seed*7)%3],P+FVector(0,0,(H+.48)*Unit),FVector(2.65,2.45,2.5));
+            for(int32 I=0;I<4;I++) {
+                const double A=Turn+I*PI/2,Rad=1.45+(I%2)*.18,Up=(I%2?.30:-.14);
+                Put(TEXT("Sphere"),Leaves[(FMath::FloorToInt(Seed*11)+I+1)%3],P+FVector(FMath::Cos(A)*Rad*Unit,FMath::Sin(A)*Rad*Unit,(H+Up)*Unit),FVector(1.82,1.65,1.78));
+            }
+        }
         else for(int32 I=0;I<3;I++)Put(TEXT("Cone"),TEXT("#648673"),P+FVector(0,0,(2.5+I*1.25)*Unit),FVector(3.5-I*.8,3.5-I*.8,2.9-I*.25));
     }
     if(Quality>0)for(const auto& V:Array(SceneData,TEXT("decorations"))) {
