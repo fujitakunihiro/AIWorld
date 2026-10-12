@@ -271,10 +271,10 @@ void AAIWorldScene::Tick(float Delta) {
         TArray<FTransform> Instances;for(int32 I=Particles.Num()-1;I>=0;I--){auto& P=Particles[I];P.Age+=Delta;if(P.Age>1){Particles.RemoveAtSwap(I);continue;}P.Position+=P.Velocity*Delta;Instances.Add(FTransform(FQuat::Identity,P.Position,FVector(.08*(1-P.Age))));}Effects->ClearInstances();Effects->AddInstances(Instances,false);
     }
     if(Sun && Now>NextLight){NextLight=Now+.5;const double Minute=LightPreview>=0?LightPreview:FMath::Fmod(Time,1440.),Angle=(Minute-360)/1440*2*PI,Day=FMath::Max(0.,FMath::Sin(Angle));
-        Sun->SetActorRotation(FRotator(-FMath::Max(8.,Day*65),FMath::RadiansToDegrees(Angle)-90,0));Sun->GetLightComponent()->SetIntensity(.3+Day*10);
-        Sun->GetLightComponent()->SetLightColor(FMath::Lerp(FLinearColor(1.f,.48f,.26f),FLinearColor(1.f,.92f,.78f),(float)FMath::Sqrt(Day)));
-        Sky->GetLightComponent()->SetIntensity(.65+Day*.9);
-        Fog->GetComponent()->SetFogInscatteringColor(FMath::Lerp(FLinearColor(.09f,.16f,.23f),FLinearColor(.66f,.76f,.78f),(float)Day));
+        Sun->SetActorRotation(FRotator(-FMath::Max(8.,Day*65),FMath::RadiansToDegrees(Angle)-90,0));Sun->GetLightComponent()->SetIntensity(2.0+Day*8.3);
+        Sun->GetLightComponent()->SetLightColor(FMath::Lerp(FLinearColor(.42f,.53f,.74f),FLinearColor(1.f,.92f,.78f),(float)FMath::Sqrt(Day)));
+        Sky->GetLightComponent()->SetIntensity(1.35+Day*.8);
+        Fog->GetComponent()->SetFogInscatteringColor(FMath::Lerp(FLinearColor(.18f,.25f,.36f),FLinearColor(.66f,.76f,.78f),(float)Day));
     }
     if(bReady && ReadyAt>0 && !Dirty.Num()) {
         const double Age=Now-ReadyAt;double Duration=0;FParse::Value(FCommandLine::Get(),TEXT("AIWorldBenchmark="),Duration);
