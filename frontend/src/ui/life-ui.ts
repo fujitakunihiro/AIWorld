@@ -8,7 +8,7 @@ export class LifeUI {
   onSend: (id: string, residentId: string, text: string) => void = () => {};
   onMapFocus: (x: number, z: number) => void = () => {};
   onHistoryResident: (id: string) => void = () => {};
-  onSettings: (settings: { sound: boolean; effects: boolean; bubbles: boolean; quality: 'auto' | 'low' | 'high' }) => void = () => {};
+  onSettings: (settings: { sound: boolean; effects: boolean; bubbles: boolean }) => void = () => {};
   private selected = 'haru';
   private state?: VillageState;
   private connected = false;
@@ -36,14 +36,12 @@ export class LifeUI {
     this.baseMap.width = this.baseMap.height = SIZE;
     $('sound-enabled').toggleAttribute('checked', localStorage.getItem('ai-world-sound') === 'on');
     for (const id of ['effects-enabled', 'bubbles-enabled']) ($<HTMLInputElement>(id)).checked = localStorage.getItem(`ai-world-${id}`) !== 'off';
-    const quality = localStorage.getItem('ai-world-quality'); $<HTMLSelectElement>('render-quality').value = quality === 'low' || quality === 'high' ? quality : 'auto';
-    for (const id of ['sound-enabled', 'effects-enabled', 'bubbles-enabled', 'render-quality']) $(id).onchange = () => this.applySettings();
+    for (const id of ['sound-enabled', 'effects-enabled', 'bubbles-enabled']) $(id).onchange = () => this.applySettings();
   }
   applySettings() {
     const sound = $<HTMLInputElement>('sound-enabled').checked, effects = $<HTMLInputElement>('effects-enabled').checked, bubbles = $<HTMLInputElement>('bubbles-enabled').checked;
-    const quality = $<HTMLSelectElement>('render-quality').value as 'auto' | 'low' | 'high';
-    localStorage.setItem('ai-world-effects-enabled', effects ? 'on' : 'off'); localStorage.setItem('ai-world-bubbles-enabled', bubbles ? 'on' : 'off'); localStorage.setItem('ai-world-quality', quality);
-    this.onSettings({ sound, effects, bubbles, quality });
+    localStorage.setItem('ai-world-effects-enabled', effects ? 'on' : 'off'); localStorage.setItem('ai-world-bubbles-enabled', bubbles ? 'on' : 'off');
+    this.onSettings({ sound, effects, bubbles });
   }
   select(id: string) {
     if (this.selected !== id) { $<HTMLInputElement>('conversation-text').value = ''; $('conversation-feedback').textContent = this.pending ? '返事を待っています。' : '行動と記憶から、住民が答えます。'; }

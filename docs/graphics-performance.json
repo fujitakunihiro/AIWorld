@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-12",
+  "platform": "Windows / Codex Chromium / ANGLE AMD Radeon(TM) Graphics D3D11",
+  "note": "390x844 is a PC viewport test, not an iPhone device. First medium/low runs preceded final lighting/water tuning; high final and mobile-width runs include final tuning.",
+  "measurements": [
+    {
+      "case": "PC diorama high overview",
+      "result": "10.0秒 / 601フレーム\n平均 60.0 FPS · フレーム95% 17.3 ms · CPU描画 5.1 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "live": "60.0 FPS · フレーム95% 17.6 ms · CPU描画 5.3 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 1206 · 三角形 86,998 · 影 2048 · AO ON\nジオメトリ 123 · テクスチャ 9\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "case": "PC classic high overview",
+      "result": "10.0秒 / 601フレーム\n平均 60.0 FPS · フレーム95% 17.3 ms · CPU描画 2.7 ms\n旧ボクセル · high · 1280×720 · 影 OFF · AO OFF",
+      "live": "60.0 FPS · フレーム95% 17.5 ms · CPU描画 2.8 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 437 · 三角形 29,702 · 影 OFF · AO OFF\nジオメトリ 122 · テクスチャ 2\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "case": "PC diorama medium overview",
+      "result": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.5 ms · CPU描画 5.3 ms\nジオラマ · medium · 1280×720 · 影 1024 · AO ON",
+      "live": "60.0 FPS · フレーム95% 17.3 ms · CPU描画 6.5 ms\n品質 中 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 878 · 三角形 59,264 · 影 1024 · AO ON\nジオメトリ 123 · テクスチャ 9\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "case": "PC diorama low overview",
+      "result": "10.0秒 / 601フレーム\n平均 60.0 FPS · フレーム95% 17.4 ms · CPU描画 3.1 ms\nジオラマ · low · 1280×720 · 影 OFF · AO OFF",
+      "live": "60.0 FPS · フレーム95% 17.2 ms · CPU描画 2.5 ms\n品質 低 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 438 · 三角形 30,230 · 影 OFF · AO OFF\nジオメトリ 122 · テクスチャ 2\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "case": "PC diorama high final overview",
+      "result": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.3 ms · CPU描画 4.9 ms\nジオラマ · high · 1280×720 · 影 2048 · AO ON",
+      "live": "60.0 FPS · フレーム95% 17.2 ms · CPU描画 4.7 ms\n品質 高 · 1280×720 · 解像度倍率 1.00\n描画呼び出し 824 · 三角形 58,616 · 影 2048 · AO ON\nジオメトリ 123 · テクスチャ 9\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    {
+      "case": "PC viewport 390x844 auto medium",
+      "result": "10.0秒 / 600フレーム\n平均 60.0 FPS · フレーム95% 17.3 ms · CPU描画 6.2 ms\nジオラマ · medium · 390×844 · 影 1024 · AO ON",
+      "live": "60.0 FPS · フレーム95% 17.9 ms · CPU描画 6.8 ms\n品質 中 · 390×844 · 解像度倍率 1.00\n描画呼び出し 824 · 三角形 58,616 · 影 1024 · AO ON\nジオメトリ 123 · テクスチャ 9\nANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    }
+  ]
+}

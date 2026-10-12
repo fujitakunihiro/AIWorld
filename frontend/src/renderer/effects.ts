@@ -9,7 +9,7 @@ export class WorldEffects {
   private mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85, depthWrite: false }), 160);
   private dummy = new THREE.Object3D();
   private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  constructor(scene: THREE.Scene) { this.mesh.count = 0; this.mesh.frustumCulled = false; this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(this.mesh); }
+  constructor(scene: THREE.Scene) { this.mesh.count = 0; this.mesh.frustumCulled = false; this.mesh.userData.skipAO = true; this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(this.mesh); }
   emit(kind: EffectKind, position: Position) {
     this.onSound(kind);
     if (!this.enabled || this.reduced) return;

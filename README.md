@@ -2,7 +2,9 @@
 
 プレイヤーが世界を創造し、AI住民が文明を築くファンタジーゲームの **Phase 1〜6** です。128×128の世界で、5人の住民が採集して小屋を建て、農業・住宅・移住へ発展します。住民と会話し、記憶や世界の歴史を読みながら、文明を見守れます。自然言語で建築・農業・採集・休息を指示でき、会話も指示も外部APIを使わずに遊べます。キャラクター、地形、演出、Web Audioの効果音は独自制作です。
 
-![橋でつながり、島々に発展した村](docs/screenshots/phase6-world.png)
+グラフィックリメイク **Phase 1** に対応しました。光・影・AO・空・水面・色調を改善し、設定から旧ボクセル描画へ戻して比較できます。[変更ファイル・性能測定・今後のアセット](docs/graphics-phase1.md)を参照してください。
+
+![光・影・水面を改善した島々](docs/screenshots/graphics-diorama-day.png)
 
 [Phase 6の調査・検証結果](docs/phase6.md) / [住民の判断スコア](docs/screenshots/phase6-utility.png) / [橋と村の仕事](docs/screenshots/phase6-tasks.png) / [関連する住民・建物を開く履歴](docs/screenshots/phase6-history.png)
 
@@ -90,7 +92,15 @@ Docker Desktop 4.44.3 / Docker 28.3.2では、日本語を含むフォルダか�
 
 建築中は工具を振り、ブロックが降りて粒子が散ります。完成・収穫・移住も演出し、効果音はWeb Audioで合成します。右上の設定で音、エフェクト、吹き出し、描画品質を変更できます。音は初期状態でオフで、オンにして画面を操作すると鳴ります。設定は端末のブラウザに保存します。視差効果を減らす設定では粒子と作業アニメーションを抑えます。
 
-地形は64チャンクのGreedy Meshingで、Web Workerがメッシュを生成します。村の近くから読み込み、変更されたチャンクと境界のみをまとめて再生成します。画面外・遠方の地形を省略し、低FPSが続くと自動モードがピクセル比を下げます。非表示のタブでは描画を停止します。経路探索は結果をキャッシュし、地形変更時は床の変わった列だけを更新します。
+地形は64チャンクのGreedy Meshingで、Web Workerがメッシュを生成します。村の近くから読み込み、変更されたチャンクと境界のみをまとめて再生成します。画面外・遠方の地形を省略し、低FPSが続くと自動モードが解像度・影・AOを含む品質を段階的に下げます。非表示のタブでは描画を停止します。経路探索は結果をキャッシュし、地形変更時は床の変わった列だけを更新します。
+
+## グラフィックリメイク Phase 1
+
+右上の設定→「世界の描き方」でジオラマと旧ボクセルを切り替えます。低・中・高・自動の品質、影、AO、描画距離を調整でき、昼・夕方・夜の光だけをプレビューできます。住民の時間は通常どおり進みます。品質を低にすると影と AO を停止します。草の密度は Phase 2 で草のモデルを追加する際に実装します。
+
+「この端末の描画性能」→「10秒間の性能を測る」で平均 FPS・フレーム時間・CPU描画時間を確認できます。PCの AMD Radeon Graphics / 1280×720 では高品質・影・AO付きで平均60.0 FPSを測定しました。iPhone実機のSafariと30 FPS目標は未検証です。390×844の画面幅確認はPC上で実施しており、iPhoneの性能測定とは別です。
+
+今回の変更は描画と設定画面に限定し、ワールド生成、AI、建築、資源、保存バージョン5、Docker構成を維持しています。樹木・住宅・橋・住民のモデル刷新は次の Phase です。
 
 ## ことばで村に指示する（Phase 3）
 
@@ -227,10 +237,15 @@ frontend/src/
   renderer/village-renderer.ts 住民・採集地・建築敷地の描画
   renderer/mesh-worker.ts      地形メッシュの非同期生成
   renderer/effects.ts          建築・完成・収穫・移住の粒子
+  renderer/environment.ts      描画専用の空・太陽/月・水面
+  renderer/post-processing.ts  SSAO・ACES・sRGB出力
+  renderer/graphics.ts         品質・光・性能測定の型と計算
+  renderer/water-depth.ts      保存地形を読む水深計算
   audio.ts                    Web Audioの合成効果音
   ui/village-ui.ts            村の状況と住民詳細
   ui/instruction-ui.ts        自然言語入力・履歴・JSON表示
   ui/life-ui.ts               会話・世界史・地図・設定
+  ui/graphics-ui.ts           旧表示比較・品質・性能測定
   main.ts                     UI、WebSocket、編集履歴
   style.css                   PC・スマホの画面
 backend/src/

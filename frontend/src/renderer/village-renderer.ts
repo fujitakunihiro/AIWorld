@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Resident, VillageState } from '../../../shared/village';
 import type { EffectKind } from './effects';
+import type { GraphicStyle } from './graphics';
 interface Figure { group: THREE.Group; legs: THREE.Mesh[]; arms: THREE.Mesh[]; cargo: THREE.Mesh; target: THREE.Vector3; resident: Resident; label: HTMLElement; speech: HTMLElement }
 export class VillageRenderer {
   showBubbles = true;
@@ -19,13 +20,19 @@ export class VillageRenderer {
   private materials = new Map<string, THREE.MeshLambertMaterial>();
   private selection = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.72, 24), new THREE.MeshBasicMaterial({ color: '#ffe4a1', side: THREE.DoubleSide, depthWrite: false }));
   private selected: string | null = null;
+  private style: GraphicStyle = 'diorama';
   constructor(scene: THREE.Scene) { scene.add(this.root); this.root.add(this.selection); this.selection.rotation.x = -Math.PI / 2; this.selection.visible = false; }
   private material(color: string) {
     let material = this.materials.get(color);
-    if (!material) { material = new THREE.MeshLambertMaterial({ color }); this.materials.set(color, material); } return material;
+    if (!material) { material = new THREE.MeshLambertMaterial({ color }); this.tint(material, color); this.materials.set(color, material); } return material;
   }
+  private tint(material: THREE.MeshLambertMaterial, color: string) {
+    material.color.set(color);
+    if (this.style === 'diorama') { const hsl = { h: 0, s: 0, l: 0 }; material.color.getHSL(hsl); material.color.setHSL(hsl.h, hsl.s * .88, hsl.l); }
+  }
+  setGraphicStyle(style: GraphicStyle) { this.style = style; for (const [color, material] of this.materials) this.tint(material, color); }
   private box(parent: THREE.Object3D, color: string, size: number[], p: number[]) {
-    const mesh = new THREE.Mesh(this.cube, this.material(color)); mesh.scale.set(size[0], size[1], size[2]); mesh.position.set(p[0], p[1], p[2]); parent.add(mesh); return mesh;
+    const mesh = new THREE.Mesh(this.cube, this.material(color)); mesh.castShadow = mesh.receiveShadow = true; mesh.scale.set(size[0], size[1], size[2]); mesh.position.set(p[0], p[1], p[2]); parent.add(mesh); return mesh;
   }
   private figure(r: Resident): Figure {
     const group = new THREE.Group(); group.userData.residentId = r.id;

@@ -4,8 +4,12 @@ import { Block, CHUNK, SIZE, getBlock, inside, type Edit } from '../../../shared
 import type { VillageState } from '../../../shared/village';
 import { VillageRenderer } from './village-renderer';
 import { WorldEffects } from './effects';
+import { DioramaEnvironment } from './environment';
+import { DioramaPostProcessing } from './post-processing';
+import { QUALITY_PROFILES, effectiveQuality, lightingAt, previewMinute, summarizeFrames, type GraphicsSettings, type QualityProfile, type RenderMetrics, type Benchmark } from './graphics';
 interface WorkerMesh { positions: Float32Array; normals: Float32Array; blocks: Uint8Array; indices: Uint32Array }
 const palette: Record<number, string> = { 1: '#85ae62', 2: '#a47a50', 3: '#909a9e', 4: '#e9d39c', 5: '#aa8057', 6: '#548b54', 7: '#77bec7', 8: '#c6886b' };
+const dioramaPalette: Record<number, string> = { 1: '#8caa6a', 2: '#a28a69', 3: '#969c95', 4: '#e4d1a0', 5: '#a88560', 6: '#628657', 7: '#ffffff', 8: '#bd927b' };
 export class WorldRenderer {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 800);
@@ -13,7 +17,18 @@ export class WorldRenderer {
   readonly controls: WorldCamera;
   readonly village: VillageRenderer;
   readonly effects: WorldEffects;
-  quality: 'auto' | 'low' | 'high' = 'auto';
+  settings: GraphicsSettings = { style: 'diorama', quality: 'auto', shadows: true, ao: true, distance: 'standard', preview: 'world' };
+  private environment: DioramaEnvironment;
+  private post?: DioramaPostProcessing;
+  private profile: QualityProfile = QUALITY_PROFILES.high;
+  private downgrade = 0;
+  private profileKey = '';
+  private postUnavailable = false;
+  private gpu = '';
+  private durations: number[] = [];
+  private cpuTimes: number[] = [];
+  private benchmark?: { durations: number[]; cpu: number[]; warmupUntil: number; elapsed: number };
+  private shadowAt = 0;
   private worker?: Worker;
   private jobId = 0;
   private jobs = new Map<string, number>();
@@ -39,16 +54,25 @@ export class WorldRenderer {
   private frames = 0;
   time = 480;
   onFps: (fps: number) => void = () => {};
+  onMetrics: (metrics: RenderMetrics) => void = () => {};
+  onBenchmark: (result: Benchmark | null) => void = () => {};
+  onGraphicNotice: (text: string) => void = () => {};
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.ratio = Math.min(devicePixelRatio, window.innerWidth < 700 ? 1.5 : 2); this.renderer.setPixelRatio(this.ratio);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.info.autoReset = false;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; this.renderer.shadowMap.autoUpdate = false;
+    const gl = this.renderer.getContext(), debug = gl.getExtension('WEBGL_debug_renderer_info');
+    this.gpu = debug ? String(gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)) : 'WebGL 2（GPU名は非公開）';
+    this.postUnavailable = !this.renderer.extensions.has('EXT_color_buffer_float');
     container.appendChild(this.renderer.domElement);
     this.controls = new WorldCamera(this.camera, this.renderer.domElement); this.controls.home();
     this.village = new VillageRenderer(this.scene);
     this.effects = new WorldEffects(this.scene); this.village.onEffect = (kind, position) => this.effects.emit(kind, position);
     this.scene.background = new THREE.Color('#dfeef0'); this.scene.fog = new THREE.Fog('#dfeef0', 380, 700);
     this.scene.add(this.sun, this.ambient); this.sun.position.set(45, 75, 20);
+    this.environment = new DioramaEnvironment(this.scene, this.sun, this.ambient);
     this.scene.add(this.outline); this.outline.visible = false;
     const cloudGeo = new THREE.BoxGeometry(1, 1, 1);
     const cloudMat = new THREE.MeshLambertMaterial({ color: '#ffffff', transparent: true, opacity: 0.75 });
@@ -60,26 +84,35 @@ export class WorldRenderer {
       dummy.scale.set(4, 1.4, 3); dummy.updateMatrix(); instanced.setMatrixAt(i, dummy.matrix);
     }
     this.clouds.add(instanced); this.scene.add(this.clouds);
-    window.addEventListener('resize', () => this.resize()); this.resize();
-    document.addEventListener('visibilitychange', () => { this.lastFrame = performance.now(); this.renderer.setAnimationLoop(document.hidden ? null : () => this.frame()); });
+    this.clouds.userData.skipAO = true; this.outline.userData.skipAO = true;
+    window.addEventListener('resize', () => { if (this.benchmark) { this.benchmark = undefined; this.onBenchmark(null); } this.configureGraphics(); }); this.resize();
+    document.addEventListener('visibilitychange', () => { this.lastFrame = performance.now(); this.durations = []; this.cpuTimes = []; if (this.benchmark) { this.benchmark = undefined; this.onBenchmark(null); } this.renderer.setAnimationLoop(document.hidden ? null : () => this.frame()); });
+    this.configureGraphics();
     this.renderer.setAnimationLoop(() => this.frame());
   }
   private geometry(mesh: WorkerMesh) {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(mesh.positions, 3));
     geometry.setAttribute('normal', new THREE.Float32BufferAttribute(mesh.normals, 3));
-    const colors = new Float32Array(mesh.blocks.length * 3), color = new THREE.Color();
+    const colors = new Float32Array(mesh.blocks.length * 3), warmColors = new Float32Array(colors.length), color = new THREE.Color();
     for (let i = 0; i < mesh.blocks.length; i++) {
       const block = mesh.blocks[i], normalY = mesh.normals[i * 3 + 1];
       color.set(block === Block.Grass && normalY !== 1 ? '#96734d' : palette[block]);
       if (normalY < 0) color.multiplyScalar(0.76);
       colors.set([color.r, color.g, color.b], i * 3);
+      color.set(block === Block.Grass && normalY !== 1 ? '#a28a69' : dioramaPalette[block]);
+      if (normalY < 0) color.multiplyScalar(.8);
+      warmColors.set([color.r, color.g, color.b], i * 3);
     }
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); geometry.setIndex(new THREE.BufferAttribute(mesh.indices, 1));
+    // Keep both palettes as owned attributes so disposing an edited chunk releases both GPU buffers.
+    geometry.setAttribute('classicColor', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute('dioramaColor', new THREE.Float32BufferAttribute(warmColors, 3));
+    geometry.setAttribute('color', geometry.getAttribute(`${this.settings.style}Color`)); geometry.setIndex(new THREE.BufferAttribute(mesh.indices, 1));
     geometry.computeBoundingSphere(); return geometry;
   }
   setWorld(data: Uint8Array, center = { x: 34, z: 40 }): Promise<void> {
     this.data = data;
+    this.environment.world(data);
     this.worker?.terminate(); this.jobs.clear(); this.dirty.clear(); this.pendingEdits = [];
     for (const group of this.chunks.values()) { group.traverse(o => { if (o instanceof THREE.Mesh) o.geometry.dispose(); }); this.scene.remove(group); } this.chunks.clear();
     this.worker = new Worker(new URL('./mesh-worker.ts', import.meta.url), { type: 'module' });
@@ -108,12 +141,15 @@ export class WorldRenderer {
     const group = new THREE.Group(); group.userData.cx = cx; group.userData.cz = cz;
     for (const [kind, mesh] of Object.entries(result)) {
       if (!mesh.indices.length) continue;
-      const object = new THREE.Mesh(this.geometry(mesh), kind === 'solid' ? this.solid : this.water);
+      const object = new THREE.Mesh(this.geometry(mesh), this.material(kind === 'solid'));
+      object.castShadow = object.receiveShadow = kind === 'solid'; object.userData.skipAO = kind === 'water';
       object.userData.solid = kind === 'solid'; group.add(object);
     }
     this.chunks.set(key, group); this.scene.add(group);
+    this.renderer.shadowMap.needsUpdate = true;
   }
   changed(edit: Edit) {
+    if (this.data) this.environment.edits(this.data, [edit]);
     this.pendingEdits.push(edit);
     const cx = Math.floor(edit.x / CHUNK), cz = Math.floor(edit.z / CHUNK);
     this.rebuild(cx, cz);
@@ -123,6 +159,7 @@ export class WorldRenderer {
     if (edit.z % CHUNK === CHUNK - 1) this.rebuild(cx, cz + 1);
   }
   changedBatch(edits: Edit[]) {
+    if (this.data) this.environment.edits(this.data, edits);
     this.pendingEdits.push(...edits);
     for (const edit of edits.slice(-12)) if (edit.block !== Block.Air) this.effects.block(edit, palette[edit.block]);
     const chunks = new Set<string>();
@@ -135,10 +172,42 @@ export class WorldRenderer {
     }
     for (const key of chunks) { const [x, z] = key.split(',').map(Number); this.rebuild(x, z); }
   }
-  setQuality(quality: 'auto' | 'low' | 'high') {
-    this.quality = quality; this.slowFrames = 0;
-    this.ratio = quality === 'low' ? 1 : Math.min(devicePixelRatio, window.innerWidth < 700 ? 1.5 : 2); this.renderer.setPixelRatio(this.ratio); this.resize();
+  private material(solid: boolean) { return this.settings.style === 'classic' ? (solid ? this.solid : this.water) : (solid ? this.environment.solid : this.environment.water); }
+  setGraphics(settings: GraphicsSettings) {
+    const styleChanged = settings.style !== this.settings.style;
+    const changed = JSON.stringify(settings) !== JSON.stringify(this.settings);
+    if (changed && this.benchmark) { this.benchmark = undefined; this.onBenchmark(null); }
+    this.settings = settings; this.slowFrames = 0; this.downgrade = 0;
+    if (styleChanged) {
+      for (const group of this.chunks.values()) for (const object of group.children) if (object instanceof THREE.Mesh) {
+        object.material = this.material(object.userData.solid); object.geometry.setAttribute('color', object.geometry.getAttribute(`${settings.style}Color`));
+      }
+      this.village.setGraphicStyle(settings.style);
+    }
+    this.configureGraphics();
   }
+  private configureGraphics() {
+    const effective = effectiveQuality(this.settings.quality, innerWidth < 700, this.downgrade);
+    this.profile = QUALITY_PROFILES[effective];
+    const remake = this.settings.style === 'diorama';
+    this.ratio = Math.min(devicePixelRatio, this.profile.pixelRatio); this.renderer.setPixelRatio(this.ratio);
+    this.renderer.toneMapping = remake ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
+    this.renderer.toneMappingExposure = remake ? 1.04 : 1;
+    this.renderer.shadowMap.enabled = remake && this.settings.shadows && this.profile.shadowSize > 0;
+    this.environment.shadow(this.profile, this.renderer.shadowMap.enabled); this.renderer.shadowMap.needsUpdate = true;
+    const usePost = remake && this.settings.ao && this.profile.aoScale > 0 && !this.postUnavailable;
+    if (remake && this.settings.ao && this.profile.aoScale > 0 && this.postUnavailable) this.onGraphicNotice('この端末では AO を利用できないため、光と影だけで描画します。');
+    const key = `${effective}:${usePost}`;
+    if (key !== this.profileKey) {
+      this.post?.dispose(); this.post = undefined; this.profileKey = key;
+      if (usePost) {
+        try { this.post = new DioramaPostProcessing(this.renderer, this.scene, this.camera, this.profile); }
+        catch (error) { this.postUnavailable = true; this.onGraphicNotice('この端末では AO を無効にして描画します。'); console.warn('AO unavailable', error); }
+      }
+    }
+    this.durations = []; this.cpuTimes = []; this.resize();
+  }
+  measure() { this.benchmark = { durations: [], cpu: [], warmupUntil: performance.now() + 1000, elapsed: 0 }; }
   focusVillage(state: VillageState, residentId?: string) {
     const p = state.residents.find(r => r.id === residentId)?.position ?? state.camp;
     this.controls.target.set(p.x, p.y, p.z);
@@ -179,33 +248,69 @@ export class WorldRenderer {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.clearViewOffset(); this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.post?.resize(this.profile);
+    this.renderer.shadowMap.needsUpdate = true;
   }
   private frame() {
-    const now = performance.now(), hour = (this.time % 1440) / 60;
-    const delta = Math.min(0.1, (now - this.lastFrame) / 1000);
+    const now = performance.now(), frameMs = now - this.lastFrame;
+    const visualTime = previewMinute(this.settings.preview, this.time), hour = (visualTime % 1440) / 60;
+    const delta = Math.min(0.1, frameMs / 1000);
     this.village.frame(now, delta, this.paused, this.camera, this.controls.orbit.radius); this.effects.frame(delta, this.paused); this.lastFrame = now;
     if (this.dirty.size && this.worker) {
       const requests = [...this.dirty].map(key => { const [cx, cz] = key.split(',').map(Number), id = ++this.jobId; this.jobs.set(key, id); return { cx, cz, id }; });
       this.worker.postMessage({ edits: this.pendingEdits, requests }); this.dirty.clear(); this.pendingEdits = [];
     }
-    const light = Math.max(0.12, Math.sin((hour - 6) / 24 * Math.PI * 2));
-    this.sun.intensity = light * 2.1; this.ambient.intensity = 0.6 + light * 1.4;
-    this.sky.copy(this.nightColor).lerp(this.dayColor, light);
+    if (this.settings.style === 'classic') {
+      const light = Math.max(0.12, Math.sin((hour - 6) / 24 * Math.PI * 2));
+      this.sun.position.set(45, 75, 20); this.sun.target.position.set(0, 0, 0); this.sun.color.set('#fff1d8');
+      this.ambient.color.set('#effbff'); this.ambient.groundColor.set('#7b875a');
+      this.sun.intensity = light * 2.1; this.ambient.intensity = 0.6 + light * 1.4;
+      this.sky.copy(this.nightColor).lerp(this.dayColor, light);
+    } else {
+      this.renderer.toneMappingExposure = lightingAt(visualTime).exposure;
+    }
+    this.environment.frame(visualTime, now, this.camera, this.controls.target, this.controls.orbit.radius, this.settings);
+    if (this.settings.style === 'diorama') this.sky.copy(this.environment.horizon);
     (this.scene.background as THREE.Color).copy(this.sky); (this.scene.fog as THREE.Fog).color.copy(this.sky);
     this.clouds.position.x = Math.sin(now / 90000) * 10;
     this.water.opacity = 0.68 + Math.sin(now / 1800) * 0.035;
     // Frustum culling is enabled on each mesh; mobile limits distant chunks as well.
-    const mobile = window.innerWidth < 700;
+    const distance = this.settings.distance === 'far' ? 220 : this.settings.distance === 'near' ? 44 : this.profile.distance;
     for (const group of this.chunks.values()) {
       const { cx, cz } = group.userData;
-      group.visible = !(mobile || this.quality === 'low') || Math.hypot(cx * CHUNK + 8 - this.controls.target.x, cz * CHUNK + 8 - this.controls.target.z) < Math.max(44, this.controls.orbit.radius * 0.8);
+      group.visible = Math.hypot(cx * CHUNK + 8 - this.controls.target.x, cz * CHUNK + 8 - this.controls.target.z) < Math.max(distance, this.controls.orbit.radius * .8) + CHUNK;
     }
-    this.renderer.render(this.scene, this.camera); this.frames++;
+    this.renderer.info.reset();
+    if (this.renderer.shadowMap.enabled && now - this.shadowAt > 66) { this.renderer.shadowMap.needsUpdate = true; this.shadowAt = now; }
+    if (this.post) this.post.render(delta); else this.renderer.render(this.scene, this.camera);
+    this.frames++;
+    const cpuMs = performance.now() - now;
+    this.durations.push(frameMs); this.cpuTimes.push(cpuMs);
+    if (this.durations.length > 300) { this.durations.shift(); this.cpuTimes.shift(); }
+    if (this.benchmark && now >= this.benchmark.warmupUntil) {
+      this.benchmark.durations.push(frameMs); this.benchmark.cpu.push(cpuMs);
+      this.benchmark.elapsed += frameMs;
+      if (this.benchmark.elapsed >= 10_000) {
+        const result = summarizeFrames(this.benchmark.durations, this.benchmark.cpu); this.benchmark = undefined;
+        this.onBenchmark({ ...result, metrics: this.metrics() });
+      }
+    }
     if (now - this.fpsAt > 1000) {
       const fps = Math.round(this.frames * 1000 / (now - this.fpsAt)); this.onFps(fps);
-      this.slowFrames = fps < 30 ? this.slowFrames + 1 : 0;
-      if (this.quality === 'auto' && this.slowFrames >= 4 && this.ratio > 1) { this.ratio = Math.max(1, this.ratio - .25); this.renderer.setPixelRatio(this.ratio); this.resize(); this.slowFrames = 0; }
+      this.onMetrics(this.metrics());
+      this.slowFrames = fps < (innerWidth < 700 ? 28 : 50) ? this.slowFrames + 1 : 0;
+      if (!this.benchmark && this.settings.quality === 'auto' && this.slowFrames >= 4 && this.downgrade < 2) {
+        this.downgrade++; this.configureGraphics(); this.slowFrames = 0;
+        this.onGraphicNotice('描画負荷に合わせて、品質を軽くしました。');
+      }
       this.frames = 0; this.fpsAt = now;
     }
+  }
+  private metrics(): RenderMetrics {
+    const sample = summarizeFrames(this.durations, this.cpuTimes), info = this.renderer.info;
+    return { fps: sample.fps, frameP95: sample.frameP95, cpuMs: sample.cpuMs, calls: info.render.calls, triangles: info.render.triangles,
+      geometries: info.memory.geometries, textures: info.memory.textures, width: this.renderer.domElement.width, height: this.renderer.domElement.height,
+      ratio: this.ratio, gpu: this.gpu, effectiveQuality: effectiveQuality(this.settings.quality, innerWidth < 700, this.downgrade),
+      post: !!this.post, shadowSize: this.renderer.shadowMap.enabled ? this.profile.shadowSize : 0, style: this.settings.style };
   }
 }

@@ -104,7 +104,33 @@
   </dialog>
   <dialog id="history-dialog" class="history-dialog"><button id="close-history" class="icon-button dialog-close" aria-label="世界の歴史を閉じる">×</button><div class="eyebrow">THE STORY WE SHARE</div><h2>この世界の、歩んだ時間。</h2><p>最初の小屋、実った作物、新しい仲間。住民たちが刻んだ出来事を残します。</p><label for="history-filter" class="history-filter-label">出来事の種類</label><select id="history-filter"><option value="all">すべての歴史</option><option value="task">村の課題と仕事</option><option value="growth">発展</option><option value="arrival">移住</option><option value="harvest">農業</option><option value="construction">建築</option><option value="festival">祭り</option><option value="weather">天候</option><option value="trade">交易</option></select><p id="history-archive"></p><ol id="world-history" class="world-history"></ol></dialog>
   <dialog id="tasks-dialog" class="history-dialog"><button id="close-tasks" class="icon-button dialog-close" aria-label="村の仕事を閉じる">×</button><div class="eyebrow">OUR NEXT STEPS</div><h2>みんなで、村の課題を解く。</h2><p id="task-issues"></p><h3>島をつなぐ橋</h3><div id="bridge-list"></div><h3>必要な仕事と分担</h3><p>材料を取り置きし、作業場所ごとに担当を決めます。移動できない仕事は時間を置いて再評価します。</p><div id="task-list"></div></dialog>
-  <dialog id="settings-dialog"><button id="close-settings" class="icon-button dialog-close" aria-label="設定を閉じる">×</button><div class="eyebrow">MAKE YOURSELF AT HOME</div><h2>心地よい、世界の眺め方。</h2><label class="setting-row"><span><strong>効果音</strong><small>建築・収穫・新しい仲間の到着</small></span><input id="sound-enabled" type="checkbox" /></label><label class="setting-row"><span><strong>エフェクト</strong><small>建築の粒子と完成時のお祝い</small></span><input id="effects-enabled" type="checkbox" checked /></label><label class="setting-row"><span><strong>住民の吹き出し</strong><small>村を近くで見ると会話が表示されます</small></span><input id="bubbles-enabled" type="checkbox" checked /></label><label class="quality-setting" for="render-quality">描画品質<select id="render-quality"><option value="auto">自動 · FPSに合わせて調整</option><option value="low">軽量 · 近くの地形を優先</option><option value="high">高品質 · 遠くの地形も表示</option></select></label><p>音はこの端末で操作した後に再生されます。設定はブラウザに保存されます。端末の「視差効果を減らす」設定にも対応しています。</p></dialog>
+  <dialog id="settings-dialog">
+    <button id="close-settings" class="icon-button dialog-close" aria-label="設定を閉じる">×</button>
+    <div class="eyebrow">MAKE YOURSELF AT HOME</div><h2>心地よい、世界の眺め方。</h2>
+    <div class="graphics-options">
+      <label for="graphic-style">世界の描き方<select id="graphic-style"><option value="diorama">ジオラマ · 温かな光と水面</option><option value="classic">旧ボクセル · 以前の描画</option></select></label>
+      <label for="render-quality">描画品質<select id="render-quality"><option value="auto">自動 · FPSに合わせて調整</option><option value="low">低 · 影とポストエフェクトなし</option><option value="medium">中 · 軽い影と AO</option><option value="high">高 · 細かな影と AO</option></select></label>
+      <label for="light-preview">光のプレビュー<select id="light-preview"><option value="world">世界の時刻に合わせる</option><option value="day">昼 · 12:00</option><option value="evening">夕方 · 17:30</option><option value="night">夜 · 22:00</option></select></label>
+    </div>
+    <p class="graphics-help">描き方と光を切り替えて、同じ場所を比較できます。光のプレビューは住民や世界の時刻を変更しません。</p>
+    <details class="graphics-detail"><summary>影・描画距離・ポストエフェクト</summary>
+      <label class="setting-row"><span><strong>柔らかな影</strong><small>太陽と月による地形・建物・住民の影</small></span><input id="render-shadows" type="checkbox" checked /></label>
+      <label class="setting-row"><span><strong>Ambient Occlusion（AO）</strong><small>物の重なりに淡い陰影を加えます</small></span><input id="render-ao" type="checkbox" checked /></label>
+      <label class="quality-setting" for="render-distance">描画距離<select id="render-distance"><option value="near">近く · 村の観察向け</option><option value="standard">標準 · 品質に合わせる</option><option value="far">遠く · すべての島</option></select></label>
+      <p>低品質では影と AO を停止します。島全体へズームを戻すと、距離設定に合わせて表示範囲も広がります。</p>
+    </details>
+    <details class="graphics-detail"><summary>この端末の描画性能</summary>
+      <pre id="graphics-metrics" class="graphics-metrics">描画を計測しています…</pre>
+      <button id="measure-graphics" class="graphics-measure">10秒間の性能を測る</button>
+      <pre id="graphics-benchmark" class="graphics-metrics" aria-live="polite">PCは60 FPS、スマホは30 FPS以上が目標です。</pre>
+      <p>CPU描画時間は GPU の処理時間を含みません。別タブに移ると測定を中止します。</p>
+    </details>
+    <p id="graphics-notice" role="status"></p>
+    <label class="setting-row"><span><strong>効果音</strong><small>建築・収穫・新しい仲間の到着</small></span><input id="sound-enabled" type="checkbox" /></label>
+    <label class="setting-row"><span><strong>エフェクト</strong><small>建築の粒子と完成時のお祝い</small></span><input id="effects-enabled" type="checkbox" checked /></label>
+    <label class="setting-row"><span><strong>住民の吹き出し</strong><small>村を近くで見ると会話が表示されます</small></span><input id="bubbles-enabled" type="checkbox" checked /></label>
+    <p>音はこの端末で操作した後に再生されます。設定はブラウザに保存されます。端末の「視差効果を減らす」設定にも対応しています。</p>
+  </dialog>
   <dialog id="instructions-dialog" class="instructions-dialog">
     <button id="close-instructions" class="icon-button" aria-label="AI指示を閉じる">×</button>
     <div class="eyebrow">A WORD TO YOUR WORLD</div><h2>ことばから、次の暮らし。</h2>
