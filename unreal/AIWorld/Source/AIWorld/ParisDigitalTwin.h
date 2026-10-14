@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/HUD.h"
 #include "Dom/JsonObject.h"
+#include "ParisGeoReference.h"
 #include "ParisDigitalTwin.generated.h"
 
 class UCameraComponent;
@@ -18,7 +19,8 @@ class AParisTwinCamera : public APawn {
 public:
     AParisTwinCamera();
     virtual void Tick(float Delta) override;
-    void Overview(double Extent);
+    void Overview(double Extent,const FVector& Centre=FVector::ZeroVector);
+    void Focus(const FVector& Location,double Distance);
     void Eye(const FVector& Location);
     void Zoom(double Factor);
     UPROPERTY() TObjectPtr<UCameraComponent> Camera;
@@ -37,6 +39,8 @@ public:
     void BeginLook();void EndLook();
     FVector2D GetRawLookDelta() const;
     bool IsLooking() const { return bLooking; }
+    void ToggleFootprints();void ToggleIssues();void ToggleHelp();
+    void LandmarkOne();void LandmarkTwo();void LandmarkThree();
 private:
     bool bLooking=false;
 };
@@ -49,12 +53,18 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float Delta) override;
     void Select(UPrimitiveComponent* Component);
+    void SelectHit(const FHitResult& Hit);
+    TSharedPtr<FJsonObject> SourceAt(const FVector& Point,const FString& Kind=TEXT(""),const TArray<TSharedPtr<FJsonValue>>& Allowed={}) const;
     void ToggleLevels();
+    void ToggleFootprints();void ToggleIssues();void FocusLandmark(int32 Index);
     void Capture();
-    bool bReady=false,bLevels=false;
+    bool bReady=false,bLevels=false,bFootprints=false,bIssues=false;
     FString Status=TEXT("GISデータを読み込み中"),Selection;
     double Extent=800;
     FVector QualityCentre=FVector::ZeroVector;
+    FVector SceneCentre=FVector::ZeroVector;
+    FParisGeoReference GeoReference;
+    FString IssueSummary;
     int32 BuildingCount=0,TriangleCount=0;
 private:
     UPROPERTY() TArray<TObjectPtr<UProceduralMeshComponent>> Meshes;
@@ -62,6 +72,10 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInterface> StoneMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> WaterMaterial;
     TMap<UPrimitiveComponent*,TSharedPtr<FJsonObject>> Features;
+    TArray<TSharedPtr<FJsonObject>> SourceFeatures,Landmarks,Issues;
+    TSet<FString> OverlapIDs;
+    UPROPERTY() TObjectPtr<UProceduralMeshComponent> FootprintMesh;
+    void RefreshAppearance();
     double ReadyAt=0;
     bool bCaptured=false,bMeasured=false;
     TArray<double> FrameTimes;
@@ -72,4 +86,6 @@ class AParisTwinHUD : public AHUD {
     GENERATED_BODY()
 public:
     virtual void DrawHUD() override;
+    bool HandleClick(const FVector2D& Position);
+    bool bHelp=false;
 };

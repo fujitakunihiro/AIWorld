@@ -35,6 +35,10 @@ $env:PYTHONPATH=Join-Path (Get-Location) 'gis'
 
 UE向けファイルは `unreal/AIWorld/Content/Data/paris-digital-twin.json` にも出力します。座標は既にcmなので、既存ボクセルの軸変換・100倍変換を適用しません。Cesiumは使っていません。
 
+Phase 2で `diagnostics.py`、`Data/Generated/<district>/diagnostics.json`、クリック選択用source情報、輪郭メッシュ、対話式HTML地図を追加しました。地図の品質項目を選択すると関連する元IDを強調します。詳細は [Phase 2報告書](../docs/paris-digital-twin-phase2.md)。
+
+`origin_wgs84` は全地区の共通原点、`district_center_wgs84` は個別地区の取得・表示範囲の中心です。`gis/config/saint_michel_west.json` は共通原点を保持した拡張例です。西側のRawは未取得なので、その設定を使う前に `download --config gis/config/saint_michel_west.json` が必要です。`generate` / `validate` にも同じ `--config` を渡してください。CLI座標変換は地区が変わっても同じ原点を使用します。
+
 各棟はL1です。OSM heightタグも測量済みとはみなさず `source_declared_unverified` とします。Parisの `h_et_max` は階数であり、メートルではありません。階数×階高や地区の既定高さは `estimated` として区別します。高さを丸ごと柱へ適用する簡易プレビューなので、特に教会の塔・尖塔の形を再現したL2ボリュームではありません。
 
 出力の再現性は固定した入力、設定、依存ライブラリに対して確認します。元データの測量精度は、変換の往復誤差と別です。LOD・Nanite用のStaticMesh化、World Partition・HLOD、現地写真に合う外観は後続Phaseで実装します。

@@ -17,7 +17,9 @@ class Georeference:
         self.inverse = Transformer.from_crs(self.crs, 'EPSG:4326', always_xy=True)
         self.origin = self.forward.transform(*config['origin_wgs84'])
         half = config['core_size_m'] / 2 + config['context_buffer_m']
-        x, y = self.origin
+        # District coverage can move while all districts keep the same UE origin.
+        self.centre = self.forward.transform(*config.get('district_center_wgs84', config['origin_wgs84']))
+        x, y = self.centre
         self.extent = box(x-half, y-half, x+half, y+half)
 
     def to_ue(self, lon, lat, elevation=0, origin_elevation=0):

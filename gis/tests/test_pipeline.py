@@ -9,6 +9,7 @@ from paris_twin.mesh import export,triangulate
 from paris_twin.normalize import normalize,positive_number,road_width
 from paris_twin.validate import validate
 from paris_twin import acquire
+from paris_twin.diagnostics import road_components
 
 CONFIG=read(ROOT/'gis/config/ile_de_la_cite.json')
 
@@ -35,6 +36,28 @@ class PipelineTests(unittest.TestCase):
         lon2,lat2,h=geo.from_ue(x,y,z,origin_elevation=30)
         self.assertAlmostEqual(lon,lon2,places=10);self.assertAlmostEqual(lat,lat2,places=10);self.assertEqual(h,35)
         with self.assertRaises(ValueError):Georeference({**CONFIG,'projected_crs':'EPSG:4326'})
+
+    def test_adjacent_district_uses_same_origin_and_continuous_coordinates(self):
+        geo=Georeference(CONFIG)
+        centre=geo.inverse.transform(geo.origin[0]+500,geo.origin[1])
+        neighbor=Georeference({**CONFIG,'district_center_wgs84':centre})
+        self.assertEqual(geo.origin,neighbor.origin)
+        point=geo.inverse.transform(geo.origin[0]+250,geo.origin[1]+80)
+        self.assertEqual(geo.to_ue(*point),neighbor.to_ue(*point))
+        self.assertGreater(geo.extent.intersection(neighbor.extent).area,0)
+        self.assertAlmostEqual(neighbor.centre[0]-geo.centre[0],500,places=6)
+
+    def test_road_review_distinguishes_clipped_boundary_and_internal_paths(self):
+        geo=Georeference(CONFIG);x,y=geo.origin
+        def road(identifier,ids,points):
+            return {'properties':{'tunnel':False,'layer':0,'source_id':identifier,'osm_node_ids':ids,'source_geometry_projected':{'coordinates':points}}}
+        roads=[road('osm/way/1',[1,2,3],[(x,y),(x+50,y),(x+100,y)]),
+               road('osm/way/2',[4,5],[(x,y+50),(x+20,y+50)]),
+               road('osm/way/3',[6,7],[(x-450,y),(x-390,y)])]
+        network,issues=road_components(roads,geo)
+        self.assertEqual(network['component_sizes'],[3,2,2])
+        self.assertEqual([i['classification'] for i in issues],['interior_unconnected','boundary_clipped'])
+        self.assertEqual(road_components(list(reversed(roads)),geo),(network,issues))
 
     def test_roof_and_ground_triangulation_preserves_courtyards(self):
         g=Polygon([(0,0),(20,0),(20,20),(0,20)],holes=[[(4,4),(4,8),(8,8),(8,4)]])
@@ -65,6 +88,11 @@ class PipelineTests(unittest.TestCase):
         basin_ids={f['properties']['source_id'] for f in data['layers']['water'] if f['properties']['water_role']=='basin'}
         self.assertTrue(river_ids);self.assertTrue(basin_ids);self.assertFalse(river_ids & basin_ids)
         self.assertTrue(all(o['properties']['water_level_local_m']>=0 for o in scene['objects'] if o['id'] in basin_ids))
+        self.assertEqual(scene['diagnostics']['building_overlaps'],report['building_overlaps'])
+        self.assertEqual(len(scene['diagnostics']['issues']),len(report['building_overlaps'])+len(report['road_network']['component_sizes'])-1)
+        self.assertEqual(len(scene['landmarks']),3)
+        self.assertTrue(scene['footprint_mesh']['indices'])
+        self.assertEqual(len(scene['pick_features']),len({f['id'] for f in scene['pick_features']}))
 
 
 if __name__=='__main__':unittest.main()

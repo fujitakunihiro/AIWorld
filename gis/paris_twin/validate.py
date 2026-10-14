@@ -6,31 +6,11 @@ from shapely.strtree import STRtree
 from .acquire import verify_cache
 from .coordinates import Georeference
 from .io import paths, read, sha, write
+from .diagnostics import road_components
 
 
 def connectivity(roads,geo):
-    graph=defaultdict(set)
-    for f in roads:
-        p=f['properties']
-        if p['tunnel'] or p['layer']<0:continue
-        coords=p['source_geometry_projected'].get('coordinates',[])
-        ids=p.get('osm_node_ids',[])
-        if len(coords)!=len(ids):continue
-        for a,b,ca,cb in zip(ids,ids[1:],coords,coords[1:]):
-            if not LineString([ca,cb]).intersects(geo.extent):continue
-            graph[a].add(b);graph[b].add(a)
-    remaining=set(graph);components=[]
-    while remaining:
-        todo=[remaining.pop()];count=0
-        while todo:
-            node=todo.pop();count+=1
-            for neighbor in graph[node]:
-                if neighbor in remaining:remaining.remove(neighbor);todo.append(neighbor)
-        components.append(count)
-    return {'nodes':len(graph),'edges':sum(map(len,graph.values()))//2,
-            'component_sizes':sorted(components,reverse=True),
-            'largest_component_ratio':round(max(components,default=0)/max(1,len(graph)),4),
-            'method':'original OSM shared node IDs; underground omitted; disconnected clipped paths reported'}
+    return road_components(roads,geo)[0]
 
 
 def validate(config):
@@ -93,6 +73,18 @@ def validate(config):
         if any(not math.isfinite(v) for pos in positions for v in pos):errors.append('nonfinite_mesh:'+obj['id'])
         triangles+=len(indices)//3
     if scene['georeference']['cesium_transform_applied']:errors.append('unexpected_double_georeference')
+    review=read(p['Generated']/'diagnostics.json')
+    if review['road_network']!=network:errors.append('diagnostic_network_mismatch')
+    if review['building_overlaps']!=overlaps:errors.append('diagnostic_overlap_mismatch')
+    for issue in review['issues']:
+        if not issue['source_ids'] or any(identifier not in ids for identifier in issue['source_ids']):errors.append('untraced_diagnostic:'+issue['id'])
+    if len(scene['pick_features'])!=len({f['id'] for f in scene['pick_features']}):errors.append('duplicate_pick_feature')
+    if any(f['id'] not in ids for f in scene['pick_features']):errors.append('untraced_pick_feature')
+    footprint=scene['footprint_mesh']
+    if len(footprint['positions_cm'])!=len(footprint['vertex_colors']):errors.append('footprint_colour_count_mismatch')
+    if any(i<0 or i>=len(footprint['positions_cm']) for i in footprint['indices']) or len(footprint['indices'])%3:errors.append('invalid_footprint_mesh_indices')
+    expected_centre=geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']))
+    if any(abs(a-b)>.001 for a,b in zip(expected_centre,scene['scene_centre_ue_cm'])):errors.append('district_centre_mismatch')
     report={'format':1,'generation':data['generation'],'errors':errors,'warnings':warnings,'coordinate_roundtrip_max_m':worst,
             'invalid_geometry':invalid,'untraced_ids':untraced,'building_overlaps':overlaps,
             'buildings':len(buildings),'missing_verified_measured_heights':missing,'estimated_heights':estimates,
@@ -101,6 +93,9 @@ def validate(config):
             'normalized_issues':data['issues'],'generated_surface_validation':surface,
             'water_roles':{role:sum(f['properties']['water_role']==role for f in layers['water']) for role in ['river','basin','waterbody']},
             'scene_sha256':sha(p['Generated']/'scene.json'),'triangles':triangles,
+            'review_issue_counts':{kind:sum(i['kind']==kind for i in review['issues']) for kind in ['building_overlap','disconnected_road']},
+            'review_road_classes':{kind:sum(i['classification']==kind for i in review['issues']) for kind in ['boundary_clipped','interior_unconnected']},
+            'shared_georeference':scene['georeference']['reference_id'],
             'height_semantics':'Paris h_et_max is floors, not metres; OSM height is source-declared, unverified'}
     write(p['Generated']/'validation.json',report)
     return report

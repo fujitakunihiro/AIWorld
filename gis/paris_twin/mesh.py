@@ -8,6 +8,7 @@ from shapely.ops import unary_union
 from .coordinates import Georeference
 from .io import ROOT, paths, sha, write
 from .normalize import polygonal
+from .diagnostics import analyse
 
 
 def polygons(g):
@@ -20,6 +21,28 @@ def polygons(g):
 
 def triangulate(g):
     return [t for p in polygons(g) for t in constrained_delaunay_triangles(p).geoms]
+
+
+def lines(g):
+    if g is None or g.is_empty:
+        return []
+    if g.geom_type == 'Polygon':
+        return [list(r.coords) for r in [g.exterior, *g.interiors]]
+    if g.geom_type in ['LineString', 'LinearRing']:
+        return [list(g.coords)]
+    return [line for child in getattr(g, 'geoms', []) for line in lines(child)]
+
+
+def source_feature(feature, kind, geo):
+    g = shape(feature['geometry']); p = feature['properties']
+    props = {k:v for k,v in p.items() if k not in ['source_geometry_projected', 'osm_node_ids', 'tags']}
+    mesh = Mesh(geo)
+    result = {'id': p['source_id'], 'kind': kind, 'properties': props}
+    if kind in ['road', 'bridge']:
+        result['polylines_cm'] = [[mesh.vertex(xy, 0) for xy in line] for line in lines(g)]
+    else:
+        result['polygons_cm'] = [[[mesh.vertex(xy, 0) for xy in ring] for ring in lines(polygon)] for polygon in polygons(g)]
+    return result
 
 
 class Mesh:
@@ -127,28 +150,65 @@ def export(config,dataset):
     scene={'format':'paris_twin_scene_v1','generation':dataset['generation'],'district_id':config['district_id'],'georeference':{
         'wgs84_origin':config['origin_wgs84'],'projected_origin_m':list(geo.origin),'projected_crs':geo.crs.to_string(),
         'units':'cm','axes':'X=east, Y=south, Z=up','cesium_transform_applied':False,
+        'reference_id':config.get('georeference_id','paris_lambert93_shared_v1'),
         'vertical_mode':'relative preview; IGN NGF69 samples stored separately'},
         'extent_m':config['core_size_m']+config['context_buffer_m']*2,
+        'scene_centre_ue_cm':list(geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']))),
         'quality_centre_ue_cm':list(geo.to_ue(*config['quality_center_wgs84'])),
         'raw_checksums':dataset['raw_checksums'],'objects':objects,
         'attribution':'OpenStreetMap contributors / Ville de Paris (ODbL); IGN RGE ALTI (Etalab 2.0)',
         'limitations':['L1 footprints; source-tag or estimated heights, not surveyed L2',
                         'flat preview terrain; elevations stored separately','No L3-L5 landmark facades',
                         'Road widths partly estimated; no walking gravity system yet']}
+    review = analyse(dataset, geo)
+    scene['diagnostics'] = {k:v for k,v in review.items() if k != 'issues'}
+    scene['diagnostics']['issues'] = []
+    for issue in review['issues']:
+        item = {k:v for k,v in issue.items() if k != 'geometry'}
+        item['polylines_cm'] = [[Mesh(geo).vertex(p, .35) for p in line] for line in lines(shape(issue['geometry']))]
+        scene['diagnostics']['issues'].append(item)
+    scene['pick_features'] = []
+    for layer, kind in [('buildings','building'),('roads','road'),('water','water'),('parks','park'),('squares','path')]:
+        for feature in layers[layer]:
+            if layer == 'roads' and (feature['properties']['tunnel'] or feature['properties']['layer'] < 0):
+                continue
+            scene['pick_features'].append(source_feature(feature,'bridge' if layer == 'roads' and feature['properties']['bridge'] else kind,geo))
+    scene['landmarks'] = []
+    for label, layer, name in [('Notre-Dame','buildings','Cathédrale Notre-Dame de Paris'),('Sainte-Chapelle','buildings','Sainte-Chapelle'),('Saint-Michel','squares','Place Saint-Michel')]:
+        feature = next((f for f in layers[layer] if f['properties']['name']==name),None)
+        if feature:
+            g = shape(feature['geometry']); point = g.representative_point()
+            scene['landmarks'].append({'name':label,'source_id':feature['properties']['source_id'],
+                'ue_cm':Mesh(geo).vertex((point.x,point.y),0),'radius_cm':max(8000,max(g.bounds[2]-g.bounds[0],g.bounds[3]-g.bounds[1])*150)})
+    scene['coordinate_checks'] = []
+    for e,n in [geo.origin,*[(x,y) for x in [geo.extent.bounds[0],geo.extent.bounds[2]] for y in [geo.extent.bounds[1],geo.extent.bounds[3]]]]:
+        ll = geo.inverse.transform(e,n)
+        scene['coordinate_checks'].append({'wgs84':list(ll),'ue_cm':list(geo.to_ue(*ll))})
+    # A single optional footprint mesh, rather than hundreds of debug components.
+    outline = unary_union([g.boundary.buffer(.35,cap_style='flat',join_style='mitre') for g in building_geometries])
+    mesh = Mesh(geo); colours=[]
+    for f,g in zip(layers['buildings'],building_geometries):
+        start=len(mesh.positions);mesh.top(g,.2)
+        shade=sum(f['properties']['source_id'].encode('utf-8'))%4
+        colours.extend([['#b89465','#c5a277','#ceae86','#d7b88f'][shade]]*(len(mesh.positions)-start))
+    start=len(mesh.positions);mesh.top(outline,.25);colours.extend(['#42627b']*(len(mesh.positions)-start))
+    scene['footprint_mesh'] = mesh.item('building-footprints','footprint','#218db5',{'source_ids':[f['properties']['source_id'] for f in layers['buildings']]})
+    scene['footprint_mesh']['vertex_colors']=colours
     dest=paths(config)['Generated']
     write(dest/'scene.json',scene)
+    write(dest/'diagnostics.json',review)
     native=ROOT/'unreal/AIWorld/Content/Data/paris-digital-twin.json'
     write(native,scene)
     road_result=[g for g in [roads,bridges,paths_surface,sidewalks] if g is not None]
     write(dest/'surface-validation.json',{'generated_road_building_overlap_m2':round(sum(g.intersection(building_union).area for g in road_result),8),
           'surface_area_m2':round(sum(g.area for g in road_result),3),'buildings':len(footprint_seen),
           'meshes':len(objects),'triangles':sum(len(o['indices'])//3 for o in objects)})
-    preview(config,dataset,road_result,water)
+    preview(config,dataset,road_result,water,review)
     return {'native_file':str(native),'sha256':sha(native),'meshes':len(objects),'buildings':len(footprint_seen),
             'triangles':sum(len(o['indices'])//3 for o in objects)}
 
 
-def preview(config,dataset,road_shapes,water):
+def preview(config,dataset,road_shapes,water,review):
     geo=Georeference(config);x0,y0,x1,y1=geo.extent.bounds;scale=1000/(x1-x0)
     def path(g):
         pieces=[]
@@ -162,7 +222,7 @@ def preview(config,dataset,road_shapes,water):
         if g:nodes.append(f'<path d="{path(g)}" fill="{color}" fill-rule="evenodd"/>')
     for f in dataset['layers']['buildings']:
         props=f['properties'];title=html.escape(f"{props['name']} | {props['source_id']} | {props['height_m']}m ({props['height_source']}) | L1")
-        nodes.append(f'<path class="building" d="{path(shape(f["geometry"]))}" fill="#c19b6b" stroke="#5d4634" stroke-width=".6" fill-rule="evenodd"><title>{title}</title></path>')
+        nodes.append(f'<path class="building feature" data-id="{html.escape(props["source_id"])}" d="{path(shape(f["geometry"]))}" fill="#c19b6b" stroke="#5d4634" stroke-width=".6" fill-rule="evenodd"><title>{title}</title></path>')
     labels=[('Notre-Dame','buildings','Cathédrale Notre-Dame de Paris'),('Sainte-Chapelle','buildings','Sainte-Chapelle'),('Saint-Michel','squares','Place Saint-Michel')]
     for label,layer,name in labels:
         feature=next((f for f in dataset['layers'][layer] if f['properties']['name']==name),None)
@@ -171,11 +231,26 @@ def preview(config,dataset,road_shapes,water):
             nodes.append(f'<text x="{(x-x0)*scale:.2f}" y="{(y1-y)*scale:.2f}" font-size="14" font-family="sans-serif" fill="#182e39"><title>{html.escape(feature["properties"]["source_id"])}</title>{label}</text>')
     qx,qy=geo.forward.transform(*config['quality_center_wgs84']);half=config['quality_size_m']/2
     nodes.append(f'<rect x="{(qx-half-x0)*scale}" y="{(y1-qy-half)*scale}" width="{half*2*scale}" height="{half*2*scale}" fill="none" stroke="#d63e56" stroke-width="2"/>')
-    half=config['core_size_m']/2;ox,oy=geo.origin
+    half=config['core_size_m']/2;ox,oy=geo.centre
     nodes.append(f'<rect x="{(ox-half-x0)*scale}" y="{(y1-oy-half)*scale}" width="{half*2*scale}" height="{half*2*scale}" fill="none" stroke="#314d67" stroke-dasharray="8 5" stroke-width="2"/>')
+    for issue in review['issues']:
+        g=shape(issue['geometry']);colour='#e04d59' if issue['kind']=='building_overlap' else '#d98920'
+        d=path(g) if polygons(g) else ' '.join('M'+' L'.join(f'{(x-x0)*scale:.2f},{(y1-y)*scale:.2f}' for x,y in line) for line in lines(g))
+        nodes.append(f'<path class="issue" data-issue="{html.escape(issue["id"])}" d="{d}" fill="none" stroke="{colour}" stroke-width="3"><title>{html.escape(issue["id"]+" | "+issue["classification"])}</title></path>')
     nodes.append('</svg>');svg=''.join(nodes)
     dest=paths(config)['Generated'];(dest/'map.svg').write_text(svg,encoding='utf-8')
-    text=f'''<!doctype html><html lang="ja"><meta charset="utf-8"><title>Paris Digital Twin — GIS preview</title>
-<style>body{{margin:24px;font-family:system-ui;background:#faf8f3;color:#25323d}}main{{max-width:1100px;margin:auto}}svg{{width:100%;max-height:85vh}}.building:hover{{fill:#e96950;stroke-width:2}}p{{line-height:1.7}}</style>
-<main><h1>Île de la Cité — 実データ配置</h1><p>中央500m地区（破線）＋周辺150mの文脈範囲。赤枠は重点検証100m。建物にカーソルを置くと元ID・高さの根拠を表示します。道路面は建物輪郭で切り抜き済みです。これはL1配置検証で、写真品質の外観ではありません。</p>{svg}<p>{html.escape('OpenStreetMap contributors / Ville de Paris — ODbL. IGN RGE ALTI — Etalab Open Licence 2.0.')}</p></main></html>'''
+    details={f['properties']['source_id']:{k:v for k,v in f['properties'].items() if k in ['source_id','name','height_m','height_source','source_url','wgs84_centre','reproduction_level']} for f in dataset['layers']['buildings']}
+    issue_items=''.join(f'<button data-issue="{html.escape(i["id"])}">{html.escape(i["kind"]+" · "+i["classification"])}<small>{html.escape(", ".join(i["source_ids"]))}</small></button>' for i in review['issues'])
+    # Embedded JSON is escaped for an HTML script context, including untrusted OSM names.
+    payload=json.dumps({'features':details,'issues':review['issues'],'bounds':[x0,y0,x1,y1],'origin':geo.origin},ensure_ascii=False).replace('<','\\u003c')
+    text=f'''<!doctype html><html lang="ja"><meta charset="utf-8"><title>Paris Digital Twin — Phase 2</title>
+<style>body{{margin:20px;font-family:system-ui;background:#faf8f3;color:#25323d}}main{{max-width:1400px;margin:auto}}section{{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px}}svg{{width:100%;max-height:80vh}}.building:hover,.building.selected{{fill:#e96950;stroke-width:2}}.issue.selected{{stroke:#9b00ff;stroke-width:6}}button{{display:block;width:100%;text-align:left;padding:10px;margin-bottom:6px;cursor:pointer}}small{{display:block;overflow-wrap:anywhere}}aside{{max-height:78vh;overflow:auto}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}@media(max-width:800px){{section{{display:block}}}}</style>
+<main><h1>Île de la Cité — Phase 2 配置・品質確認</h1><p>建物クリックで元IDと高さの根拠。右の問題を選ぶと該当する建物と道路を強調します。赤線は建物sourceの重なり、橙線は最大道路ネットワークから分かれた成分です。孤立は不具合と断定せず、境界切断と内部の独立経路を区別しています。</p>
+<section><div>{svg}<p id="coordinate">地図をクリックするとLambert-93とUE座標を表示。</p><pre id="selection">建物または品質項目を選択してください。</pre></div><aside><h2>品質レビュー ({len(review['issues'])})</h2>{issue_items}</aside></section><p>500m中核は破線、100m重点確認は赤枠。L1輪郭表示。OpenStreetMap contributors / Ville de Paris — ODbL. IGN — Etalab 2.0.</p></main>
+<script id="data" type="application/json">{payload}</script><script>
+const data=JSON.parse(document.querySelector('#data').textContent),svg=document.querySelector('svg'),out=document.querySelector('#selection');
+function select(id,issue=false){{document.querySelectorAll('.selected').forEach(x=>x.classList.remove('selected'));const item=issue?data.issues.find(x=>x.id===id):data.features[id];if(!item)return;out.textContent=JSON.stringify(item,null,2);for(const element of document.querySelectorAll('[data-id],[data-issue]')){{if((issue&&element.dataset.issue===id)||(item.source_ids||[id]).includes(element.dataset.id))element.classList.add('selected');}}}}
+document.addEventListener('click',event=>{{const i=event.target.closest('[data-issue]'),f=event.target.closest('[data-id]');if(i)select(i.dataset.issue,true);else if(f)select(f.dataset.id);}});
+svg.addEventListener('click',event=>{{let p=new DOMPoint(event.clientX,event.clientY).matrixTransform(svg.getScreenCTM().inverse()),e=data.bounds[0]+p.x/1000*(data.bounds[2]-data.bounds[0]),n=data.bounds[3]-p.y/1000*(data.bounds[3]-data.bounds[1]);document.querySelector('#coordinate').textContent=`EPSG:2154 E=${{e.toFixed(3)}}m N=${{n.toFixed(3)}}m | UE X=${{((e-data.origin[0])*100).toFixed(1)}}cm Y=${{(-(n-data.origin[1])*100).toFixed(1)}}cm`;}});
+</script></html>'''
     (dest/'map.html').write_text(text,encoding='utf-8')

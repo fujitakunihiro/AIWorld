@@ -157,6 +157,7 @@ def normalize(config):
         layer.sort(key=lambda f:f['properties']['source_id'])
     result = {'format':1,'generation':generation_metadata(config),'district_id':config['district_id'],'projected_crs':geo.crs.to_string(),
               'origin_wgs84':config['origin_wgs84'],'origin_projected_m':list(geo.origin),
+              'district_center_wgs84':config.get('district_center_wgs84',config['origin_wgs84']),
               'extent_projected_m':list(geo.extent.bounds),'core_size_m':config['core_size_m'],
               'context_buffer_m':config['context_buffer_m'],'quality_size_m':config['quality_size_m'],
               'quality_center_wgs84':config['quality_center_wgs84'],
