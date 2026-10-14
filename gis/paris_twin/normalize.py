@@ -145,13 +145,14 @@ def normalize(config):
                           'source_snapshot':'paris_volumes.json','source_license':'ODbL-1.0',
                           'h_et_max_floors':row.get('h_et_max'),'nb_pl':row.get('nb_pl'),'source_type':row.get('l_src'),
                           'height_m':None,'height_measured_missing':True,'updated':row.get('d_maj')}})
-    for i,point in enumerate(read(p['Raw']/'ign_elevation.json')['elevations']):
+    elevation_snapshot='terrain/elevations.json' if (p['Raw']/'terrain/elevations.json').exists() else 'ign_elevation.json'
+    for i,point in enumerate(read(p['Raw']/elevation_snapshot)['elevations']):
         if not math.isfinite(point['z']) or point['z'] <= -9999:
             issues.append({'id':f'ign/elevation/{i}','issue':'elevation_nodata'});continue
         e,n = geo.forward.transform(point['lon'],point['lat'])
         layers['elevations'].append({'geometry':{'type':'Point','coordinates':[e,n]},
             'properties':{'source_id':f'ign/elevation/{i}','source':'IGN RGE ALTI','source_url':manifest['files']['ign_elevation.json']['url'],
-                          'source_snapshot':'ign_elevation.json','source_license':'Etalab Open Licence 2.0',
+                          'source_snapshot':elevation_snapshot,'source_license':'Etalab Open Licence 2.0',
                           'height_ngf_m':point['z'],'accuracy':point.get('acc'),'measures':point.get('measures',[])}})
     for layer in layers.values():
         layer.sort(key=lambda f:f['properties']['source_id'])

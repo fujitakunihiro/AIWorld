@@ -215,3 +215,6 @@ if not unreal.EditorAssetLibrary.does_asset_exist('/Game/Maps/Main'):
     sub.new_level('/Game/Maps/Main')
     sub.save_current_level()
 unreal.log('AIWORLD_ASSETS_READY')
+paris_script=os.path.join(os.path.dirname(__file__),'create-paris-assets.py')
+with open(paris_script,encoding='utf-8') as source:
+    exec(compile(source.read(),paris_script,'exec'),{'__file__':paris_script})

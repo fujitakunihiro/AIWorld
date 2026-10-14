@@ -79,6 +79,15 @@ def validate(config):
         positions=obj['positions_cm'];indices=obj['indices']
         if len(indices)%3 or any(i<0 or i>=len(positions) for i in indices):errors.append('invalid_mesh_indices:'+obj['id'])
         if any(not math.isfinite(v) for pos in positions for v in pos):errors.append('nonfinite_mesh:'+obj['id'])
+        if len(obj['normals'])!=len(positions):errors.append('normal_count_mismatch:'+obj['id'])
+        if 'vertex_colors' in obj and len(obj['vertex_colors'])!=len(positions):errors.append('vertex_color_count_mismatch:'+obj['id'])
+        if 'appearance_ranges' in obj:
+            ranges=obj['appearance_ranges'];cursor=0
+            for r in ranges:
+                if r['start']!=cursor or r['count']<1 or r['source_id'] not in ids:errors.append('invalid_batched_building_range')
+                cursor+=r['count']
+            if cursor!=len(positions):errors.append('building_batch_not_fully_covered')
+        if obj['kind'].startswith('facade_') and obj['properties']['reproduction_level']!='L1':errors.append('unverified_facade_promoted')
         triangles+=len(indices)//3
     if scene['georeference']['cesium_transform_applied']:errors.append('unexpected_double_georeference')
     review=read(p['Generated']/'diagnostics.json')
@@ -91,8 +100,24 @@ def validate(config):
     footprint=scene['footprint_mesh']
     if len(footprint['positions_cm'])!=len(footprint['vertex_colors']):errors.append('footprint_colour_count_mismatch')
     if any(i<0 or i>=len(footprint['positions_cm']) for i in footprint['indices']) or len(footprint['indices'])%3:errors.append('invalid_footprint_mesh_indices')
-    expected_centre=geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']))
+    from .terrain import Terrain
+    terrain=Terrain(config,geo)
+    expected_centre=geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']),terrain.ngf(geo.centre),terrain.origin_ngf)
     if any(abs(a-b)>.001 for a,b in zip(expected_centre,scene['scene_centre_ue_cm'])):errors.append('district_centre_mismatch')
+    if abs(scene['georeference']['origin_elevation_ngf_m']-terrain.origin_ngf)>1e-9:errors.append('vertical_origin_mismatch')
+    if scene['georeference']['vertical_datum']!='NGF-IGN69':errors.append('vertical_datum_mismatch')
+    for obj in scene['objects']:
+        kind=obj['kind']
+        if kind in ['ground','road','path','sidewalk','park']:
+            offset={'ground':0,'road':.035,'path':.04,'sidewalk':.15,'park':.025}[kind]
+            for x,y,z in obj['positions_cm']:
+                projected=(geo.origin[0]+x/100,geo.origin[1]-y/100)
+                if abs(z/100-terrain.local(projected)-offset)>.0001:
+                    errors.append('surface_not_on_shared_terrain:'+obj['id']);break
+    if surface['quay_segments']<10:errors.append('river_quay_missing')
+    if not surface['bridge_decks']:errors.append('terrain_bridge_decks_missing')
+    low_bridges=[b for b in surface['bridge_decks'] if b['minimum_centerline_clearance_m']<1]
+    if low_bridges:warnings.append(f'{len(low_bridges)} low bridge fragments ({sum(b["clipped_at_context_boundary"] for b in low_bridges)} boundary-clipped) need full coverage / surveyed deck elevations; estimates retained')
     report={'format':1,'generation':data['generation'],'errors':errors,'warnings':warnings,'coordinate_roundtrip_max_m':worst,
             'invalid_geometry':invalid,'untraced_ids':untraced,'building_overlaps':overlaps,
             'buildings':len(buildings),'missing_verified_measured_heights':missing,'estimated_heights':estimates,
@@ -108,6 +133,8 @@ def validate(config):
             'review_issue_counts':{kind:sum(i['kind']==kind for i in review['issues']) for kind in ['building_overlap','disconnected_road']},
             'review_road_classes':{kind:sum(i['classification']==kind for i in review['issues']) for kind in ['boundary_clipped','interior_unconnected']},
             'shared_georeference':scene['georeference']['reference_id'],
-            'height_semantics':'IGN hauteur/3D Z describe gutters; source precision retained; extra roof profiles inferred; Paris h_et_max is floors'}
+            'height_semantics':'IGN hauteur/3D Z describe gutters; source precision retained; extra roof profiles inferred; Paris h_et_max is floors',
+            'terrain':terrain.metadata(),'bridge_decks':len(surface['bridge_decks']),'low_bridge_fragments':len(low_bridges),
+            'facades':surface['facades'],'building_render_batches':sum(o['kind']=='building' for o in scene['objects'])}
     write(p['Generated']/'validation.json',report)
     return report

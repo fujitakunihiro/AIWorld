@@ -17,14 +17,16 @@ def gutter_at(part,point):
     return max(.5,min(part['height_gutter_m'],height))
 
 
-def variable_walls(mesh,geometry,part):
+def variable_walls(mesh,geometry,part,base=0,terrain=None):
     from shapely.geometry.polygon import orient
     for p in polygon_parts(geometry):
         for ring in [orient(p,sign=1).exterior,*orient(p,sign=1).interiors]:
             for a,b in zip(list(ring.coords),list(ring.coords)[1:]):
                 dx,dy=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dy)
                 if length<.001:continue
-                mesh.face([mesh.vertex(a,.02),mesh.vertex(b,.02),mesh.vertex(b,gutter_at(part,b)+.02),mesh.vertex(a,gutter_at(part,a)+.02)],(dy/length,dx/length,0))
+                ba=min(base,terrain.local(a)-.2) if terrain else base
+                bb=min(base,terrain.local(b)-.2) if terrain else base
+                mesh.face([mesh.vertex(a,ba+.02),mesh.vertex(b,bb+.02),mesh.vertex(b,base+gutter_at(part,b)+.02),mesh.vertex(a,base+gutter_at(part,a)+.02)],(dy/length,dx/length,0))
 
 
 def roof_surfaces(geometry,roof):
@@ -68,12 +70,14 @@ def roof_surfaces(geometry,roof):
             yield inset,lambda xy,height=roof['rise_m']:height
 
 
-def generate_buildings(geo,buildings,Mesh,triangulate):
+def generate_buildings(geo,buildings,Mesh,triangulate,terrain=None):
     bodies=[];buckets={};sources=defaultdict(set)
     for feature in buildings:
         props=feature['properties'];body=Mesh(geo);root_id=props['source_id']
         for part in props['height_parts']:
-            g=shape(part['geometry']);variable_walls(body,g,part)
+            g=shape(part['geometry']);point=g.representative_point()
+            base=(part.get('ground_ngf_m',terrain.ngf((point.x,point.y)))-terrain.origin_ngf) if terrain else 0.
+            variable_walls(body,g,part,base,terrain)
             point=g.representative_point();cell=(math.floor((point.x-geo.origin[0])/100),math.floor((point.y-geo.origin[1])/100))
             if cell not in buckets:buckets[cell]=Mesh(geo);buckets[cell].level_colors=[]
             roof=buckets[cell];sources[cell].add(root_id)
@@ -87,13 +91,13 @@ def generate_buildings(geo,buildings,Mesh,triangulate):
                                 ra,rb=extra(a),extra(b)
                                 if max(ra,rb)<.001 or not boundary.covers(LineString([a,b])):continue
                                 dx,dy=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dy)
-                                points=[body.vertex(a,gutter_at(part,a)+.02),body.vertex(b,gutter_at(part,b)+.02),body.vertex(b,gutter_at(part,b)+rb+.02),body.vertex(a,gutter_at(part,a)+ra+.02)]
+                                points=[body.vertex(a,base+gutter_at(part,a)+.02),body.vertex(b,base+gutter_at(part,b)+.02),body.vertex(b,base+gutter_at(part,b)+rb+.02),body.vertex(a,base+gutter_at(part,a)+ra+.02)]
                                 if ra<.001:points.pop(3)
                                 elif rb<.001:points.pop(2)
                                 body.face(points,(dy/length,dx/length,0))
                 for triangle in triangulate(surface):
                     xy=list(orient(triangle,sign=1).exterior.coords)[:3]
-                    vertices=[roof.vertex(p,gutter_at(part,p)+extra(p)+.02) for p in xy]
+                    vertices=[roof.vertex(p,base+gutter_at(part,p)+extra(p)+.02) for p in xy]
                     u=[vertices[1][i]-vertices[0][i] for i in range(3)];v=[vertices[2][i]-vertices[0][i] for i in range(3)]
                     normal=[v[1]*u[2]-v[2]*u[1],v[2]*u[0]-v[0]*u[2],v[0]*u[1]-v[1]*u[0]]
                     size=math.sqrt(sum(n*n for n in normal));normal=[n/max(size,1e-9) for n in normal]

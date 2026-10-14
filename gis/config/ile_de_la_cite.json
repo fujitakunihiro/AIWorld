@@ -1,6 +1,7 @@
 {
   "district_id": "ile_de_la_cite",
   "origin_wgs84": [2.3471, 48.8547],
+  "origin_elevation_ngf_m": 35.38,
   "georeference_id": "paris_lambert93_shared_v1",
   "district_center_wgs84": [2.3471, 48.8547],
   "projected_crs": "EPSG:2154",
@@ -10,6 +11,7 @@
   "quality_size_m": 100,
   "quality_center_wgs84": [2.3436, 48.85325],
   "elevation_grid_steps": 10,
+  "terrain_grid_steps": 40,
   "osm_provider": "official_map_api",
   "default_building_height_m": 15,
   "estimated_floor_height_m": 3.2,

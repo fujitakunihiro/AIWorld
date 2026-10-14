@@ -1,0 +1,9 @@
+Python: Ran 17 tests in 144.754s; OK
+UE 5.8.3 Win64 Development Editor: Succeeded in 26.02 seconds
+Material generation: Unreal Python commandlet success; 0 errors, 0 warnings
+Cached offline prepare: cached=true; 1.213 seconds (data preparation only)
+Docker Compose: config --quiet exit 0
+Native GIS tests:
+[2026.10.14-15.56.01:161][872]LogAutomationController: Display: Test Completed. Result={Success} Name={CoordinateAgreement} Path={ParisDigitalTwin.Live.CoordinateAgreement}
+[2026.10.14-15.56.01:161][872]LogAutomationController: Native / Python projection maximum disagreement 0.000000001m
+[2026.10.14-15.56.09:579][875]LogAutomationController: Display: Test Completed. Result={Success} Name={SceneCollisionAndDebug} Path={ParisDigitalTwin.Live.SceneCollisionAndDebug}

@@ -72,6 +72,7 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInterface> StoneMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> SlateMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> WaterMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInterface> GlassMaterial;
     TMap<UPrimitiveComponent*,TSharedPtr<FJsonObject>> Features;
     TArray<TSharedPtr<FJsonObject>> SourceFeatures,Landmarks,Issues;
     TSet<FString> OverlapIDs;

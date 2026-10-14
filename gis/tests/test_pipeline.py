@@ -17,11 +17,87 @@ from paris_twin.normalize import polygonal
 from paris_twin.io import write
 from shapely.geometry import shape,mapping
 from shapely.ops import unary_union
+from paris_twin.terrain import Terrain
+from paris_twin.mesh import Mesh
+from paris_twin.bridges import BridgeDeck
+from paris_twin import elevation_source
+from paris_twin.building_mesh import generate_buildings
+from paris_twin.facades import batch_bodies,generate_facades
+from paris_twin import prepare
+from paris_twin.io import generation_metadata
 
 CONFIG=read(ROOT/'gis/config/ile_de_la_cite.json')
 
 
 class PipelineTests(unittest.TestCase):
+    def test_fixed_ngf_origin_survives_dem_refresh(self):
+        with tempfile.TemporaryDirectory() as temp:
+            raw=Path(temp);write(raw/'terrain/manifest.json',dict(grid_steps=2))
+            write(raw/'terrain/elevations.json',dict(origin={'z':37.},elevations=[{'z':38.}]*9))
+            geo=Georeference(CONFIG)
+            with patch('paris_twin.terrain.paths',return_value={'Raw':raw}):terrain=Terrain(CONFIG,geo)
+            self.assertEqual(terrain.origin_ngf,35.38);self.assertEqual(terrain.measured_origin_ngf,37.)
+            self.assertAlmostEqual(terrain.local(geo.origin),2.62)
+            self.assertEqual(geo.to_ue(*CONFIG['origin_wgs84'],35.38,terrain.origin_ngf)[2],0)
+
+    def test_cached_export_restores_native_and_rejects_changed_config(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);folders={name:root/name for name in ['Raw','Processed','Generated']}
+            products={}
+            for key in prepare.PRODUCTS:
+                folder,name=key.split('/');path=folders[folder]/name;path.parent.mkdir(exist_ok=True)
+                path.write_text('unchanged source product');products[key]=sha(path)
+            write(folders['Generated']/'generation-cache.json',dict(district_id=CONFIG['district_id'],generation=generation_metadata(CONFIG),
+                  raw_checksums={'test.json':'123'},products=products,statistics=dict(meshes=1,buildings=1,triangles=1)))
+            native=root/'unreal/AIWorld/Content/Data/paris-digital-twin.json';native.parent.mkdir(parents=True);native.write_text('other district')
+            with patch.object(prepare,'paths',return_value=folders),patch.object(prepare,'ROOT',root),patch.object(prepare,'verify_cache',return_value={'files':{'test.json':{'sha256':'123'}}}):
+                result=prepare.prepare(CONFIG);self.assertTrue(result['cached']);self.assertEqual(sha(native),products['Generated/scene.json'])
+                with patch('paris_twin.normalize.normalize',side_effect=RuntimeError('regeneration required')):
+                    with self.assertRaisesRegex(RuntimeError,'regeneration required'):prepare.prepare({**CONFIG,'default_building_height_m':16})
+                    (folders['Generated']/'scene.json').write_text('damaged export')
+                    with self.assertRaisesRegex(RuntimeError,'regeneration required'):prepare.prepare(CONFIG)
+
+    def test_failed_terrain_refresh_preserves_snapshot(self):
+        with tempfile.TemporaryDirectory() as temp:
+            raw=Path(temp);folder=raw/'terrain';folder.mkdir();(folder/'manifest.json').write_text('old');(folder/'elevations.json').write_text('old samples')
+            with patch.object(elevation_source,'paths',return_value={'Raw':raw}),patch.object(elevation_source,'request',side_effect=RuntimeError('IGN unavailable')):
+                with self.assertRaisesRegex(RuntimeError,'IGN unavailable'):elevation_source.download_terrain(CONFIG,refresh=True)
+            self.assertEqual((folder/'manifest.json').read_text(),'old');self.assertEqual((folder/'elevations.json').read_text(),'old samples')
+
+    def test_bilinear_terrain_and_shared_vertical_datum(self):
+        terrain=Terrain.__new__(Terrain);terrain.steps=2;terrain.bounds=(0,0,20,20);terrain.spacing=10;terrain.origin_ngf=30
+        terrain.samples=[{'z':30+.1*x+.2*y} for y in [0,10,20] for x in [0,10,20]]
+        self.assertAlmostEqual(terrain.ngf((7,13)),33.3);self.assertAlmostEqual(terrain.local((7,13)),3.3)
+        self.assertAlmostEqual(terrain.ngf((20,20)),36)
+        geo=Georeference(CONFIG);x,y=geo.origin
+        mesh=Mesh(geo);foot=Polygon([(x,y),(x+20,y),(x+20,y+20),(x,y+20)],holes=[[(x+5,y+5),(x+5,y+10),(x+10,y+10),(x+10,y+5)]])
+        mesh.drape(foot,lambda p:(p[0]-x)*.1+(p[1]-y)*.2,5)
+        for px,py,pz in mesh.positions:self.assertAlmostEqual(pz/100,(px/100)*.1-(py/100)*.2,places=4)
+        for n in mesh.normals:self.assertGreater(n[2],.9)
+
+    def test_bridge_deck_meets_banks_without_dem_river_dip(self):
+        terrain=type('TestTerrain',(),dict(origin_ngf=30.,local=lambda self,p:4. if p[0]<10 or p[0]>60 else -3.))()
+        deck=BridgeDeck(Polygon([(0,0),(70,0),(70,10),(0,10)]),[],terrain)
+        self.assertAlmostEqual(deck.height(deck.ends[0]),4.035)
+        self.assertAlmostEqual(deck.height(deck.ends[1]),4.035)
+        self.assertGreater(deck.height((35,5)),4)
+        self.assertGreater(deck.properties(27)['minimum_centerline_clearance_m'],7)
+
+    def test_gutter_absolute_height_and_batch_ids_survive(self):
+        geo=Georeference(CONFIG);x,y=geo.origin;g=Polygon([(x,y),(x+10,y),(x+10,y+10),(x,y+10)])
+        part=dict(geometry=mapping(g),height_gutter_m=10,ground_ngf_m=35,gutter_segments_m=[],roof=dict(form='flat',rise_m=0))
+        props=dict(source_id='osm/way/1',height_parts=[part],tags={},wgs84_centre=list(CONFIG['origin_wgs84']),reproduction_level_body='L2')
+        features=[dict(geometry=mapping(g),properties=props)]
+        terrain=type('TestTerrain',(),dict(origin_ngf=30.,local=lambda self,p:3.,ngf=lambda self,p:33.))()
+        objects=generate_buildings(geo,features,Mesh,triangulate,terrain)
+        roof=next(o for o in objects if o['kind']=='roof');self.assertAlmostEqual(max(p[2] for p in roof['positions_cm']),1502.)
+        body=next(o for o in objects if o['kind']=='building');self.assertAlmostEqual(min(p[2] for p in body['positions_cm']),282.)
+        batched=batch_bodies(objects,geo,Mesh);batch=next(o for o in batched if o['kind']=='building')
+        self.assertEqual(batch['properties']['source_ids'],['osm/way/1']);self.assertEqual(batch['appearance_ranges'][0]['count'],len(body['positions_cm']))
+        facades,report=generate_facades(geo,features,terrain,Mesh);self.assertGreater(report['windows'],0)
+        props['tags']={'building':'cathedral'}
+        self.assertEqual(generate_facades(geo,features,terrain,Mesh)[1]['windows'],0)
+
     def test_failed_building_refresh_preserves_height_snapshot(self):
         with tempfile.TemporaryDirectory() as temp:
             raw=Path(temp);folder=raw/'heights';folder.mkdir();(folder/'manifest.json').write_text('old metadata');(folder/'buildings.json').write_text('old buildings')
@@ -126,7 +202,7 @@ class PipelineTests(unittest.TestCase):
         river_ids=set(next(o for o in scene['objects'] if o['id']=='seine')['properties']['source_ids'])
         basin_ids={f['properties']['source_id'] for f in data['layers']['water'] if f['properties']['water_role']=='basin'}
         self.assertTrue(river_ids);self.assertTrue(basin_ids);self.assertFalse(river_ids & basin_ids)
-        self.assertTrue(all(o['properties']['water_level_local_m']>=0 for o in scene['objects'] if o['id'] in basin_ids))
+        self.assertTrue(all(o['properties']['water_above_terrain_m']==.12 for o in scene['objects'] if o['id'] in basin_ids))
         self.assertEqual(scene['diagnostics']['building_overlaps'],report['building_overlaps'])
         self.assertEqual(len(scene['diagnostics']['issues']),len(report['building_overlaps'])+len(report['road_network']['component_sizes'])-1)
         self.assertEqual(len(scene['landmarks']),3)

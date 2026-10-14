@@ -34,8 +34,10 @@ bool FParisGeoReference::Load(const TSharedPtr<FJsonObject>& G) {
     const auto& EN=Array(G,TEXT("projected_origin_m"));const auto& LL=Array(G,TEXT("wgs84_origin"));
     if(EN.Num()!=2||LL.Num()!=2)return false;
     OriginProjected=FVector2D(EN[0]->AsNumber(),EN[1]->AsNumber());
+    OriginElevationNGF=Number(G,TEXT("origin_elevation_ngf_m"));
+    if(!FMath::IsFinite(OriginElevationNGF)||String(G,TEXT("vertical_datum"))!=TEXT("NGF-IGN69"))return false;
     return !OriginProjected.ContainsNaN()&&(OriginProjected-Project(FVector2D(LL[0]->AsNumber(),LL[1]->AsNumber()))).Size()<.01;
 }
 FVector2D FParisGeoReference::ProjectedFromUE(const FVector& P) const {return OriginProjected+FVector2D(P.X/100,-P.Y/100);}
 FVector2D FParisGeoReference::WGS84FromUE(const FVector& P) const {return Unproject(ProjectedFromUE(P));}
-FVector FParisGeoReference::ToUE(const FVector2D& LL) const {const auto Delta=Project(LL)-OriginProjected;return FVector(Delta.X*100,-Delta.Y*100,0);}
+FVector FParisGeoReference::ToUE(const FVector2D& LL,double ElevationNGF) const {const auto Delta=Project(LL)-OriginProjected;return FVector(Delta.X*100,-Delta.Y*100,(ElevationNGF-OriginElevationNGF)*100);}
