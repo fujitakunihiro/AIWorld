@@ -115,6 +115,14 @@ def validate(config):
     street_pick={f['id'] for f in scene['pick_features'] if f['kind'].startswith('street_')}
     model_ids={i['source_id'] for b in scene.get('instance_batches',[]) for i in b['instances']}
     if street_pick!=model_ids:errors.append('street_instance_selection_mismatch')
+    from .pedestrians import validate_network
+    crowd=scene.get('pedestrians',{})
+    errors.extend(validate_network(read(p['Generated']/'pedestrian-network.json'),ids))
+    route_ids={r['id'] for r in crowd.get('routes',[])};agent_ids=set()
+    for agent in crowd.get('agents',[]):
+        if agent['id'] in agent_ids or agent['route_id'] not in route_ids:errors.append('invalid_pedestrian_agent')
+        agent_ids.add(agent['id'])
+        if not .5<=agent['speed_mps']<=2 or agent['direction'] not in [-1,1] or agent['variant'] not in [0,1,2]:errors.append('invalid_pedestrian_motion')
     footprint=scene['footprint_mesh']
     if len(footprint['positions_cm'])!=len(footprint['vertex_colors']):errors.append('footprint_colour_count_mismatch')
     if any(i<0 or i>=len(footprint['positions_cm']) for i in footprint['indices']) or len(footprint['indices'])%3:errors.append('invalid_footprint_mesh_indices')
@@ -156,5 +164,6 @@ def validate(config):
             'facades':surface['facades'],'building_render_batches':sum(o['kind']=='building' for o in scene['objects']),
             'street_furniture':surface.get('street_furniture',{}),'instance_batches':len(scene.get('instance_batches',[])),
             'rendered_instances':sum(len(b['instances']) for b in scene.get('instance_batches',[]))}
+    report['pedestrians']=crowd.get('report',{})
     write(p['Generated']/'validation.json',report)
     return report

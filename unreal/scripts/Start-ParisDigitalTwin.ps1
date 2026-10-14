@@ -1,4 +1,4 @@
-param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails)
+param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople)
 $ErrorActionPreference='Stop'
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $gisOptions=@()
@@ -29,6 +29,9 @@ $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor.exe'
 if(-not(Test-Path -LiteralPath $editor)){throw 'Unreal Engine is not installed at '+$EngineRoot}
 $launchArgs=@('"'+$project+'"','-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-NoSplash')
 if($Eye){$launchArgs+='-ParisTwinEye'}
+if($Walk){$launchArgs+='-ParisTwinWalk'}
+if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}
+if($NoPeople){$launchArgs+='-ParisTwinNoPeople'}
 if($Landmark -gt 0){$launchArgs+="-ParisTwinLandmark=$Landmark"}
 if($Footprints){$launchArgs+='-ParisTwinFootprints'}
 if($Issues){$launchArgs+='-ParisTwinIssues'}

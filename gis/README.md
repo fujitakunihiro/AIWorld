@@ -2,7 +2,7 @@
 
 Python 3.12で動作する実データ取得・正規化・検証・UEプレビュー出力です。住民AIやSQLiteを変更しません。取得と生成を分離し、`Data/Raw` の固定スナップショットだけで再生成できます。
 
-最新は[Phase 5続き・Phase 6静的設備](../docs/paris-digital-twin-phase56.md)です。NGF原点35.38mを保持し、入口・バルコニー・コーニス・屋根窓と、元OSM位置の街路樹・街灯・ベンチを追加しました。外観や未登録寸法は推定、建物全体の再現レベルはL1を維持します。
+最新は[Phase 6・散策と歩行者](../docs/paris-digital-twin-phase6.md)です。NGF原点35.38mと既存の建物・装飾・街路設備を保持し、現実スケールの一人称/三人称散策とGIS由来の経路を歩く160人のシミュレーションを追加しました。人数・人物・外観は推定であり、建物全体の再現レベルはL1を維持します。
 
 ```powershell
 py -3.12 -m venv gis/.venv
@@ -58,6 +58,10 @@ Phase 5続きでは隣接建物で塞がれる壁の窓を省略し、推定入�
 Phase 6の `street_furniture.py` は、既存の `osm-map.xml.gz` から街路設備ノードを読み取ります。Overpassを使う新規取得では `osm.json` のノードを使用します。新しい取得は不要です。点を黙って移動せず、建物との干渉・河川上の橋なし・壁付け灯などを `Generated/street-placement.json` に理由付きで保存します。UEでは6つの自作StaticMeshをHISMで使い回し、クリックしたインスタンスから元ノード・座標・推定寸法を確認できます。F6で設備表示、F7で低・中・高の描画距離を切り替えます。`Start-ParisDigitalTwin.ps1 -Quality Low` でも設定できます。
 
 再計測は `Measure-ParisDigitalTwin.ps1 -View Overview` または `-View Street`。事前に生成とビルドを済ませてください。隠した補助プロセスでDX11のオフスクリーン描画を測定し、JSONと画像をdocsへ保存します。ウィンドウ表示時の計測とは条件が異なるため、以前のFPSとの厳密な比較には使いません。
+
+`pedestrians.py` は実在道路・歩行面から安全な経路を切り出し、建物・水面・設備を避けた `Generated/pedestrian-network.json` を生成します。経路の分割点だけでなく補間した線分全体を検査します。経路IDは元道路・元の分割線・左右歩道・切り抜き後の区間を区別し、重複を検出。人物と初期状態は同じ入力から再生成する推定値です。UEではPで表示、F8で散策、Vで一人称/三人称に切替。歩行用の重力・衝突はUE標準Character Movementを使用します。
+
+散策の計測は `Measure-ParisDigitalTwin.ps1 -View WalkFirst` / `-View WalkThird`。要求した散策モードに入らなかった場合は測定失敗として扱います。
 
 出力の再現性は固定した入力、設定、依存ライブラリに対して確認します。元データの測量精度は、変換の往復誤差と別です。LOD・Nanite用のStaticMesh化、World Partition・HLOD、現地写真に合う外観は後続Phaseで実装します。
 

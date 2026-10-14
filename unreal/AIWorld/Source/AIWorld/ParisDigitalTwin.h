@@ -14,6 +14,8 @@ class UMaterialInterface;
 class UPrimitiveComponent;
 class UHierarchicalInstancedStaticMeshComponent;
 class UStaticMesh;
+class AParisWalker;
+class AParisPedestrianCrowd;
 
 UCLASS()
 class AParisTwinCamera : public APawn {
@@ -44,6 +46,10 @@ public:
     void ToggleFootprints();void ToggleIssues();void ToggleHelp();
     void ToggleStreetDetails();void CycleDetailQuality();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
+    bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();
+    void ReturnToFree();
+    UPROPERTY() TObjectPtr<AParisTwinCamera> FreeCamera;
+    UPROPERTY() TObjectPtr<AParisWalker> Walker;
 private:
     bool bLooking=false;
 };
@@ -73,6 +79,10 @@ public:
     int32 StreetCount=0,InstanceCount=0,InstanceTriangles=0,DetailQuality=1;
     bool bStreetDetails=true;
     TSharedPtr<FJsonObject> StreetInstanceSource(UPrimitiveComponent* Component,int32 Instance) const;
+    bool FindWalkingSpawn(const FVector& Desired,FVector& Centre) const;
+    void TogglePeople();
+    bool bPeople=true;
+    UPROPERTY() TObjectPtr<AParisPedestrianCrowd> Crowd;
 private:
     UPROPERTY() TArray<TObjectPtr<UProceduralMeshComponent>> Meshes;
     UPROPERTY() TObjectPtr<UMaterialInterface> VertexMaterial;
@@ -94,6 +104,7 @@ private:
     void RefreshAppearance();
     double ReadyAt=0;
     bool bCaptured=false,bMeasured=false;
+    bool bWalkLaunchPending=false;
     TArray<double> FrameTimes;
 };
 

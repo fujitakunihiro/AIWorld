@@ -219,6 +219,9 @@ class PipelineTests(unittest.TestCase):
         self.assertGreater(report['facades']['balconies'],100)
         self.assertGreater(report['facades']['party_wall_columns_omitted'],100)
         self.assertEqual(report['instance_batches'],6)
+        self.assertGreater(report['pedestrians']['routes'],100)
+        self.assertGreater(report['pedestrians']['agents'],100)
+        self.assertTrue(report['pedestrians']['inferred_population'])
 
 
 if __name__=='__main__':unittest.main()
