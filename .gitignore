@@ -14,3 +14,8 @@ unreal/**/*.suo
 unreal/AIWorld/Content/Data/models.json
 unreal/.toolchain/
 unreal/Builds/
+gis/.venv/
+gis/**/__pycache__/
+gis/Data/Processed/
+gis/Data/Generated/
+unreal/AIWorld/Content/Data/paris-digital-twin.json

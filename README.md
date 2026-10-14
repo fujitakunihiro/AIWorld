@@ -1,5 +1,7 @@
 # AI WORLD — パリと自律する住民
 
+**実地理のParis Digital Twin（Phase 0・1）:** OSM・Paris Data・IGNから取得した地区を、旧箱庭とは別のUEモードで表示します。起動は `Paris-DigitalTwin.cmd`。保存済みGISからオフライン再生成できます。現在はL1の実輪郭・道路・河川プレビューです。[実装・検証・次Phase](docs/paris-digital-twin.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
+
 **Unreal Engine版への移行:** Windows用のUE 5.8プロジェクトを追加しました。起動は `.\unreal\scripts\Start-AIWorldUE.ps1`、初回ビルドは `.\unreal\scripts\Build-AIWorldUE.ps1` です。現在の世界と住民AI・SQLiteを引き継ぎ、UEのネイティブ3D画面と操作で遊べます。[起動方法・移行構成・検証](docs/unreal-migration.md) を参照してください。
 
 プレイヤーが世界を創造し、AI住民が文明を築くファンタジーゲームの **Phase 1〜6** です。384×384の世界で、5人の住民から始まる村が採集して小屋を建て、農業・住宅・移住へ発展します。住民と会話し、記憶や世界の歴史を読みながら、文明を見守れます。自然言語で建築・農業・採集・休息を指示でき、会話も指示も外部APIを使わずに遊べます。キャラクター、地形、演出、Web Audioの効果音は独自制作です。

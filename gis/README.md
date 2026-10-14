@@ -1,0 +1,51 @@
+# Paris Digital Twin GIS pipeline
+
+Python 3.12で動作する実データ取得・正規化・検証・UEプレビュー出力です。住民AIやSQLiteを変更しません。取得と生成を分離し、`Data/Raw` の固定スナップショットだけで再生成できます。
+
+```powershell
+py -3.12 -m venv gis/.venv
+.\gis\.venv\Scripts\python.exe -m pip install -r gis/requirements.lock
+$env:PYTHONPATH=Join-Path (Get-Location) 'gis'
+.\gis\.venv\Scripts\python.exe -m paris_twin all --offline
+.\gis\.venv\Scripts\python.exe -m unittest discover -s gis/tests -v
+```
+
+取得済みデータを同梱しています。オンラインで更新する場合だけ `download --refresh` を実行します。API応答を合成して補いません。取得は一時ディレクトリで完了させてから置き換えるため、途中のAPI失敗で旧キャッシュを上書きしません。キャッシュのSHA-256・取得範囲・標高点数を検証します。建物高さや道路幅の生成ポリシーは取得設定から独立し、再取得せず変更できます。
+
+```powershell
+.\gis\.venv\Scripts\python.exe -m paris_twin download --refresh
+.\gis\.venv\Scripts\python.exe -m paris_twin generate --offline
+.\gis\.venv\Scripts\python.exe -m paris_twin validate --offline
+# 標高はNGF-IGN69の正標高。WGS84の楕円体高への変換は行いません。
+.\gis\.venv\Scripts\python.exe -m paris_twin coordinates --wgs84 2.3471 48.8547 35 --origin-elevation 30
+.\gis\.venv\Scripts\python.exe -m paris_twin coordinates --ue-cm 0 0 500 --origin-elevation 30
+```
+
+## 構成
+
+- `config/ile_de_la_cite.json`: 500mの検証地区＋各辺150mの文脈範囲、100mの品質確認範囲、共通基準点、推定ルール。
+- `paris_twin/acquire.py`: OSM、Paris Data、IGNの取得。OSM公式APIの元XMLはgzip保存し、復元時のバイト列を保持。
+- `coordinates.py`: WGS84 / EPSG:2154 / UE cmの相互変換。常にlon,lat順、UEは東=X、南=Y、上=Z。
+- `normalize.py`: 不正形状の修復、河川の穴と複合輪郭、元ID、Paris建物階数との対応、未検証・推定の属性。
+- `mesh.py`: 実輪郭の柱状メッシュ、道路幅の解釈、道路面の結合と建物による切り抜き、中庭を保持した三角形分割、SVG/HTML地図。
+- `validate.py`: 変換、形状、重複、高さ、OSMの共有ノードによる接続、橋と川、出典、生成メッシュの検証。
+- `Data/Raw/<district>`: 取得結果、URL・ライセンス・日時・SHA-256のmanifest。Gitに保存。
+- `Data/Processed/<district>`: EPSG:2154の中間JSON、WGS84のGeoJSON。ローカルに保存し再生成可能。
+- `Data/Generated/<district>`: UE用JSON、検証レポート、`map.html` / `map.svg`。ローカルに保存し再生成可能。
+
+UE向けファイルは `unreal/AIWorld/Content/Data/paris-digital-twin.json` にも出力します。座標は既にcmなので、既存ボクセルの軸変換・100倍変換を適用しません。Cesiumは使っていません。
+
+各棟はL1です。OSM heightタグも測量済みとはみなさず `source_declared_unverified` とします。Parisの `h_et_max` は階数であり、メートルではありません。階数×階高や地区の既定高さは `estimated` として区別します。高さを丸ごと柱へ適用する簡易プレビューなので、特に教会の塔・尖塔の形を再現したL2ボリュームではありません。
+
+出力の再現性は固定した入力、設定、依存ライブラリに対して確認します。元データの測量精度は、変換の往復誤差と別です。LOD・Nanite用のStaticMesh化、World Partition・HLOD、現地写真に合う外観は後続Phaseで実装します。
+
+## 固定依存関係
+
+| ライブラリ | バージョン | 用途 | ライセンス / 取得元 |
+| --- | --- | --- | --- |
+| NumPy | 2.2.6 | Shapelyの配列基盤 | BSD-3-Clause / https://pypi.org/project/numpy/2.2.6/ |
+| Shapely | 2.1.2 | 形状修復・バッファ・三角形分割 | BSD-3-Clause / https://pypi.org/project/shapely/2.1.2/ |
+| pyproj | 3.7.2 | PROJ座標変換 | MIT / https://pypi.org/project/pyproj/3.7.2/ |
+| certifi | 2025.10.5 | pyprojの依存 | MPL-2.0 / https://pypi.org/project/certifi/2025.10.5/ |
+
+osmnx・GeoPandas・rasterio・trimeshは今回は導入していません。取得と小地区のベクトル処理を最小の構成で実装しました。DEMラスタと広域GISを扱うPhaseで追加・固定します。

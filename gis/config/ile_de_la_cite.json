@@ -1,0 +1,17 @@
+{
+  "district_id": "ile_de_la_cite",
+  "origin_wgs84": [2.3471, 48.8547],
+  "projected_crs": "EPSG:2154",
+  "vertical_datum": "NGF-IGN69 (IGN source); no ellipsoidal height conversion",
+  "core_size_m": 500,
+  "context_buffer_m": 150,
+  "quality_size_m": 100,
+  "quality_center_wgs84": [2.3436, 48.85325],
+  "elevation_grid_steps": 10,
+  "osm_provider": "official_map_api",
+  "default_building_height_m": 15,
+  "estimated_floor_height_m": 3.2,
+  "road_width_defaults_m": {"primary": 12, "secondary": 10, "tertiary": 8, "residential": 6, "unclassified": 6, "service": 3.5, "pedestrian": 8, "footway": 2, "path": 2, "steps": 2, "cycleway": 2.5},
+  "overpass_endpoints": ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"],
+  "landmarks": ["Notre-Dame", "Sainte-Chapelle", "Saint-Michel"]
+}

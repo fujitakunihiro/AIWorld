@@ -3,6 +3,9 @@
 #include "AIWorldResident.h"
 #include "SAIWorldHUD.h"
 #include "WorldProtocol.h"
+#include "ParisDigitalTwin.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "Engine/Engine.h"
@@ -11,8 +14,8 @@
 #include "DrawDebugHelpers.h"
 using namespace AIWorld;
 
-AAIWorldGameMode::AAIWorldGameMode(){PlayerControllerClass=AAIWorldPlayer::StaticClass();DefaultPawnClass=AAIWorldCamera::StaticClass();}
-void AAIWorldGameMode::BeginPlay(){Super::BeginPlay();GetWorld()->SpawnActor<AAIWorldScene>();}
+AAIWorldGameMode::AAIWorldGameMode(){if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwin"))){PlayerControllerClass=AParisTwinController::StaticClass();DefaultPawnClass=AParisTwinCamera::StaticClass();HUDClass=AParisTwinHUD::StaticClass();}else{PlayerControllerClass=AAIWorldPlayer::StaticClass();DefaultPawnClass=AAIWorldCamera::StaticClass();}}
+void AAIWorldGameMode::BeginPlay(){Super::BeginPlay();if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwin")))GetWorld()->SpawnActor<AParisTwinScene>();else GetWorld()->SpawnActor<AAIWorldScene>();}
 AAIWorldCamera::AAIWorldCamera(){PrimaryActorTick.bCanEverTick=true;RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("Root"));Camera=CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));Camera->SetupAttachment(RootComponent);Camera->FieldOfView=48;}
 void AAIWorldCamera::Focus(const FVector& P,double R){Target=P;Radius=R;}
 void AAIWorldCamera::Zoom(double F){Radius=FMath::Clamp(Radius*F,350.,65000.);}

@@ -1,0 +1,13 @@
+{
+	"fps": 26.120824469913103,
+	"frame_p95_ms": 46.662800014019012,
+	"frames": 523,
+	"buildings": 739,
+	"triangles": 71107,
+	"mesh_components": 757,
+	"shadows_disabled": true,
+	"viewport_width": 1280,
+	"viewport_height": 720,
+	"rhi": "DX11 preview; no Nanite/Lumen claim",
+	"view": "overview"
+}
