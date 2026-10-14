@@ -72,7 +72,7 @@ def normalize(config):
             volumes.append(g); rows.append(row)
     tree = STRtree(volumes)
     relation_building_members = {m['ref'] for e in osm if e['type']=='relation' and e.get('tags',{}).get('building') not in [None,'no'] for m in e.get('members',[]) if m['type']=='way'}
-    layers = {key:[] for key in ['buildings','roads','water','parks','squares','elevations','paris_volumes']}
+    layers = {key:[] for key in ['buildings','roads','water','parks','squares','elevations','paris_volumes','street_objects']}
     issues = []
     for e in sorted(osm,key=lambda e:(e['type'],e['id'])):
         tags = e.get('tags',{})
@@ -154,6 +154,8 @@ def normalize(config):
             'properties':{'source_id':f'ign/elevation/{i}','source':'IGN RGE ALTI','source_url':manifest['files']['ign_elevation.json']['url'],
                           'source_snapshot':elevation_snapshot,'source_license':'Etalab Open Licence 2.0',
                           'height_ngf_m':point['z'],'accuracy':point.get('acc'),'measures':point.get('measures',[])}})
+    from .street_furniture import mapped_nodes
+    layers['street_objects']=mapped_nodes(p['Raw'],manifest,geo)
     for layer in layers.values():
         layer.sort(key=lambda f:f['properties']['source_id'])
     from .building_heights import enrich_buildings

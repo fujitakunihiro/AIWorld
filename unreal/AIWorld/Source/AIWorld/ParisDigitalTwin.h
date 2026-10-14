@@ -12,6 +12,8 @@ class UCameraComponent;
 class UProceduralMeshComponent;
 class UMaterialInterface;
 class UPrimitiveComponent;
+class UHierarchicalInstancedStaticMeshComponent;
+class UStaticMesh;
 
 UCLASS()
 class AParisTwinCamera : public APawn {
@@ -40,6 +42,7 @@ public:
     FVector2D GetRawLookDelta() const;
     bool IsLooking() const { return bLooking; }
     void ToggleFootprints();void ToggleIssues();void ToggleHelp();
+    void ToggleStreetDetails();void CycleDetailQuality();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
 private:
     bool bLooking=false;
@@ -58,6 +61,7 @@ public:
     void ToggleLevels();
     void ToggleFootprints();void ToggleIssues();void FocusLandmark(int32 Index);
     void Capture();
+    void ToggleStreetDetails();void CycleDetailQuality();void ApplyDetailQuality();
     bool bReady=false,bLevels=false,bFootprints=false,bIssues=false;
     FString Status=TEXT("GISデータを読み込み中"),Selection;
     double Extent=800;
@@ -66,6 +70,9 @@ public:
     FParisGeoReference GeoReference;
     FString IssueSummary;
     int32 BuildingCount=0,TriangleCount=0;
+    int32 StreetCount=0,InstanceCount=0,InstanceTriangles=0,DetailQuality=1;
+    bool bStreetDetails=true;
+    TSharedPtr<FJsonObject> StreetInstanceSource(UPrimitiveComponent* Component,int32 Instance) const;
 private:
     UPROPERTY() TArray<TObjectPtr<UProceduralMeshComponent>> Meshes;
     UPROPERTY() TObjectPtr<UMaterialInterface> VertexMaterial;
@@ -73,6 +80,13 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInterface> SlateMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> WaterMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> GlassMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInterface> ZincMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInterface> IronMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInterface> WoodMaterial;
+    UPROPERTY() TArray<TObjectPtr<UStaticMesh>> StreetModels;
+    UPROPERTY() TArray<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>> StreetMeshes;
+    TMap<UPrimitiveComponent*,TArray<FString>> StreetInstanceIDs;
+    TMap<UPrimitiveComponent*,FString> StreetModelNames;
     TMap<UPrimitiveComponent*,TSharedPtr<FJsonObject>> Features;
     TArray<TSharedPtr<FJsonObject>> SourceFeatures,Landmarks,Issues;
     TSet<FString> OverlapIDs;

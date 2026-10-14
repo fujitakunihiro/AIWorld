@@ -1,0 +1,39 @@
+test_adjacent_district_uses_same_origin_and_continuous_coordinates (test_pipeline.PipelineTests.test_adjacent_district_uses_same_origin_and_continuous_coordinates) ... ok
+test_bilinear_terrain_and_shared_vertical_datum (test_pipeline.PipelineTests.test_bilinear_terrain_and_shared_vertical_datum) ... ok
+test_bridge_deck_meets_banks_without_dem_river_dip (test_pipeline.PipelineTests.test_bridge_deck_meets_banks_without_dem_river_dip) ... ok
+test_cached_export_restores_native_and_rejects_changed_config (test_pipeline.PipelineTests.test_cached_export_restores_native_and_rejects_changed_config) ... ok
+test_coordinates_roundtrip_and_cm_axes (test_pipeline.PipelineTests.test_coordinates_roundtrip_and_cm_axes) ... ok
+test_dimensions_are_explicit_and_estimates_labelled (test_pipeline.PipelineTests.test_dimensions_are_explicit_and_estimates_labelled) ... ok
+test_district_id_cannot_escape_data_root (test_pipeline.PipelineTests.test_district_id_cannot_escape_data_root) ... ok
+test_failed_building_refresh_preserves_height_snapshot (test_pipeline.PipelineTests.test_failed_building_refresh_preserves_height_snapshot) ... ok
+test_failed_online_refresh_preserves_previous_offline_cache (test_pipeline.PipelineTests.test_failed_online_refresh_preserves_previous_offline_cache) ... ok
+test_failed_terrain_refresh_preserves_snapshot (test_pipeline.PipelineTests.test_failed_terrain_refresh_preserves_snapshot) ... ok
+test_fixed_ngf_origin_survives_dem_refresh (test_pipeline.PipelineTests.test_fixed_ngf_origin_survives_dem_refresh) ... ok
+test_gutter_absolute_height_and_batch_ids_survive (test_pipeline.PipelineTests.test_gutter_absolute_height_and_batch_ids_survive) ... ok
+test_ign_height_parts_keep_real_steps_and_do_not_use_church_spire_as_wall (test_pipeline.PipelineTests.test_ign_height_parts_keep_real_steps_and_do_not_use_church_spire_as_wall) ... ok
+test_procedural_roofs_preserve_holes_and_ridge_breaks (test_pipeline.PipelineTests.test_procedural_roofs_preserve_holes_and_ridge_breaks) ... ok
+test_real_snapshot_quality_and_reproducibility (test_pipeline.PipelineTests.test_real_snapshot_quality_and_reproducibility) ... ok
+test_road_review_distinguishes_clipped_boundary_and_internal_paths (test_pipeline.PipelineTests.test_road_review_distinguishes_clipped_boundary_and_internal_paths) ... ok
+test_roof_and_ground_triangulation_preserves_courtyards (test_pipeline.PipelineTests.test_roof_and_ground_triangulation_preserves_courtyards) ... ok
+test_authored_prototypes_are_small_valid_and_shared (test_streets.StreetTests.test_authored_prototypes_are_small_valid_and_shared) ... ok
+test_clipped_roads_with_point_fragments_can_orient_benches (test_streets.StreetTests.test_clipped_roads_with_point_fragments_can_orient_benches) ... ok
+test_no_relocation_and_bridge_surface_for_mapped_instances (test_streets.StreetTests.test_no_relocation_and_bridge_surface_for_mapped_instances) ... ok
+test_party_walls_omit_windows_and_keep_exposed_courtyards (test_streets.StreetTests.test_party_walls_omit_windows_and_keep_exposed_courtyards) ... ok
+test_xml_and_json_nodes_preserve_ids_tags_and_direction (test_streets.StreetTests.test_xml_and_json_nodes_preserve_ids_tags_and_direction) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 184.986s
+
+OK
+
+Final UE live automation (after material and proxy collision fixes):
+[2026.10.14-23.01.53:995][ 72]LogAutomationController: Display: Test Completed. Result={Success} Name={CoordinateAgreement} Path={ParisDigitalTwin.Live.CoordinateAgreement}
+[2026.10.14-23.02.05:212][ 75]LogAutomationController: Display: Test Completed. Result={Success} Name={SceneCollisionAndDebug} Path={ParisDigitalTwin.Live.SceneCollisionAndDebug}
+[2026.10.14-23.02.05:380][ 78]LogAutomationController: Display: Test Completed. Result={Success} Name={StreetInstancesAndQuality} Path={ParisDigitalTwin.Live.StreetInstancesAndQuality}
+
+Final native build / saved material generation:
+Result: Succeeded
+Total execution time: 25.60 seconds
+[2026.10.14-22.59.47:413][  0]LogInit: Display: Success - 0 error(s), 0 warning(s)
+
+Docker Compose base and base + UE overlay: config --quiet succeeded (runtime containers not started).

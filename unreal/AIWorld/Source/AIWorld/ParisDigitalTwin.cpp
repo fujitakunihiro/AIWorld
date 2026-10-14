@@ -1,10 +1,13 @@
 #include "ParisDigitalTwin.h"
+#include "ParisStreetMeshes.h"
 #include "WorldProtocol.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/PlayerInput.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
 #include "Components/SkyAtmosphereComponent.h"
@@ -58,6 +61,12 @@ static FString FeatureText(const TSharedPtr<FJsonObject>& J) {
         Text+=FString::Printf(TEXT(" / height envelope %.2fm\nGutter %.1f - %.1fm | IGN coverage %.1f%% | Body %s / roof inferred"),Number(P,TEXT("height_m")),Number(P,TEXT("height_gutter_min_m")),Number(P,TEXT("height_gutter_max_m")),Number(P,TEXT("official_height_coverage"))*100,*String(P,TEXT("reproduction_level_body")));
         Text+=TEXT("\n")+String(P,TEXT("height_source"));const auto& Refs=Array(P,TEXT("height_reference_ids"));if(!Refs.IsEmpty())Text+=TEXT(" | ")+Refs[0]->AsString()+FString::Printf(TEXT(" (+%d more)"),Refs.Num()-1);
         if(!Refs.IsEmpty()){Text+=FString::Printf(TEXT(" | source precision %.1fm"),Number(P,TEXT("height_precision_max_m")));const auto& Dates=Array(P,TEXT("height_data_dates"));if(!Dates.IsEmpty())Text+=TEXT(" | updated ")+Dates.Last()->AsString().Left(10);}
+        Text+=TEXT("\nAppearance: inferred doors, balconies, cornices, dormers and roof material; overall L1");
+    }
+    else if(String(J,TEXT("kind")).StartsWith(TEXT("street_"))){
+        Text+=FString::Printf(TEXT("\nMapped OSM position | height %.2fm (%s)"),Number(P,TEXT("height_m")),*String(P,TEXT("height_source")));
+        Text+=TEXT("\n")+String(P,TEXT("appearance_source"));
+        Text+=TEXT("\nOrientation: ")+String(P,TEXT("direction_source"));
     }
     else if(P.IsValid()&&P->HasField(TEXT("width_m")))Text+=FString::Printf(TEXT(" / width %.2fm\n%s"),Number(P,TEXT("width_m")),*String(P,TEXT("width_source")));
     else if(P.IsValid()&&P->HasField(TEXT("water_level_ngf_m")))Text+=FString::Printf(TEXT("\nWater level estimate NGF %.2fm | %s"),Number(P,TEXT("water_level_ngf_m")),*String(P,TEXT("water_level_source")));
@@ -96,6 +105,8 @@ void AParisTwinController::SetupInputComponent() {
     InputComponent->BindKey(EKeys::F3,IE_Pressed,this,&AParisTwinController::Eye);
     InputComponent->BindKey(EKeys::F4,IE_Pressed,this,&AParisTwinController::ToggleIssues);
     InputComponent->BindKey(EKeys::F5,IE_Pressed,this,&AParisTwinController::ToggleFootprints);
+    InputComponent->BindKey(EKeys::F6,IE_Pressed,this,&AParisTwinController::ToggleStreetDetails);
+    InputComponent->BindKey(EKeys::F7,IE_Pressed,this,&AParisTwinController::CycleDetailQuality);
     InputComponent->BindKey(EKeys::H,IE_Pressed,this,&AParisTwinController::ToggleHelp);
     InputComponent->BindKey(EKeys::One,IE_Pressed,this,&AParisTwinController::LandmarkOne);
     InputComponent->BindKey(EKeys::Two,IE_Pressed,this,&AParisTwinController::LandmarkTwo);
@@ -118,6 +129,8 @@ void AParisTwinController::ZoomOut(){if(auto C=Cast<AParisTwinCamera>(GetPawn())
 void AParisTwinController::Capture(){if(auto S=Twin(GetWorld()))S->Capture();}
 void AParisTwinController::ToggleFootprints(){if(auto S=Twin(GetWorld()))S->ToggleFootprints();}
 void AParisTwinController::ToggleIssues(){if(auto S=Twin(GetWorld()))S->ToggleIssues();}
+void AParisTwinController::ToggleStreetDetails(){if(auto S=Twin(GetWorld()))S->ToggleStreetDetails();}
+void AParisTwinController::CycleDetailQuality(){if(auto S=Twin(GetWorld()))S->CycleDetailQuality();}
 void AParisTwinController::ToggleHelp(){if(auto H=Cast<AParisTwinHUD>(GetHUD()))H->bHelp=!H->bHelp;}
 void AParisTwinController::LandmarkOne(){if(auto S=Twin(GetWorld()))S->FocusLandmark(0);}
 void AParisTwinController::LandmarkTwo(){if(auto S=Twin(GetWorld()))S->FocusLandmark(1);}
@@ -138,6 +151,9 @@ void AParisTwinScene::BeginPlay() {
     if(auto ParisStone=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisLimestone.M_ParisLimestone")))StoneMaterial=ParisStone;
     if(auto ParisRoof=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisSlate.M_ParisSlate")))SlateMaterial=ParisRoof;
     GlassMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisGlass.M_ParisGlass"));
+    ZincMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisZinc.M_ParisZinc"));
+    IronMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisIron.M_ParisIron"));
+    WoodMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisWood.M_ParisWood"));
     if(!VertexMaterial||!StoneMaterial||!WaterMaterial){Status=TEXT("既存マテリアルがありません。Build-AIWorldUE.ps1を実行してください。");return;}
     Extent=Number(Data,TEXT("extent_m"),800);const auto& Q=Array(Data,TEXT("quality_centre_ue_cm"));if(Q.Num()==3)QualityCentre=FVector(Q[0]->AsNumber(),Q[1]->AsNumber(),Q[2]->AsNumber());
     Vector(Data->TryGetField(TEXT("scene_centre_ue_cm")),SceneCentre);
@@ -162,10 +178,34 @@ void AParisTwinScene::BeginPlay() {
         Mesh->SetCollisionEnabled(Kind==TEXT("water")?ECollisionEnabled::QueryOnly:ECollisionEnabled::QueryAndPhysics);Mesh->SetCollisionResponseToAllChannels(Kind==TEXT("water")?ECR_Ignore:ECR_Block);Mesh->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
         Mesh->SetCastShadow((Kind==TEXT("building")||Kind==TEXT("roof"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));
         const bool Stone=Kind==TEXT("building")||Kind==TEXT("quay")||Kind==TEXT("facade_trim");
-        Mesh->SetMaterial(0,Kind==TEXT("water")?WaterMaterial.Get():Kind==TEXT("roof")?(SlateMaterial?SlateMaterial.Get():StoneMaterial.Get()):Kind==TEXT("facade_glass")?(GlassMaterial?GlassMaterial.Get():VertexMaterial.Get()):Stone?StoneMaterial.Get():VertexMaterial.Get());
+        UMaterialInterface* Mat=Stone?StoneMaterial.Get():VertexMaterial.Get();
+        if(Kind==TEXT("water"))Mat=WaterMaterial;
+        else if(Kind==TEXT("roof"))Mat=String(Object(J,TEXT("properties")),TEXT("roof_material"))==TEXT("zinc")&&ZincMaterial?ZincMaterial.Get():(SlateMaterial?SlateMaterial.Get():StoneMaterial.Get());
+        else if(Kind==TEXT("facade_roof")&&ZincMaterial)Mat=ZincMaterial;
+        else if(Kind==TEXT("facade_glass")&&GlassMaterial)Mat=GlassMaterial;
+        else if(Kind==TEXT("facade_iron")&&IronMaterial)Mat=IronMaterial;
+        else if(Kind==TEXT("facade_wood")&&WoodMaterial)Mat=WoodMaterial;
+        Mesh->SetMaterial(0,Mat);
         const double Distance=Number(Object(J,TEXT("properties")),TEXT("render_distance_m"));if(Distance>0)Mesh->SetCullDistance(Distance*100);
         Meshes.Add(Mesh);Features.Add(Mesh,J);TriangleCount+=Indices.Num()/3;
     }
+    TMap<FString,UStaticMesh*> Models;TMap<FString,int32> ModelTriangles;
+    auto CrownMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisFoliage.M_ParisFoliage"));
+    for(const auto& Value:Array(Data,TEXT("instance_models"))){auto Model=Value->AsObject();const FString Name=String(Model,TEXT("id"));
+        UMaterialInterface* Mat=Name==TEXT("tree_crown")?CrownMaterial:Name.Contains(TEXT("metal"))?IronMaterial.Get():Name==TEXT("lamp_glass")?GlassMaterial.Get():WoodMaterial.Get();
+        auto Mesh=BuildParisStreetMesh(this,Model,Mat?Mat:VertexMaterial.Get());if(!Mesh){Status=TEXT("街路設備モデルが不正です");return;}Models.Add(Name,Mesh);StreetModels.Add(Mesh);ModelTriangles.Add(Name,Array(Model,TEXT("indices")).Num()/3);
+    }
+    for(const auto& Value:Array(Data,TEXT("instance_batches"))){auto Batch=Value->AsObject();const FString Name=String(Batch,TEXT("model"));auto Model=Models.Find(Name);if(!Model){Status=TEXT("街路設備モデルがありません");return;}
+        TArray<FTransform> Transforms;TArray<FString> IDs;
+        for(const auto& Entry:Array(Batch,TEXT("instances"))){auto Item=Entry->AsObject();FVector Position,Scale;if(!Vector(Item->TryGetField(TEXT("position_cm")),Position)||!Vector(Item->TryGetField(TEXT("scale")),Scale)||Scale.GetMin()<=0){Status=TEXT("街路設備の座標が不正です");return;}Transforms.Add(FTransform(FRotator(0,Number(Item,TEXT("yaw_degrees")),0),Position,Scale));IDs.Add(String(Item,TEXT("source_id")));}
+        auto HISM=NewObject<UHierarchicalInstancedStaticMeshComponent>(this);AddInstanceComponent(HISM);HISM->SetupAttachment(RootComponent);HISM->SetStaticMesh(*Model);HISM->SetCanEverAffectNavigation(false);HISM->RegisterComponent();HISM->AddInstances(Transforms,false,false,false);
+        HISM->SetCollisionEnabled(Name==TEXT("tree_crown")?ECollisionEnabled::QueryOnly:ECollisionEnabled::QueryAndPhysics);HISM->SetCollisionResponseToAllChannels(Name==TEXT("tree_crown")?ECR_Ignore:ECR_Block);HISM->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
+        HISM->SetCastShadow(Name==TEXT("tree_crown")&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));
+        StreetMeshes.Add(HISM);StreetInstanceIDs.Add(HISM,IDs);StreetModelNames.Add(HISM,Name);InstanceCount+=Transforms.Num();InstanceTriangles+=Transforms.Num()*ModelTriangles[Name];
+    }
+    for(const auto& F:SourceFeatures)StreetCount+=String(F,TEXT("kind")).StartsWith(TEXT("street_"))?1:0;
+    FParse::Value(FCommandLine::Get(),TEXT("ParisTwinQuality="),DetailQuality);DetailQuality=FMath::Clamp(DetailQuality,0,2);
+    bStreetDetails=!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoStreetDetails"));ApplyDetailQuality();
     if(auto J=Object(Data,TEXT("footprint_mesh"))){TArray<FVector> V,N;TArray<int32> I;TArray<FLinearColor> C;bool Valid=true;const auto& VertexColors=Array(J,TEXT("vertex_colors"));for(const auto& P:Array(J,TEXT("positions_cm"))){FVector Point;if(!Vector(P,Point)){Valid=false;break;}V.Add(Point);N.Add(FVector::UpVector);if(VertexColors.Num()!=Array(J,TEXT("positions_cm")).Num()){Valid=false;break;}C.Add(FLinearColor(FColor::FromHex(VertexColors[V.Num()-1]->AsString())));}for(const auto& Index:Array(J,TEXT("indices"))){const double Value=Index->AsNumber();if(Value<0||Value>=V.Num()||FMath::FloorToDouble(Value)!=Value){Valid=false;break;}I.Add(int32(Value));}if(!Valid||I.Num()%3){Status=TEXT("輪郭メッシュが不正です");return;}FootprintMesh=NewObject<UProceduralMeshComponent>(this);AddInstanceComponent(FootprintMesh);FootprintMesh->SetupAttachment(RootComponent);FootprintMesh->RegisterComponent();FootprintMesh->CreateMeshSection_LinearColor(0,V,I,N,{},C,{},false);FootprintMesh->SetMaterial(0,VertexMaterial);FootprintMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);FootprintMesh->SetCastShadow(false);FootprintMesh->SetVisibility(false);}
     auto Sun=GetWorld()->SpawnActor<ADirectionalLight>();Sun->GetLightComponent()->SetMobility(EComponentMobility::Movable);Sun->SetActorRotation(FRotator(-48,-35,0));Sun->GetLightComponent()->SetIntensity(10.3f);
     auto Direction=CastChecked<UDirectionalLightComponent>(Sun->GetLightComponent());Direction->SetAtmosphereSunLight(true);Direction->SetLightSourceAngle(3);
@@ -194,10 +234,21 @@ TSharedPtr<FJsonObject> AParisTwinScene::SourceAt(const FVector& Point,const FSt
 void AParisTwinScene::SelectHit(const FHitResult& Hit) {
     auto Found=Features.Find(Hit.GetComponent());TSharedPtr<FJsonObject> Source;
     if(bFootprints)Source=SourceAt(Hit.ImpactPoint);
+    else if(StreetInstanceIDs.Contains(Hit.GetComponent()))Source=StreetInstanceSource(Hit.GetComponent(),Hit.Item);
     else if(Found){const auto J=*Found;auto P=Object(J,TEXT("properties"));const FString Kind=String(J,TEXT("kind"));const FString SourceKind=Kind==TEXT("roof")||Kind.StartsWith(TEXT("facade_"))?TEXT("building"):Kind==TEXT("quay")?TEXT("water"):Kind;if(!String(P,TEXT("source_id")).IsEmpty())Source=J;else Source=SourceAt(Hit.ImpactPoint,SourceKind,Array(P,TEXT("source_ids")));if(!Source&&Kind.StartsWith(TEXT("facade_")))Source=SourceAt(Hit.ImpactPoint-Hit.ImpactNormal*15,TEXT("building"),Array(P,TEXT("source_ids")));}
     Selection=Source?FeatureText(Source):TEXT("Geographic inspection point");
     const auto LL=GeoReference.WGS84FromUE(Hit.ImpactPoint),EN=GeoReference.ProjectedFromUE(Hit.ImpactPoint);
     Selection+=FString::Printf(TEXT("\nCLICK WGS84 lon %.7f / lat %.7f | EPSG:2154 %.3f, %.3fm\nUE %.1f, %.1f, %.1fcm | NGF-IGN69 %.3fm (shared origin %.2fm)"),LL.X,LL.Y,EN.X,EN.Y,Hit.ImpactPoint.X,Hit.ImpactPoint.Y,Hit.ImpactPoint.Z,GeoReference.NGFFromUE(Hit.ImpactPoint),GeoReference.OriginElevationNGF);
+}
+TSharedPtr<FJsonObject> AParisTwinScene::StreetInstanceSource(UPrimitiveComponent* Component,int32 Instance) const {
+    const auto IDs=StreetInstanceIDs.Find(Component);if(!IDs||!IDs->IsValidIndex(Instance))return nullptr;
+    for(const auto& F:SourceFeatures)if(String(F,TEXT("id"))==(*IDs)[Instance])return F;return nullptr;
+}
+void AParisTwinScene::ToggleStreetDetails(){bStreetDetails=!bStreetDetails;ApplyDetailQuality();}
+void AParisTwinScene::CycleDetailQuality(){DetailQuality=(DetailQuality+1)%3;ApplyDetailQuality();}
+void AParisTwinScene::ApplyDetailQuality(){
+    for(auto& Pair:Features){const FString Kind=String(Pair.Value,TEXT("kind"));if(Kind.StartsWith(TEXT("facade_"))){const double Base=Number(Object(Pair.Value,TEXT("properties")),TEXT("render_distance_m"),300);Pair.Key->SetCullDistance(Base*(DetailQuality==0?.5:DetailQuality==2?1.7:1.)*100);}}
+    for(auto HISM:StreetMeshes){const bool Tree=StreetModelNames[HISM].StartsWith(TEXT("tree_"));const int32 Distance=Tree?(DetailQuality==0?90000:DetailQuality==1?120000:180000):(DetailQuality==0?12000:DetailQuality==1?25000:45000);HISM->SetCullDistances(Distance*.8,Distance);HISM->SetVisibility(bStreetDetails&&!bFootprints);HISM->SetCollisionEnabled(bStreetDetails&&!bFootprints?(StreetModelNames[HISM]==TEXT("tree_crown")?ECollisionEnabled::QueryOnly:ECollisionEnabled::QueryAndPhysics):ECollisionEnabled::NoCollision);}
 }
 void AParisTwinScene::FocusLandmark(int32 Index) {
     if(!Landmarks.IsValidIndex(Index))return;auto L=Landmarks[Index];FVector Point;if(!Vector(L->TryGetField(TEXT("ue_cm")),Point))return;
@@ -207,6 +258,7 @@ void AParisTwinScene::FocusLandmark(int32 Index) {
 void AParisTwinScene::ToggleFootprints() {
     bFootprints=!bFootprints;if(FootprintMesh)FootprintMesh->SetVisibility(bFootprints);
     for(auto& Pair:Features){const FString Kind=String(Pair.Value,TEXT("kind"));if(Kind==TEXT("building")||Kind==TEXT("roof")||Kind.StartsWith(TEXT("facade_"))){Pair.Key->SetVisibility(!bFootprints);Pair.Key->SetCollisionEnabled(bFootprints?ECollisionEnabled::NoCollision:ECollisionEnabled::QueryAndPhysics);}}
+    ApplyDetailQuality();
 }
 void AParisTwinScene::ToggleIssues(){bIssues=!bIssues;RefreshAppearance();}
 void AParisTwinScene::RefreshAppearance() {
@@ -215,7 +267,7 @@ void AParisTwinScene::RefreshAppearance() {
         if(auto Section=C->GetProcMeshSection(0)){for(const auto& Value:Array(Pair.Value,TEXT("appearance_ranges"))){auto Range=Value->AsObject();const bool Overlap=bIssues&&OverlapIDs.Contains(String(Range,TEXT("source_id")));const FColor Color=Overlap?FColor(235,65,92):bLevels?(String(Range,TEXT("body_level"))==TEXT("L2")?FColor(78,174,148):FColor(239,156,66)):FLinearColor(FColor::FromHex(String(Range,TEXT("color")))).ToFColor(false);const int32 Start=Number(Range,TEXT("start")),End=Start+Number(Range,TEXT("count"));for(int32 I=Start;I<End&&Section->ProcVertexBuffer.IsValidIndex(I);I++)Section->ProcVertexBuffer[I].Color=Color;}C->MarkRenderStateDirty();}C->SetMaterial(0,bLevels||bIssues?VertexMaterial.Get():StoneMaterial.Get());
     }
     for(auto& Pair:Features)if(String(Pair.Value,TEXT("kind"))==TEXT("roof")){
-        auto C=Cast<UProceduralMeshComponent>(Pair.Key);const auto& LevelColors=Array(Pair.Value,TEXT("level_colors"));if(auto Section=C->GetProcMeshSection(0)){for(int32 I=0;I<Section->ProcVertexBuffer.Num();I++)Section->ProcVertexBuffer[I].Color=FLinearColor(FColor::FromHex(bLevels&&LevelColors.IsValidIndex(I)?LevelColors[I]->AsString():String(Pair.Value,TEXT("color")))).ToFColor(false);C->MarkRenderStateDirty();}C->SetMaterial(0,bLevels?VertexMaterial.Get():(SlateMaterial?SlateMaterial.Get():StoneMaterial.Get()));
+        auto C=Cast<UProceduralMeshComponent>(Pair.Key);const auto& LevelColors=Array(Pair.Value,TEXT("level_colors"));if(auto Section=C->GetProcMeshSection(0)){for(int32 I=0;I<Section->ProcVertexBuffer.Num();I++)Section->ProcVertexBuffer[I].Color=FLinearColor(FColor::FromHex(bLevels&&LevelColors.IsValidIndex(I)?LevelColors[I]->AsString():String(Pair.Value,TEXT("color")))).ToFColor(false);C->MarkRenderStateDirty();}C->SetMaterial(0,bLevels?VertexMaterial.Get():String(Object(Pair.Value,TEXT("properties")),TEXT("roof_material"))==TEXT("zinc")&&ZincMaterial?ZincMaterial.Get():(SlateMaterial?SlateMaterial.Get():StoneMaterial.Get()));
     }
 }
 void AParisTwinScene::ToggleLevels() {
@@ -227,17 +279,17 @@ void AParisTwinScene::Tick(float Delta) {
     if(bIssues)for(const auto& Issue:Issues)for(const auto& Line:Array(Issue,TEXT("polylines_cm"))){const auto& Points=Line->AsArray();for(int32 I=1;I<Points.Num();I++){FVector A,B;if(Vector(Points[I-1],A)&&Vector(Points[I],B))DrawDebugLine(GetWorld(),A,B,String(Issue,TEXT("kind"))==TEXT("building_overlap")?FColor(235,65,92):FColor(245,161,46),false,-1,0,2);}}
     if(!bCaptured&&Age>8&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinCapture"))){bCaptured=true;Capture();}
     double Duration=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinBenchmark="),Duration);
-    if(Duration>0&&Age>5&&!bMeasured){FrameTimes.Add(Delta*1000.);if(Age>=5+Duration){bMeasured=true;double Sum=0;for(double T:FrameTimes)Sum+=T;FrameTimes.Sort();auto J=MakeShared<FJsonObject>();J->SetNumberField(TEXT("fps"),FrameTimes.Num()*1000/FMath::Max(Sum,1.));J->SetNumberField(TEXT("frame_p95_ms"),FrameTimes[FMath::Clamp(FMath::CeilToInt(FrameTimes.Num()*.95)-1,0,FrameTimes.Num()-1)]);J->SetNumberField(TEXT("frames"),FrameTimes.Num());J->SetNumberField(TEXT("buildings"),BuildingCount);J->SetNumberField(TEXT("triangles"),TriangleCount);J->SetNumberField(TEXT("mesh_components"),Meshes.Num());J->SetBoolField(TEXT("shadows_disabled"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));FVector2D Size;GEngine->GameViewport->GetViewportSize(Size);J->SetNumberField(TEXT("viewport_width"),Size.X);J->SetNumberField(TEXT("viewport_height"),Size.Y);J->SetStringField(TEXT("rhi"),TEXT("DX11 preview; no Nanite/Lumen claim"));int32 LandmarkIndex=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),LandmarkIndex);J->SetNumberField(TEXT("landmark_index"),LandmarkIndex);J->SetBoolField(TEXT("footprints"),bFootprints);J->SetStringField(TEXT("view"),LandmarkIndex>0?TEXT("landmark"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))?TEXT("eye_1.7m"):TEXT("overview"));FString Output;FJsonSerializer::Serialize(J,TJsonWriterFactory<>::Create(&Output));FFileHelper::SaveStringToFile(Output,*(FPaths::ProjectSavedDir()/TEXT("paris-twin-performance.json")));UE_LOG(LogTemp,Display,TEXT("PARIS_TWIN_BENCHMARK %s"),*Output);if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinExit")))FPlatformMisc::RequestExit(false);}}
+    if(Duration>0&&Age>5&&!bMeasured){FrameTimes.Add(Delta*1000.);if(Age>=5+Duration){bMeasured=true;double Sum=0;for(double T:FrameTimes)Sum+=T;FrameTimes.Sort();auto J=MakeShared<FJsonObject>();J->SetNumberField(TEXT("fps"),FrameTimes.Num()*1000/FMath::Max(Sum,1.));J->SetNumberField(TEXT("frame_p95_ms"),FrameTimes[FMath::Clamp(FMath::CeilToInt(FrameTimes.Num()*.95)-1,0,FrameTimes.Num()-1)]);J->SetNumberField(TEXT("frames"),FrameTimes.Num());J->SetNumberField(TEXT("buildings"),BuildingCount);J->SetNumberField(TEXT("triangles"),TriangleCount);J->SetNumberField(TEXT("mesh_components"),Meshes.Num());J->SetNumberField(TEXT("instance_components"),StreetMeshes.Num());J->SetNumberField(TEXT("street_objects"),StreetCount);J->SetNumberField(TEXT("instances"),InstanceCount);J->SetNumberField(TEXT("instance_triangles_before_culling"),InstanceTriangles);J->SetNumberField(TEXT("detail_quality"),DetailQuality);J->SetBoolField(TEXT("street_details"),bStreetDetails);J->SetBoolField(TEXT("shadows_disabled"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));FVector2D Size;GEngine->GameViewport->GetViewportSize(Size);J->SetNumberField(TEXT("viewport_width"),Size.X);J->SetNumberField(TEXT("viewport_height"),Size.Y);J->SetStringField(TEXT("rhi"),TEXT("DX11 preview; no Nanite/Lumen claim"));int32 LandmarkIndex=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),LandmarkIndex);J->SetNumberField(TEXT("landmark_index"),LandmarkIndex);J->SetBoolField(TEXT("footprints"),bFootprints);J->SetStringField(TEXT("view"),LandmarkIndex>0?TEXT("landmark"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))?TEXT("eye_1.7m"):TEXT("overview"));FString Output;FJsonSerializer::Serialize(J,TJsonWriterFactory<>::Create(&Output));FFileHelper::SaveStringToFile(Output,*(FPaths::ProjectSavedDir()/TEXT("paris-twin-performance.json")));UE_LOG(LogTemp,Display,TEXT("PARIS_TWIN_BENCHMARK %s"),*Output);if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinExit")))FPlatformMisc::RequestExit(false);}}
 }
 struct FParisButton{int32 Action;FString Label;FVector2D Position,Size;};
 static TArray<FParisButton> ParisButtons(float Width) {
-    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Street [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Sainte-Chapelle [2]"),TEXT("Saint-Michel [3]"),TEXT("Help [H]")};
+    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Street [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Sainte-Chapelle [2]"),TEXT("Saint-Michel [3]"),TEXT("Help [H]"),TEXT("Trees / props [F6]"),TEXT("Quality [F7]")};
     TArray<FParisButton> Result;float X=16,Y=36;
     for(int32 I=0;I<Labels.Num();I++){const float W=Labels[I].Len()*7.5f+20;if(X+W>Width-16&&X>16){X=16;Y+=34;}Result.Add({I,Labels[I],FVector2D(X,Y),FVector2D(W,28)});X+=W+6;}return Result;
 }
 bool AParisTwinHUD::HandleClick(const FVector2D& P) {
     if(!Canvas)return false;auto C=Cast<AParisTwinController>(PlayerOwner);if(!C)return false;
-    for(const auto& B:ParisButtons(Canvas->SizeX))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;default:C->ToggleHelp();break;}return true;}
+    for(const auto& B:ParisButtons(Canvas->SizeX))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;case 7:C->ToggleHelp();break;case 8:C->ToggleStreetDetails();break;default:C->CycleDetailQuality();break;}return true;}
     return P.Y<ParisButtons(Canvas->SizeX).Last().Position.Y+38;
 }
 void AParisTwinHUD::DrawHUD() {
@@ -245,8 +297,8 @@ void AParisTwinHUD::DrawHUD() {
     auto Text=[this](const FString& Message,float X,float Y,float Scale=1.f){Canvas->SetDrawColor(FColor::White);Canvas->DrawText(GEngine->GetSmallFont(),Message,X,Y,Scale,Scale,FFontRenderInfo());};
     const auto Buttons=ParisButtons(Canvas->SizeX);const float Bottom=Buttons.Last().Position.Y+38;
     DrawRect(FLinearColor(.015f,.02f,.03f,.88f),8,8,Canvas->SizeX-16,Bottom-8);
-    Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | Phase 4 + 5 preview | %d buildings | IGN terrain / inferred facades | 1m = 100cm"),S->BuildingCount),16,15,1.05f);
-    for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
+    Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | %d buildings | %d mapped street objects | Inferred appearance | Quality: %s"),S->BuildingCount,S->StreetCount,S->DetailQuality==0?TEXT("LOW"):S->DetailQuality==1?TEXT("MEDIUM"):TEXT("HIGH")),16,15,1.05f);
+    for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp)||(B.Action==8&&S->bStreetDetails);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
     if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(720.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("W/A/S/D: move | Arrow keys: rotate | Mouse wheel: overview zoom"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("F1: body L2 green / L1 amber | F9: screenshot | Roof profiles remain inferred."),16,Bottom+84);}
     if(S->bIssues){DrawRect(FLinearColor(.07f,.025f,.01f,.88f),8,Bottom+(bHelp?126:4),FMath::Min(720.f,float(Canvas->SizeX-16)),42);Text(S->IssueSummary,16,Bottom+(bHelp?134:12));Text(TEXT("Red: source overlap | Orange: separate road paths (review; not automatically errors)"),16,Bottom+(bHelp?152:30));}
     if(!S->Selection.IsEmpty()){TArray<FString> Lines;S->Selection.ParseIntoArrayLines(Lines);const float Height=Lines.Num()*19+16,Y=Canvas->SizeY-50-Height;DrawRect(FLinearColor(.015f,.02f,.03f,.9f),8,Y,Canvas->SizeX-16,Height);for(int32 I=0;I<Lines.Num();I++)Text(Lines[I],16,Y+8+I*19);}

@@ -6,6 +6,7 @@
 #include "ParisDigitalTwin.h"
 #include "Engine/Engine.h"
 #include "EngineUtils.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
 using namespace AIWorld;
 #if WITH_DEV_AUTOMATION_TESTS
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FParisCoordinateTest,"ParisDigitalTwin.Live.CoordinateAgreement",EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
@@ -54,4 +55,37 @@ bool FParisTwinSceneWait::Update() {
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FParisTwinLiveTest,"ParisDigitalTwin.Live.SceneCollisionAndDebug",EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FParisTwinLiveTest::RunTest(const FString&){ADD_LATENT_AUTOMATION_COMMAND(FParisTwinSceneWait(this));return true;}
+
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FParisTwinStreetWait,FAutomationTestBase*,Test);
+bool FParisTwinStreetWait::Update() {
+    static double Started=0;if(Started==0)Started=FPlatformTime::Seconds();
+    for(const auto& Context:GEngine->GetWorldContexts())if(Context.World())for(TActorIterator<AParisTwinScene> It(Context.World());It;++It){auto Scene=*It;if(!Scene->bReady)continue;
+        TArray<UHierarchicalInstancedStaticMeshComponent*> Instances;Scene->GetComponents(Instances);
+        Test->TestEqual(TEXT("Six shared street prototypes instead of thousands of components"),Instances.Num(),6);
+        Test->TestTrue(TEXT("Real mapped furniture loaded"),Scene->StreetCount>1500&&Scene->InstanceCount==Scene->StreetCount*2);
+        for(auto Mesh:Instances)if(Mesh->GetInstanceCount()>0){
+            auto Source=Scene->StreetInstanceSource(Mesh,0);Test->TestTrue(TEXT("Instance index resolves an original mapped node"),Source.IsValid());if(!Source)continue;
+            FTransform Transform;Mesh->GetInstanceTransform(0,Transform,true);FHitResult Pick;Pick.Component=Mesh;Pick.Item=0;Pick.ImpactPoint=Transform.GetLocation();Scene->SelectHit(Pick);
+            Test->TestTrue(TEXT("Instance selection displays the correct original OSM node"),Scene->Selection.Contains(String(Source,TEXT("id")))&&Scene->Selection.Contains(TEXT("Mapped OSM position")));
+            Test->TestTrue(TEXT("Instance selection distinguishes inferred appearance"),Scene->Selection.Contains(TEXT("unverified")));
+            Test->TestFalse(TEXT("Out-of-range hit index cannot select an unrelated node"),Scene->StreetInstanceSource(Mesh,Mesh->GetInstanceCount()).IsValid());
+        }
+        const int32 Quality=Scene->DetailQuality,Count=Scene->InstanceCount;
+        if(!Instances.IsEmpty()){
+            FTransform Transform;Instances[0]->GetInstanceTransform(0,Transform,true);
+            FHitResult Hit;FCollisionQueryParams Params;Params.bTraceComplex=true;
+            const bool HitObject=Context.World()->LineTraceSingleByChannel(Hit,Transform.GetLocation()+FVector(0,0,6000),Transform.GetLocation()-FVector(0,0,100),ECC_Visibility,Params);
+            auto Source=HitObject?Scene->StreetInstanceSource(Hit.GetComponent(),Hit.Item):nullptr;
+            Test->TestTrue(TEXT("Actual complex cursor trace hits a mapped tree proxy"),Source.IsValid()&&String(Source,TEXT("kind"))==TEXT("street_tree"));
+        }
+        for(int32 I=0;I<3;I++)Scene->CycleDetailQuality();Test->TestEqual(TEXT("Quality cycling restores selected preset"),Scene->DetailQuality,Quality);Test->TestEqual(TEXT("Visual quality never deletes GIS instances"),Scene->InstanceCount,Count);
+        Scene->ToggleStreetDetails();for(auto Mesh:Instances)Test->TestTrue(TEXT("Disabled props do not intercept picking"),!Mesh->IsVisible()&&Mesh->GetCollisionEnabled()==ECollisionEnabled::NoCollision);
+        Scene->ToggleFootprints();Scene->ToggleFootprints();for(auto Mesh:Instances)Test->TestFalse(TEXT("Footprint mode preserves user-disabled street details"),Mesh->IsVisible());
+        Scene->ToggleStreetDetails();for(auto Mesh:Instances)Test->TestTrue(TEXT("Street detail toggle restores rendering and queries"),Mesh->IsVisible()&&Mesh->GetCollisionEnabled()!=ECollisionEnabled::NoCollision);
+        Started=0;return true;
+    }
+    if(FPlatformTime::Seconds()-Started>25){Test->AddError(TEXT("Street instance scene did not become ready"));Started=0;return true;}return false;
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FParisTwinStreetTest,"ParisDigitalTwin.Live.StreetInstancesAndQuality",EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
+bool FParisTwinStreetTest::RunTest(const FString&){ADD_LATENT_AUTOMATION_COMMAND(FParisTwinStreetWait(this));return true;}
 #endif

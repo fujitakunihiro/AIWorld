@@ -214,6 +214,11 @@ class PipelineTests(unittest.TestCase):
         self.assertGreater(len(notre['height_reference_ids']),2)
         self.assertTrue(all(f['properties']['reproduction_level']=='L1' for f in data['layers']['buildings']))
         self.assertTrue(any(o['kind']=='roof' for o in scene['objects']))
+        self.assertGreater(report['street_furniture']['rendered']['tree'],900)
+        self.assertGreater(report['street_furniture']['rendered']['lamp'],400)
+        self.assertGreater(report['facades']['balconies'],100)
+        self.assertGreater(report['facades']['party_wall_columns_omitted'],100)
+        self.assertEqual(report['instance_batches'],6)
 
 
 if __name__=='__main__':unittest.main()

@@ -1,6 +1,6 @@
 # AI WORLD — パリと自律する住民
 
-**実地理のParis Digital Twin（Phase 0・1）:** OSM・Paris Data・IGNから取得した地区を、旧箱庭とは別のUEモードで表示します。起動は `Paris-DigitalTwin.cmd`。保存済みGISからオフライン再生成できます。現在はL1の実輪郭・道路・河川プレビューです。[実装・検証・次Phase](docs/paris-digital-twin.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
+**実地理のParis Digital Twin（Phase 5続き・Phase 6静的設備）:** OSM・Paris Data・IGNの建物739棟・地形・道路・セーヌ川に、推定の入口・バルコニー・コーニス・屋根窓と、OSM位置の樹木・街灯・ベンチを追加しました。起動は `Paris-DigitalTwin.cmd`。F6で街路設備、F7で描画距離の低・中・高を切り替えられます。保存済みGISからオフライン再生成できます。建物全体はL1、条件を満たす本体だけL2で、固有建築の外観は今後の実装です。[最新の検証・残作業](docs/paris-digital-twin-phase56.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
 
 **Unreal Engine版への移行:** Windows用のUE 5.8プロジェクトを追加しました。起動は `.\unreal\scripts\Start-AIWorldUE.ps1`、初回ビルドは `.\unreal\scripts\Build-AIWorldUE.ps1` です。現在の世界と住民AI・SQLiteを引き継ぎ、UEのネイティブ3D画面と操作で遊べます。[起動方法・移行構成・検証](docs/unreal-migration.md) を参照してください。
 

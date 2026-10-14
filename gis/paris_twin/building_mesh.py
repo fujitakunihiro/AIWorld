@@ -79,8 +79,11 @@ def generate_buildings(geo,buildings,Mesh,triangulate,terrain=None):
             base=(part.get('ground_ngf_m',terrain.ngf((point.x,point.y)))-terrain.origin_ngf) if terrain else 0.
             variable_walls(body,g,part,base,terrain)
             point=g.representative_point();cell=(math.floor((point.x-geo.origin[0])/100),math.floor((point.y-geo.origin[1])/100))
-            if cell not in buckets:buckets[cell]=Mesh(geo);buckets[cell].level_colors=[]
-            roof=buckets[cell];sources[cell].add(root_id)
+            tagged=props['tags'].get('roof:material')
+            material='zinc' if tagged in ['metal','zinc','steel'] or (not tagged and part['roof']['form'] in ['mansard','flat']) else 'slate'
+            key=(*cell,material)
+            if key not in buckets:buckets[key]=Mesh(geo);buckets[key].level_colors=[]
+            roof=buckets[key];sources[key].add(root_id)
             for surface,extra in roof_surfaces(g,part['roof']):
                 if part['roof']['form'] in ['gabled','pyramidal']:
                     boundary=g.boundary.buffer(.00001)
@@ -107,7 +110,8 @@ def generate_buildings(geo,buildings,Mesh,triangulate,terrain=None):
         bodies.append(body.item(root_id,'building','#d0c3a7',props))
     roofs=[]
     for cell,mesh in sorted(buckets.items()):
-        item=mesh.item(f'roof-cell/{cell[0]}/{cell[1]}','roof','#596679',{'source_ids':sorted(sources[cell]),
+        item=mesh.item(f'roof-cell/{cell[0]}/{cell[1]}/{cell[2]}','roof','#7c8790' if cell[2]=='zinc' else '#596679',{'source_ids':sorted(sources[cell]),'roof_material':cell[2],
+             'roof_material_source':'OSM roof:material when tagged; inferred zinc for untagged mansard/flat roofs, slate otherwise; not an observed facade',
              'roof_shape_source':'OSM declared or procedural; not a scanned roof', 'gutter_height_source':'IGN BD TOPO where spatially matched; labelled estimates otherwise'})
         item['level_colors']=mesh.level_colors;roofs.append(item)
     return bodies+roofs

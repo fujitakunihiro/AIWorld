@@ -25,9 +25,10 @@ def property(node,out,prop):
 def material(name, texture_path=None, tile_cm=400, roughness=.8, metallic=0):
     path='/Game/Materials/'+name
     mat=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,'/Game/Materials',unreal.Material,unreal.MaterialFactoryNew())
-    if assets.get_metadata_tag(mat,'ParisTwin.Generator')=='1':return
+    if assets.get_metadata_tag(mat,'ParisTwin.Generator')=='2':return
     lib.delete_all_material_expressions(mat)
     mat.set_editor_property('two_sided',True)
+    lib.set_material_usage(mat,unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
     color=expression(mat,unreal.MaterialExpressionVertexColor,-900,-200)
     if texture_path:
         texture=assets.load_asset(texture_path)
@@ -65,10 +66,14 @@ def material(name, texture_path=None, tile_cm=400, roughness=.8, metallic=0):
     property(expression(mat,unreal.MaterialExpressionConstant,200,550,r=metallic),'',unreal.MaterialProperty.MP_METALLIC)
     property(expression(mat,unreal.MaterialExpressionConstant,200,700,r=.5),'',unreal.MaterialProperty.MP_SPECULAR)
     lib.recompile_material(mat)
-    assets.set_metadata_tag(mat,'ParisTwin.Generator','1');assets.save_loaded_asset(mat)
+    assets.set_metadata_tag(mat,'ParisTwin.Generator','2');assets.save_loaded_asset(mat)
 
 
 material('M_ParisLimestone','/Game/Textures/T_Limestone',400,.83)
 material('M_ParisSlate','/Game/Textures/T_Slate',300,.55)
 material('M_ParisGlass',roughness=.22)
+material('M_ParisZinc',roughness=.48,metallic=.72)
+material('M_ParisIron',roughness=.53,metallic=.8)
+material('M_ParisWood',roughness=.88)
+material('M_ParisFoliage','/Game/Textures/T_IslandGrass',90,.92)
 unreal.log('PARIS_TWIN_PBR_ASSETS_READY')

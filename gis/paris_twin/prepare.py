@@ -6,7 +6,7 @@ from .acquire import verify_cache
 from .io import ROOT, paths, read, sha, generation_metadata
 
 PRODUCTS=('Generated/scene.json','Generated/surface-validation.json','Generated/diagnostics.json',
-          'Generated/map.html','Generated/map.svg','Processed/district.json','Processed/features.wgs84.geojson')
+          'Generated/map.html','Generated/map.svg','Generated/street-placement.json','Processed/district.json','Processed/features.wgs84.geojson')
 
 
 def prepare(config):

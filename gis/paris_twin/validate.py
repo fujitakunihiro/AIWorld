@@ -1,6 +1,6 @@
 import math
 from collections import defaultdict
-from shapely.geometry import LineString, shape
+from shapely.geometry import LineString, Point, shape
 from shapely.ops import unary_union
 from shapely.strtree import STRtree
 from .acquire import verify_cache
@@ -97,6 +97,24 @@ def validate(config):
         if not issue['source_ids'] or any(identifier not in ids for identifier in issue['source_ids']):errors.append('untraced_diagnostic:'+issue['id'])
     if len(scene['pick_features'])!=len({f['id'] for f in scene['pick_features']}):errors.append('duplicate_pick_feature')
     if any(f['id'] not in ids for f in scene['pick_features']):errors.append('untraced_pick_feature')
+    models={m['id']:m for m in scene.get('instance_models',[])}
+    for model in models.values():
+        if len(model['normals'])!=len(model['positions_cm']) or len(model['indices'])%3 or any(i<0 or i>=len(model['positions_cm']) for i in model['indices']):errors.append('invalid_instance_model:'+model['id'])
+    streets={f['properties']['source_id']:f for f in layers.get('street_objects',[])}
+    for batch in scene.get('instance_batches',[]):
+        if batch['model'] not in models:errors.append('missing_instance_model:'+batch['model'])
+        used=set()
+        for instance in batch['instances']:
+            identifier=instance['source_id']
+            if identifier not in streets or identifier in used:errors.append('invalid_or_duplicated_street_instance:'+identifier);continue
+            used.add(identifier);feature=streets[identifier]
+            point=shape(feature['geometry']);expected=(geo.origin[0]+instance['position_cm'][0]/100,geo.origin[1]-instance['position_cm'][1]/100)
+            if point.distance(Point(expected))>.001:errors.append('street_point_silently_relocated:'+identifier)
+            if len(instance['scale'])!=3 or any(not math.isfinite(v) or v<=0 or v>10 for v in instance['scale']):errors.append('invalid_street_instance_scale:'+identifier)
+            if not all(math.isfinite(v) for v in instance['position_cm']) or not math.isfinite(instance['yaw_degrees']):errors.append('nonfinite_street_instance:'+identifier)
+    street_pick={f['id'] for f in scene['pick_features'] if f['kind'].startswith('street_')}
+    model_ids={i['source_id'] for b in scene.get('instance_batches',[]) for i in b['instances']}
+    if street_pick!=model_ids:errors.append('street_instance_selection_mismatch')
     footprint=scene['footprint_mesh']
     if len(footprint['positions_cm'])!=len(footprint['vertex_colors']):errors.append('footprint_colour_count_mismatch')
     if any(i<0 or i>=len(footprint['positions_cm']) for i in footprint['indices']) or len(footprint['indices'])%3:errors.append('invalid_footprint_mesh_indices')
@@ -135,6 +153,8 @@ def validate(config):
             'shared_georeference':scene['georeference']['reference_id'],
             'height_semantics':'IGN hauteur/3D Z describe gutters; source precision retained; extra roof profiles inferred; Paris h_et_max is floors',
             'terrain':terrain.metadata(),'bridge_decks':len(surface['bridge_decks']),'low_bridge_fragments':len(low_bridges),
-            'facades':surface['facades'],'building_render_batches':sum(o['kind']=='building' for o in scene['objects'])}
+            'facades':surface['facades'],'building_render_batches':sum(o['kind']=='building' for o in scene['objects']),
+            'street_furniture':surface.get('street_furniture',{}),'instance_batches':len(scene.get('instance_batches',[])),
+            'rendered_instances':sum(len(b['instances']) for b in scene.get('instance_batches',[]))}
     write(p['Generated']/'validation.json',report)
     return report

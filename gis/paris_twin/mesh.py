@@ -197,6 +197,8 @@ def export(config,dataset):
     objects=batch_bodies(objects,geo,Mesh)
     facade_objects,facade_report=generate_facades(geo,layers['buildings'],terrain,Mesh)
     objects.extend(facade_objects)
+    from .street_furniture import model_meshes,generate_street_objects
+    instance_batches,street_features,street_report=generate_street_objects(geo,layers['street_objects'],terrain,water,building_union,layers['roads'],sidewalks,paths_surface,bridge_decks)
     scene={'format':'paris_twin_scene_v1','generation':dataset['generation'],'district_id':config['district_id'],'georeference':{
         'wgs84_origin':config['origin_wgs84'],'projected_origin_m':list(geo.origin),'projected_crs':geo.crs.to_string(),
         'units':'cm','axes':'X=east, Y=south, Z=up','cesium_transform_applied':False,
@@ -204,6 +206,7 @@ def export(config,dataset):
         'vertical_mode':'orthometric NGF-IGN69 minus shared origin; no ellipsoidal conversion',
         'origin_elevation_ngf_m':terrain.origin_ngf,'vertical_datum':'NGF-IGN69'},
         'terrain':terrain.metadata(),'bridge_profiles':bridge_reports,'facades':facade_report,
+        'instance_models':model_meshes(geo,Mesh),'instance_batches':instance_batches,'street_furniture':street_report,
         'extent_m':config['core_size_m']+config['context_buffer_m']*2,
         'scene_centre_ue_cm':list(geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']),terrain.ngf(geo.centre),terrain.origin_ngf)),
         'quality_centre_ue_cm':list(geo.to_ue(*config['quality_center_wgs84'],terrain.ngf(geo.forward.transform(*config['quality_center_wgs84'])),terrain.origin_ngf)),
@@ -231,6 +234,7 @@ def export(config,dataset):
                 props['water_level_source']='estimated:river DEM median; no gauge' if props['water_role']=='river' else 'estimated:terrain + 0.12m fountain surface'
                 props.pop('water_level_local_m',None)
             scene['pick_features'].append(picked)
+    scene['pick_features'].extend(street_features)
     scene['landmarks'] = []
     for label, layer, name in [('Notre-Dame','buildings','Cathédrale Notre-Dame de Paris'),('Sainte-Chapelle','buildings','Sainte-Chapelle'),('Saint-Michel','squares','Place Saint-Michel')]:
         feature = next((f for f in layers[layer] if f['properties']['name']==name),None)
@@ -256,6 +260,7 @@ def export(config,dataset):
     dest=paths(config)['Generated']
     write(dest/'scene.json',scene)
     write(dest/'diagnostics.json',review)
+    write(dest/'street-placement.json',{'report':street_report,'features':street_features})
     native=ROOT/'unreal/AIWorld/Content/Data/paris-digital-twin.json'
     write(native,scene)
     road_result=[g for g in [roads,bridges,paths_surface,sidewalks] if g is not None]
@@ -263,7 +268,8 @@ def export(config,dataset):
           'surface_area_m2':round(sum(g.area for g in road_result),3),'buildings':len(footprint_seen),
           'meshes':len(objects),'triangles':sum(len(o['indices'])//3 for o in objects),
           'terrain':terrain.metadata(),'river_water_ngf_m':water_ngf,'river_dem_samples':water_samples,
-          'quay_segments':quay_count,'bridge_decks':bridge_reports,'facades':facade_report})
+          'quay_segments':quay_count,'bridge_decks':bridge_reports,'facades':facade_report,'street_furniture':street_report,
+          'instance_models':len(scene['instance_models']),'rendered_instances':sum(len(b['instances']) for b in instance_batches)})
     preview(config,dataset,road_result,water,review)
     from .prepare import PRODUCTS
     folders=paths(config)
