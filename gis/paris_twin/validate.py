@@ -49,8 +49,16 @@ def validate(config):
     for f in buildings:
         props=f['properties']
         if not math.isfinite(props['height_m']) or not 0<props['height_m']<300:errors.append('height_out_of_preview_range:'+props['source_id'])
-        if props['height_kind']=='estimated' and not props['height_source'].startswith('estimated:'):errors.append('unlabelled_height_estimate')
-    if missing:warnings.append(f'{missing} buildings have no verified measured metre height; L1 only')
+        parts=props['height_parts'];foot=shape(f['geometry']);union=unary_union([shape(p['geometry']) for p in parts])
+        if union.symmetric_difference(foot).area>.0001:errors.append('building_parts_do_not_cover_footprint:'+props['source_id'])
+        if abs(sum(shape(p['geometry']).area for p in parts)-union.area)>.0001:errors.append('building_parts_overlap:'+props['source_id'])
+        for part in parts:
+            if part['source_snapshot'] not in manifest['files'] or part['source_id'] not in ids:errors.append('untraced_height_part:'+props['source_id'])
+            if part['height_kind']=='official_topographic' and not 0<part['vertical_precision_m']<=3:errors.append('invalid_official_height_precision')
+            if not .5<=part['height_gutter_m']<150 or not 0<=part['roof']['rise_m']<20:errors.append('height_part_out_of_range')
+            if part['roof']['reproduction_level']!='L1':errors.append('unverified_roof_promoted')
+        if props['reproduction_level_body']=='L2' and props['official_height_coverage']<.98:errors.append('insufficient_L2_body_coverage')
+    if missing:warnings.append(f'{missing} buildings lack near-complete official gutter coverage; roof profiles remain inferred')
     network=connectivity(layers['roads'],geo)
     if not network['edges']:errors.append('road_network_empty')
     if len(network['component_sizes'])>1:warnings.append('Road network has disconnected components; inspect clipped paths and source gaps')
@@ -88,7 +96,11 @@ def validate(config):
     report={'format':1,'generation':data['generation'],'errors':errors,'warnings':warnings,'coordinate_roundtrip_max_m':worst,
             'invalid_geometry':invalid,'untraced_ids':untraced,'building_overlaps':overlaps,
             'buildings':len(buildings),'missing_verified_measured_heights':missing,'estimated_heights':estimates,
-            'source_declared_heights':len(buildings)-estimates,'road_network':network,'bridges':bridges,
+            'source_declared_heights':sum(f['properties']['height_kind']=='source_declared_unverified' for f in buildings),
+            'official_height_buildings':sum(bool(f['properties']['height_reference_ids']) for f in buildings),
+            'body_L2_buildings':sum(f['properties']['reproduction_level_body']=='L2' for f in buildings),
+            'height_parts':sum(len(f['properties']['height_parts']) for f in buildings),
+            'road_network':network,'bridges':bridges,
             'source_feature_ids':len(ids),'layers':{k:len(v) for k,v in layers.items()},
             'normalized_issues':data['issues'],'generated_surface_validation':surface,
             'water_roles':{role:sum(f['properties']['water_role']==role for f in layers['water']) for role in ['river','basin','waterbody']},
@@ -96,6 +108,6 @@ def validate(config):
             'review_issue_counts':{kind:sum(i['kind']==kind for i in review['issues']) for kind in ['building_overlap','disconnected_road']},
             'review_road_classes':{kind:sum(i['classification']==kind for i in review['issues']) for kind in ['boundary_clipped','interior_unconnected']},
             'shared_georeference':scene['georeference']['reference_id'],
-            'height_semantics':'Paris h_et_max is floors, not metres; OSM height is source-declared, unverified'}
+            'height_semantics':'IGN hauteur/3D Z describe gutters; source precision retained; extra roof profiles inferred; Paris h_et_max is floors'}
     write(p['Generated']/'validation.json',report)
     return report

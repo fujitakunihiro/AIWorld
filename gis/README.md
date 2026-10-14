@@ -39,7 +39,9 @@ Phase 2で `diagnostics.py`、`Data/Generated/<district>/diagnostics.json`、ク
 
 `origin_wgs84` は全地区の共通原点、`district_center_wgs84` は個別地区の取得・表示範囲の中心です。`gis/config/saint_michel_west.json` は共通原点を保持した拡張例です。西側のRawは未取得なので、その設定を使う前に `download --config gis/config/saint_michel_west.json` が必要です。`generate` / `validate` にも同じ `--config` を渡してください。CLI座標変換は地区が変わっても同じ原点を使用します。
 
-各棟はL1です。OSM heightタグも測量済みとはみなさず `source_declared_unverified` とします。Parisの `h_et_max` は階数であり、メートルではありません。階数×階高や地区の既定高さは `estimated` として区別します。高さを丸ごと柱へ適用する簡易プレビューなので、特に教会の塔・尖塔の形を再現したL2ボリュームではありません。
+建物全体はL1です。OSM heightタグも測量済みとはみなさず `source_declared_unverified` とします。Parisの `h_et_max` は階数であり、メートルではありません。階数×階高や地区の既定高さは `estimated` として区別します。Phase 3で公的な軒高のある棟は複数高さに分割しますが、推定屋根・教会の尖塔を実測した外観として扱いません。
+
+Phase 3でIGN BD TOPOの追加高さキャッシュを同梱しました。`download-buildings` で取得し、`heights/` の867記録を `building_heights.py` で既存輪郭へ対応付け、`building_mesh.py` で高さ別の壁と推定屋根を生成します。生成はAPIを呼びません。建物全体はL1、本体の条件を満たす部分は `reproduction_level_body=L2`、屋根は推定L1です。詳しい値・手順・制限は [Phase 3報告書](../docs/paris-digital-twin-phase3.md)。
 
 出力の再現性は固定した入力、設定、依存ライブラリに対して確認します。元データの測量精度は、変換の往復誤差と別です。LOD・Nanite用のStaticMesh化、World Partition・HLOD、現地写真に合う外観は後続Phaseで実装します。
 

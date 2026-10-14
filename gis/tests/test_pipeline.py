@@ -10,11 +10,50 @@ from paris_twin.normalize import normalize,positive_number,road_width
 from paris_twin.validate import validate
 from paris_twin import acquire
 from paris_twin.diagnostics import road_components
+from paris_twin import building_source
+from paris_twin.building_heights import enrich_buildings
+from paris_twin.building_mesh import roof_surfaces,gutter_at
+from paris_twin.normalize import polygonal
+from paris_twin.io import write
+from shapely.geometry import shape,mapping
+from shapely.ops import unary_union
 
 CONFIG=read(ROOT/'gis/config/ile_de_la_cite.json')
 
 
 class PipelineTests(unittest.TestCase):
+    def test_failed_building_refresh_preserves_height_snapshot(self):
+        with tempfile.TemporaryDirectory() as temp:
+            raw=Path(temp);folder=raw/'heights';folder.mkdir();(folder/'manifest.json').write_text('old metadata');(folder/'buildings.json').write_text('old buildings')
+            with patch.object(building_source,'paths',return_value={'Raw':raw}),patch.object(building_source,'request',side_effect=RuntimeError('WFS unavailable')):
+                with self.assertRaisesRegex(RuntimeError,'WFS unavailable'):building_source.download_buildings(CONFIG,refresh=True)
+            self.assertEqual((folder/'manifest.json').read_text(),'old metadata');self.assertEqual((folder/'buildings.json').read_text(),'old buildings')
+
+    def test_ign_height_parts_keep_real_steps_and_do_not_use_church_spire_as_wall(self):
+        with tempfile.TemporaryDirectory() as temp:
+            raw=Path(temp);features=[]
+            for identifier,left,right,height in [('a',0,10,10),('b',10,20,30)]:
+                geometry={'type':'MultiPolygon','coordinates':[[[[left,0,30+height],[right,0,30+height],[right,20,30+height],[left,20,30+height],[left,0,30+height]]]]}
+                features.append({'geometry':geometry,'properties':{'cleabs':identifier,'hauteur':height,'altitude_minimale_sol':30,'precision_altimetrique':1.5,'methode_d_acquisition_altimetrique':'Photogrammétrie','date_modification':'2026-01-01'}})
+            write(raw/'heights/buildings.json',{'features':features})
+            foot=Polygon([(0,0),(20,0),(20,20),(0,20)])
+            layers={'buildings':[{'geometry':mapping(foot),'properties':{'source_id':'osm/way/1','source_url':'https://www.openstreetmap.org/way/1','height_m':75,'height_kind':'source_declared_unverified','height_source':'osm:height_tag','clipped_at_context_boundary':False,'tags':{'building':'church','height':'75','roof:shape':'flat'}}}]}
+            enrich_buildings(CONFIG,raw,layers,polygonal);p=layers['buildings'][0]['properties']
+            self.assertEqual(p['height_gutter_max_m'],30);self.assertEqual(p['height_m'],30)
+            self.assertEqual(p['reproduction_level_body'],'L2');self.assertEqual(p['reproduction_level'],'L1')
+            self.assertEqual(p['official_height_coverage'],1)
+            self.assertEqual({part['height_gutter_m'] for part in p['height_parts']},{10,30})
+            self.assertAlmostEqual(sum(shape(part['geometry']).area for part in p['height_parts']),foot.area)
+
+    def test_procedural_roofs_preserve_holes_and_ridge_breaks(self):
+        footprint=Polygon([(0,0),(30,0),(30,30),(0,30)],holes=[[(10,10),(10,20),(20,20),(20,10)]])
+        for form in ['flat','gabled','mansard','hipped','pyramidal']:
+            surfaces=list(roof_surfaces(footprint,{'form':form,'rise_m':4 if form!='flat' else 0}))
+            triangles=[t for g,rise in surfaces for t in triangulate(g)]
+            self.assertAlmostEqual(sum(t.area for t in triangles),footprint.area,places=5)
+            self.assertTrue(all(footprint.covers(t) for t in triangles))
+            for g,rise in surfaces:
+                point=g.representative_point();self.assertTrue(0<=rise((point.x,point.y))<=4)
     def test_failed_online_refresh_preserves_previous_offline_cache(self):
         with tempfile.TemporaryDirectory() as temp:
             raw=Path(temp)/'district';raw.mkdir();(raw/'manifest.json').write_text('old manifest');(raw/'osm.json').write_text('old raw data')
@@ -93,6 +132,12 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(len(scene['landmarks']),3)
         self.assertTrue(scene['footprint_mesh']['indices'])
         self.assertEqual(len(scene['pick_features']),len({f['id'] for f in scene['pick_features']}))
+        self.assertGreater(report['official_height_buildings'],500)
+        notre=next(f['properties'] for f in data['layers']['buildings'] if f['properties']['name']=='Cathédrale Notre-Dame de Paris')
+        self.assertGreater(notre['height_gutter_max_m'],50)
+        self.assertGreater(len(notre['height_reference_ids']),2)
+        self.assertTrue(all(f['properties']['reproduction_level']=='L1' for f in data['layers']['buildings']))
+        self.assertTrue(any(o['kind']=='roof' for o in scene['objects']))
 
 
 if __name__=='__main__':unittest.main()

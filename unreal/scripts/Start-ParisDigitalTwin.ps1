@@ -1,4 +1,4 @@
-param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='')
+param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0)
 $ErrorActionPreference='Stop'
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $gisOptions=@()
@@ -14,6 +14,7 @@ try {
     & $python -m pip install --disable-pip-version-check -r gis/requirements.lock
     if($LASTEXITCODE -ne 0){throw 'Pinned GIS dependency install failed'}
     if($Download){$options=@('download');if($Refresh){$options+='--refresh'};& $python -m paris_twin @options @gisOptions;if($LASTEXITCODE -ne 0){throw 'GIS download failed'}}
+    if($DownloadBuildings){$options=@('download-buildings');if($Refresh){$options+='--refresh'};& $python -m paris_twin @options @gisOptions;if($LASTEXITCODE -ne 0){throw 'IGN building acquisition failed'}}
     & $python -m paris_twin generate --offline @gisOptions
     if($LASTEXITCODE -ne 0){throw 'Offline GIS generation failed; acquire raw data with -Download first'}
     & $python -m paris_twin validate --offline @gisOptions
@@ -27,6 +28,7 @@ $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor.exe'
 if(-not(Test-Path -LiteralPath $editor)){throw 'Unreal Engine is not installed at '+$EngineRoot}
 $launchArgs=@('"'+$project+'"','-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-NoSplash')
 if($Eye){$launchArgs+='-ParisTwinEye'}
+if($Landmark -gt 0){$launchArgs+="-ParisTwinLandmark=$Landmark"}
 if($Footprints){$launchArgs+='-ParisTwinFootprints'}
 if($Issues){$launchArgs+='-ParisTwinIssues'}
 if($Capture){$launchArgs+='-ParisTwinCapture'}

@@ -70,6 +70,7 @@ private:
     UPROPERTY() TArray<TObjectPtr<UProceduralMeshComponent>> Meshes;
     UPROPERTY() TObjectPtr<UMaterialInterface> VertexMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> StoneMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInterface> SlateMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> WaterMaterial;
     TMap<UPrimitiveComponent*,TSharedPtr<FJsonObject>> Features;
     TArray<TSharedPtr<FJsonObject>> SourceFeatures,Landmarks,Issues;

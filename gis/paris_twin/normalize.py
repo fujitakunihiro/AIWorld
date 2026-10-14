@@ -155,6 +155,8 @@ def normalize(config):
                           'height_ngf_m':point['z'],'accuracy':point.get('acc'),'measures':point.get('measures',[])}})
     for layer in layers.values():
         layer.sort(key=lambda f:f['properties']['source_id'])
+    from .building_heights import enrich_buildings
+    enrich_buildings(config,p['Raw'],layers,polygonal)
     result = {'format':1,'generation':generation_metadata(config),'district_id':config['district_id'],'projected_crs':geo.crs.to_string(),
               'origin_wgs84':config['origin_wgs84'],'origin_projected_m':list(geo.origin),
               'district_center_wgs84':config.get('district_center_wgs84',config['origin_wgs84']),

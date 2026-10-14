@@ -7,7 +7,7 @@ from .io import ROOT, read
 
 def main():
     parser = argparse.ArgumentParser(description='Paris public GIS snapshot and deterministic Unreal preview')
-    parser.add_argument('command',choices=['download','generate','validate','all','coordinates'])
+    parser.add_argument('command',choices=['download','download-buildings','generate','validate','all','coordinates'])
     parser.add_argument('--config',type=Path,default=ROOT/'gis/config/ile_de_la_cite.json')
     parser.add_argument('--offline',action='store_true')
     parser.add_argument('--refresh',action='store_true')
@@ -17,6 +17,10 @@ def main():
     parser.add_argument('--origin-elevation',type=float,default=0)
     args = parser.parse_args()
     config = read(args.config)
+    if args.command=='download-buildings':
+        from .building_source import download_buildings
+        result=download_buildings(config,args.offline,args.refresh)
+        print(json.dumps({'building_records':result['features'],'source':result['source']}))
     if args.command=='coordinates':
         from .coordinates import Georeference
         geo=Georeference(config)

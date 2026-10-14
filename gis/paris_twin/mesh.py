@@ -35,7 +35,7 @@ def lines(g):
 
 def source_feature(feature, kind, geo):
     g = shape(feature['geometry']); p = feature['properties']
-    props = {k:v for k,v in p.items() if k not in ['source_geometry_projected', 'osm_node_ids', 'tags']}
+    props = {k:v for k,v in p.items() if k not in ['source_geometry_projected', 'osm_node_ids', 'tags', 'height_parts']}
     mesh = Mesh(geo)
     result = {'id': p['source_id'], 'kind': kind, 'properties': props}
     if kind in ['road', 'bridge']:
@@ -145,8 +145,8 @@ def export(config,dataset):
         if key in footprint_seen:
             continue
         footprint_seen[key]=props['source_id']
-        mesh=Mesh(geo);mesh.walls(g,.02,props['height_m']);mesh.top(g,props['height_m']+.02)
-        objects.append(mesh.item(props['source_id'],'building','#d0c3a7',props))
+    from .building_mesh import generate_buildings
+    objects.extend(generate_buildings(geo,layers['buildings'],Mesh,triangulate))
     scene={'format':'paris_twin_scene_v1','generation':dataset['generation'],'district_id':config['district_id'],'georeference':{
         'wgs84_origin':config['origin_wgs84'],'projected_origin_m':list(geo.origin),'projected_crs':geo.crs.to_string(),
         'units':'cm','axes':'X=east, Y=south, Z=up','cesium_transform_applied':False,
@@ -156,8 +156,8 @@ def export(config,dataset):
         'scene_centre_ue_cm':list(geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']))),
         'quality_centre_ue_cm':list(geo.to_ue(*config['quality_center_wgs84'])),
         'raw_checksums':dataset['raw_checksums'],'objects':objects,
-        'attribution':'OpenStreetMap contributors / Ville de Paris (ODbL); IGN RGE ALTI (Etalab 2.0)',
-        'limitations':['L1 footprints; source-tag or estimated heights, not surveyed L2',
+        'attribution':'OpenStreetMap contributors / Ville de Paris (ODbL); IGN BD TOPO + RGE ALTI (Etalab 2.0)',
+        'limitations':['Overall L1; body L2 only with near-complete official gutter coverage; roofs remain inferred',
                         'flat preview terrain; elevations stored separately','No L3-L5 landmark facades',
                         'Road widths partly estimated; no walking gravity system yet']}
     review = analyse(dataset, geo)
@@ -221,7 +221,7 @@ def preview(config,dataset,road_shapes,water,review):
     for g,color in [(water,'#72b7c0'),*[(g,'#83858c') for g in road_shapes]]:
         if g:nodes.append(f'<path d="{path(g)}" fill="{color}" fill-rule="evenodd"/>')
     for f in dataset['layers']['buildings']:
-        props=f['properties'];title=html.escape(f"{props['name']} | {props['source_id']} | {props['height_m']}m ({props['height_source']}) | L1")
+        props=f['properties'];title=html.escape(f"{props['name']} | {props['source_id']} | gutter {props['height_gutter_min_m']}-{props['height_gutter_max_m']}m | inferred roof envelope {props['height_m']}m | body {props['reproduction_level_body']} / overall L1")
         nodes.append(f'<path class="building feature" data-id="{html.escape(props["source_id"])}" d="{path(shape(f["geometry"]))}" fill="#c19b6b" stroke="#5d4634" stroke-width=".6" fill-rule="evenodd"><title>{title}</title></path>')
     labels=[('Notre-Dame','buildings','Cathédrale Notre-Dame de Paris'),('Sainte-Chapelle','buildings','Sainte-Chapelle'),('Saint-Michel','squares','Place Saint-Michel')]
     for label,layer,name in labels:
@@ -239,13 +239,13 @@ def preview(config,dataset,road_shapes,water,review):
         nodes.append(f'<path class="issue" data-issue="{html.escape(issue["id"])}" d="{d}" fill="none" stroke="{colour}" stroke-width="3"><title>{html.escape(issue["id"]+" | "+issue["classification"])}</title></path>')
     nodes.append('</svg>');svg=''.join(nodes)
     dest=paths(config)['Generated'];(dest/'map.svg').write_text(svg,encoding='utf-8')
-    details={f['properties']['source_id']:{k:v for k,v in f['properties'].items() if k in ['source_id','name','height_m','height_source','source_url','wgs84_centre','reproduction_level']} for f in dataset['layers']['buildings']}
+    details={f['properties']['source_id']:{k:v for k,v in f['properties'].items() if k in ['source_id','name','height_m','height_source','source_url','wgs84_centre','reproduction_level','reproduction_level_body','official_height_coverage','height_gutter_min_m','height_gutter_max_m','height_reference_ids','height_precision_max_m','height_data_dates','roof_form_source']} for f in dataset['layers']['buildings']}
     issue_items=''.join(f'<button data-issue="{html.escape(i["id"])}">{html.escape(i["kind"]+" · "+i["classification"])}<small>{html.escape(", ".join(i["source_ids"]))}</small></button>' for i in review['issues'])
     # Embedded JSON is escaped for an HTML script context, including untrusted OSM names.
     payload=json.dumps({'features':details,'issues':review['issues'],'bounds':[x0,y0,x1,y1],'origin':geo.origin},ensure_ascii=False).replace('<','\\u003c')
-    text=f'''<!doctype html><html lang="ja"><meta charset="utf-8"><title>Paris Digital Twin — Phase 2</title>
+    text=f'''<!doctype html><html lang="ja"><meta charset="utf-8"><title>Paris Digital Twin — Phase 3</title>
 <style>body{{margin:20px;font-family:system-ui;background:#faf8f3;color:#25323d}}main{{max-width:1400px;margin:auto}}section{{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px}}svg{{width:100%;max-height:80vh}}.building:hover,.building.selected{{fill:#e96950;stroke-width:2}}.issue.selected{{stroke:#9b00ff;stroke-width:6}}button{{display:block;width:100%;text-align:left;padding:10px;margin-bottom:6px;cursor:pointer}}small{{display:block;overflow-wrap:anywhere}}aside{{max-height:78vh;overflow:auto}}pre{{white-space:pre-wrap;overflow-wrap:anywhere}}@media(max-width:800px){{section{{display:block}}}}</style>
-<main><h1>Île de la Cité — Phase 2 配置・品質確認</h1><p>建物クリックで元IDと高さの根拠。右の問題を選ぶと該当する建物と道路を強調します。赤線は建物sourceの重なり、橙線は最大道路ネットワークから分かれた成分です。孤立は不具合と断定せず、境界切断と内部の独立経路を区別しています。</p>
+<main><h1>Île de la Cité — Phase 3 高さ・配置確認</h1><p>建物クリックで元ID、IGN軒高、対応率と屋根の推定を確認。本体L2と建物全体L1を区別します。右の問題を選ぶと該当する建物と道路を強調します。赤線は建物sourceの重なり、橙線は最大道路ネットワークから分かれた成分です。孤立は不具合と断定せず、境界切断と内部の独立経路を区別しています。</p>
 <section><div>{svg}<p id="coordinate">地図をクリックするとLambert-93とUE座標を表示。</p><pre id="selection">建物または品質項目を選択してください。</pre></div><aside><h2>品質レビュー ({len(review['issues'])})</h2>{issue_items}</aside></section><p>500m中核は破線、100m重点確認は赤枠。L1輪郭表示。OpenStreetMap contributors / Ville de Paris — ODbL. IGN — Etalab 2.0.</p></main>
 <script id="data" type="application/json">{payload}</script><script>
 const data=JSON.parse(document.querySelector('#data').textContent),svg=document.querySelector('svg'),out=document.querySelector('#selection');

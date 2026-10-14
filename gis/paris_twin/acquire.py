@@ -81,6 +81,11 @@ def verify_cache(config):
         raise ValueError('District extent differs from downloaded coverage; acquire a new snapshot')
     if len(read(raw/'ign_elevation.json')['elevations'])!=(config['elevation_grid_steps']+1)**2:
         raise ValueError('Requested elevation sampling differs from cached samples')
+    if (raw/'heights/manifest.json').exists():
+        from .building_source import verify_buildings
+        extra=verify_buildings(config)
+        manifest['files'].update({'heights/'+name:item for name,item in extra['files'].items()})
+        manifest['files']['heights/manifest.json']={'sha256':sha(raw/'heights/manifest.json'),'url':extra['catalog_url'],'license':'Etalab Open Licence 2.0'}
     return manifest
 
 
