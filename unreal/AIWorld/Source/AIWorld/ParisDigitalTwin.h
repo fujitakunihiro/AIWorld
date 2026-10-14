@@ -34,6 +34,11 @@ public:
     virtual void BeginPlay() override;
     virtual void SetupInputComponent() override;
     void Pick();void ToggleLevels();void Overview();void Eye();void ZoomIn();void ZoomOut();void Capture();
+    void BeginLook();void EndLook();
+    FVector2D GetRawLookDelta() const;
+    bool IsLooking() const { return bLooking; }
+private:
+    bool bLooking=false;
 };
 
 UCLASS()

@@ -2,6 +2,7 @@
 #include "WorldProtocol.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "GameFramework/PlayerInput.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Engine/DirectionalLight.h"
@@ -42,8 +43,8 @@ void AParisTwinCamera::Eye(const FVector& Location){bEye=true;Target=Location+FV
 void AParisTwinCamera::Zoom(double Factor){if(!bEye)Radius=FMath::Clamp(Radius*Factor,1500.,250000.);}
 void AParisTwinCamera::Tick(float Delta) {
     Super::Tick(Delta);auto PC=Cast<AParisTwinController>(GetController());if(!PC)return;
-    float DX=0,DY=0;PC->GetInputMouseDelta(DX,DY);
-    if(PC->IsInputKeyDown(EKeys::RightMouseButton)){Yaw+=DX*.22;Pitch=FMath::Clamp(Pitch-DY*.22,bEye?-80.:10.,80.);}
+    const FVector2D LookDelta=PC->IsLooking()?PC->GetRawLookDelta():FVector2D::ZeroVector;
+    if(!LookDelta.IsNearlyZero()){Yaw+=LookDelta.X*.22;Pitch=FMath::Clamp(Pitch-LookDelta.Y*.22,bEye?-80.:10.,80.);}
     const FVector Forward(FMath::Cos(FMath::DegreesToRadians(Yaw)),FMath::Sin(FMath::DegreesToRadians(Yaw)),0),Right(-Forward.Y,Forward.X,0);
     FVector Move=FVector::ZeroVector;
     if(PC->IsInputKeyDown(EKeys::W))Move+=Forward;if(PC->IsInputKeyDown(EKeys::S))Move-=Forward;
@@ -55,12 +56,19 @@ void AParisTwinCamera::Tick(float Delta) {
 void AParisTwinController::BeginPlay(){Super::BeginPlay();bShowMouseCursor=true;SetInputMode(FInputModeGameOnly());}
 void AParisTwinController::SetupInputComponent() {
     Super::SetupInputComponent();InputComponent->BindKey(EKeys::LeftMouseButton,IE_Pressed,this,&AParisTwinController::Pick);
+    InputComponent->BindKey(EKeys::RightMouseButton,IE_Pressed,this,&AParisTwinController::BeginLook);
+    InputComponent->BindKey(EKeys::RightMouseButton,IE_Released,this,&AParisTwinController::EndLook);
     InputComponent->BindKey(EKeys::F1,IE_Pressed,this,&AParisTwinController::ToggleLevels);
     InputComponent->BindKey(EKeys::F2,IE_Pressed,this,&AParisTwinController::Overview);
     InputComponent->BindKey(EKeys::F3,IE_Pressed,this,&AParisTwinController::Eye);
     InputComponent->BindKey(EKeys::F9,IE_Pressed,this,&AParisTwinController::Capture);
     InputComponent->BindKey(EKeys::MouseScrollUp,IE_Pressed,this,&AParisTwinController::ZoomIn);
     InputComponent->BindKey(EKeys::MouseScrollDown,IE_Pressed,this,&AParisTwinController::ZoomOut);
+}
+void AParisTwinController::BeginLook(){bLooking=true;bShowMouseCursor=false;SetInputMode(FInputModeGameOnly());}
+void AParisTwinController::EndLook(){bLooking=false;bShowMouseCursor=true;SetInputMode(FInputModeGameOnly());}
+FVector2D AParisTwinController::GetRawLookDelta() const {
+    return PlayerInput?FVector2D(PlayerInput->GetRawKeyValue(EKeys::MouseX),PlayerInput->GetRawKeyValue(EKeys::MouseY)):FVector2D::ZeroVector;
 }
 void AParisTwinController::Pick(){FHitResult Hit;if(GetHitResultUnderCursor(ECC_Visibility,true,Hit))if(auto S=Twin(GetWorld()))S->Select(Hit.GetComponent());}
 void AParisTwinController::ToggleLevels(){if(auto S=Twin(GetWorld()))S->ToggleLevels();}
