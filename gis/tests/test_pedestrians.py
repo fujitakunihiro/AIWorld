@@ -57,15 +57,19 @@ class PedestrianTests(unittest.TestCase):
         self.assertEqual(generate_routes(self.geo,[road],self.terrain,None,Polygon(),sidewalk,None,[],[])[0]['agents'],[])
 
     def test_joint_models_have_real_human_scale_and_valid_indices(self):
-        models=person_models(self.geo,Mesh);self.assertEqual(len(models),8)
+        models=person_models(self.geo,Mesh);self.assertEqual(len(models),11)
         for m in models:
             self.assertEqual(len(m['positions_cm']),len(m['normals']))
             self.assertTrue(all(0<=i<len(m['positions_cm']) for i in m['indices']))
-            self.assertLess(len(m['indices'])//3,100)
+            self.assertLess(len(m['indices'])//3,200)
         torso=next(m for m in models if m['id']=='person_torso_0')
         self.assertEqual(max(p[2] for p in torso['positions_cm']),144)
         head=next(m for m in models if m['id']=='person_head')
         self.assertEqual(max(p[2] for p in head['positions_cm']),26)
+        far=next(m for m in models if m['id']=='person_far_0')
+        self.assertEqual(len(far['vertex_colors']),len(far['positions_cm']))
+        self.assertEqual(set(far['vertex_colors']),{'#45647b','#c29d80','#343b43'})
+        self.assertEqual(max(p[2] for p in far['positions_cm']),172)
 
     def test_new_bin_and_bicycle_proxies_leave_room_for_people(self):
         x,y=self.x,self.y;line=LineString([(x,y),(x+120,y)])

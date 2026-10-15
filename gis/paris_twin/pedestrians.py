@@ -33,6 +33,20 @@ def person_models(geo,Mesh):
     leg=Mesh(geo);box(leg,(x,y),(1,0),(0,1),.12,.14,-.79,0)
     box(leg,(x+.025,y),(1,0),(0,1),.19,.145,-.84,-.76)
     result.append(leg.item('person_leg','person_model','#343b43',{}))
+    # One rigid instance beyond the near animation range, with the same human
+    # proportions and vertex colours. Near people retain all six joints.
+    source={m['id']:m for m in result}
+    for variant in range(3):
+        merged=Mesh(geo);colors=[]
+        for name,offset in [(f'person_torso_{variant}',(0,0,0)),('person_head',(0,0,146)),
+                            (f'person_arm_{variant}',(0,-23,139)),(f'person_arm_{variant}',(0,23,139)),
+                            ('person_leg',(0,-9,84)),('person_leg',(0,9,84))]:
+            part=source[name];start=len(merged.positions)
+            merged.positions.extend([[p[i]+offset[i] for i in range(3)] for p in part['positions_cm']])
+            merged.normals.extend(part['normals']);merged.indices.extend(i+start for i in part['indices'])
+            colors.extend([part['color']]*len(part['positions_cm']))
+        item=merged.item(f'person_far_{variant}','person_model','#ffffff',{})
+        item['vertex_colors']=colors;result.append(item)
     return result
 
 

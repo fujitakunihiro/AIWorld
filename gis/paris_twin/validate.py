@@ -137,6 +137,13 @@ def validate(config):
     from .pedestrians import validate_network
     crowd=scene.get('pedestrians',{})
     errors.extend(validate_network(read(p['Generated']/'pedestrian-network.json'),ids))
+    from .visits import validate_visits
+    errors.extend(validate_visits(crowd,set(business_pick)))
+    for route in crowd.get('routes',[]):
+        if route['route_source']=='inferred_business_approach':
+            points=route['points_cm'];ox,oy=scene['georeference']['projected_origin_m']
+            link=LineString([(ox+p[0]/100,oy-p[1]/100) for p in points])
+            if link.intersection(business_roads).length>.001:errors.append('cafe_approach_crosses_traffic_surface')
     route_ids={r['id'] for r in crowd.get('routes',[])};agent_ids=set()
     for agent in crowd.get('agents',[]):
         if agent['id'] in agent_ids or agent['route_id'] not in route_ids:errors.append('invalid_pedestrian_agent')

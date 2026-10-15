@@ -228,6 +228,12 @@ class PipelineTests(unittest.TestCase):
         self.assertGreater(report['pedestrians']['routes'],100)
         self.assertGreater(report['pedestrians']['agents'],100)
         self.assertTrue(report['pedestrians']['inferred_population'])
+        self.assertGreater(report['pedestrians']['visits']['destinations'],0)
+        from paris_twin.visits import sample
+        import math
+        routes={r['id']:r for r in scene['pedestrians']['routes']}
+        positions=[sample(routes[a['route_id']]['points_cm'],a['progress_m']*100) for a in scene['pedestrians']['agents']]
+        self.assertTrue(all(math.dist(a[:2],b[:2])>=125 for i,a in enumerate(positions) for b in positions[:i]))
 
 
 if __name__=='__main__':unittest.main()

@@ -51,6 +51,8 @@ public:
             Test->TestTrue(TEXT("A populated route network is loaded"),Crowd->People().Num()>50&&Crowd->Network().Num()>50);const double TravelBefore=Crowd->TravelledCm;
             for(int32 I=0;I<1000;I++)Crowd->SimulateStep(.05);
             Test->TestTrue(TEXT("Crowd advances through 1000 bounded simulation steps"),Crowd->TravelledCm>TravelBefore+10000);
+            Test->TestTrue(TEXT("Real district visitors complete a cafe stop and return"),Crowd->CompletedVisits>0);
+            for(int32 D=0;D<Crowd->Destinations().Num();D++){const auto& Stop=Crowd->Destinations()[D];Test->TestTrue(TEXT("Every reservation identifies its actual visitor"),Stop.Owner==-1||(Crowd->People().IsValidIndex(Stop.Owner)&&Crowd->People()[Stop.Owner].Visit==D&&Crowd->People()[Stop.Owner].VisitStage>0));}
             for(const auto& Agent:Crowd->People()){const auto& Route=Crowd->Network()[Agent.Route];Test->TestTrue(TEXT("Pedestrians remain finite and on their GIS-derived route"),!Agent.Position.ContainsNaN()&&Agent.Distance>=0&&Agent.Distance<=Route.Length&&FVector::Dist(Agent.Position,Route.Sample(Agent.Distance,Agent.Direction))<.001);}
             // Distance culling must hide a remote fixture view, then restore
             // picking when the actual camera returns to a person in the city.
@@ -58,6 +60,9 @@ public:
             Test->TestEqual(TEXT("Remote camera omits all crowd instances without deleting agents"),Crowd->RenderedCount,0);
             Camera->Eye(Crowd->People()[0].Position);Camera->Tick(0);PC->PlayerCameraManager->UpdateCamera(0);
             Crowd->UpdateInstances(true);Test->TestTrue(TEXT("Near-camera people return within the visual budget"),Crowd->RenderedCount>0&&Crowd->RenderedCount<=Crowd->VisibleCount);TArray<UInstancedStaticMeshComponent*> Instances;Crowd->GetComponents(Instances);bool FoundPerson=false;
+            Test->TestTrue(TEXT("Far people use one merged part while near people retain six joints"),Crowd->FarRenderedCount>0&&Crowd->RenderedParts==Crowd->NearRenderedCount*6+Crowd->FarRenderedCount&&Crowd->RenderedParts<Crowd->RenderedCount*6);
+            int32 Parts=0;for(auto Instance:Instances)Parts+=Instance->GetInstanceCount();Test->TestEqual(TEXT("LOD counters match actual GPU instance count"),Parts,Crowd->RenderedParts);
+            Test->TestTrue(TEXT("Real snapshot has traceable cafe visit stops"),Crowd->Destinations().Num()>0);
             for(auto Instance:Instances)if(Instance->GetInstanceCount()>0){const FString Description=Crowd->DescribeHit(Instance,0);FoundPerson|=Description.Contains(TEXT("SIMULATED pedestrian"))&&Description.Contains(TEXT("osm/way/"));}
             Test->TestTrue(TEXT("Crowd picking distinguishes simulated people and their source road"),FoundPerson);
             const int32 Count=Crowd->People().Num();Scene->TogglePeople();Test->TestEqual(TEXT("People can be hidden without deleting their data"),Crowd->VisibleCount,0);Scene->ToggleFootprints();Scene->ToggleFootprints();Test->TestFalse(TEXT("Footprints preserve disabled people"),Crowd->bEnabled);Scene->TogglePeople();Test->TestEqual(TEXT("People display toggle preserves agent state"),Crowd->People().Num(),Count);PC->Overview();return true;

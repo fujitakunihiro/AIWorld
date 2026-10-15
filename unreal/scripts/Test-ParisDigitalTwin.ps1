@@ -7,6 +7,6 @@ $argsGIS=@($project,'-game','-ParisTwin','-unattended','-nullrhi','-nosound','-n
 if($LegacyJSON){$argsGIS+='-ParisTwinLegacyJSON'}
 & $editor @argsGIS
 if($LASTEXITCODE -ne 0 -or (Select-String -LiteralPath $log -Pattern 'Result=\{Fail\}|Fatal error' -Quiet) -or -not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*SceneCollisionAndDebug' -Quiet)){throw 'GIS scene/selection/collision automation failed'}
-foreach($test in @('CoordinateAgreement','SceneCollisionAndDebug','StreetInstancesAndQuality','WalkingAndPedestrians','TrafficAndMappedProps','BusinessesAndTerraces','RuntimePacketSafety')){
+foreach($test in @('CoordinateAgreement','SceneCollisionAndDebug','StreetInstancesAndQuality','WalkingAndPedestrians','TrafficAndMappedProps','BusinessesAndTerraces','RuntimePacketSafety','CafeVisitLifecycle')){
     if(-not(Select-String -LiteralPath $log -Pattern ('Result=\{Success\}.*Name=\{'+$test+'\}') -Quiet)){throw "GIS automation test did not succeed: $test"}
 }

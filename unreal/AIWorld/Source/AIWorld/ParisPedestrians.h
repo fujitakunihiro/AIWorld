@@ -26,6 +26,17 @@ struct FParisPedestrian {
     FVector Position=FVector::ZeroVector;
     double Yaw=0;
     bool Moving=false;
+    // 0 patrol, 1 walk to entry, 2 approach, 3 dwell, 4 retrace approach.
+    int32 Visit=-1,VisitStage=0,ResumeDirection=1;
+    double VisitCooldown=0,VisitAge=0;
+    FString LastVisit,VisitReason;
+    TArray<FString> RecentActions;
+    bool bVisitAborted=false,bFarPose=false;
+};
+struct FParisVisitDestination {
+    FString ID,BusinessID,Name;
+    int32 ParentRoute=-1,Route=-1,Owner=-1;
+    double Entry=0,Dwell=12,FacingYaw=0;
 };
 
 UCLASS()
@@ -39,15 +50,20 @@ public:
     void UpdateInstances(bool TraceGround=false);
     void SetDisplay(bool Enabled,int32 Quality);
     FString DescribeHit(UPrimitiveComponent* Component,int32 Instance) const;
+    FString DescribeBusiness(const FString& ID) const;
     UStaticMesh* Model(const FString& Name) const;
     const TArray<FParisPedestrian>& People() const { return Agents; }
     const TArray<FParisPedestrianRoute>& Network() const { return Routes; }
+    const TArray<FParisVisitDestination>& Destinations() const { return Visits; }
     int32 VisibleCount=0,RenderedCount=0,RecoveryTurns=0;
+    int32 NearRenderedCount=0,FarRenderedCount=0,RenderedParts=0,StandingVisitorsRendered=0,CompletedVisits=0,AbortedVisits=0;
     double TravelledCm=0;
     bool bEnabled=true,bReady=false;
 private:
     TArray<FParisPedestrianRoute> Routes;
     TArray<FParisPedestrian> Agents;
+    TArray<FParisVisitDestination> Visits;
+    void FinishVisit(int32 Agent,bool Completed);
     UPROPERTY() TArray<TObjectPtr<UStaticMesh>> Models;
     UPROPERTY() TArray<TObjectPtr<UInstancedStaticMeshComponent>> Instances;
     TMap<FString,UStaticMesh*> ModelByName;

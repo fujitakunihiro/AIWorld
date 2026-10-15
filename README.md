@@ -1,6 +1,6 @@
 # AI WORLD — パリと自律する住民
 
-**実地理のParis Digital Twin（店舗・カフェと軽量読み込み）:** 395か所の店先と49か所のテラスを追加。Bでカフェ周辺、F8で散策、Vで視点、Cで車両周辺、F2で全景へ移動できます。739棟の地理配置、160人・40台の推定シミュレーションを維持し、読み込みを軽量化しました。起動は `Paris-DigitalTwin.cmd`。実在する地図点と推定の外観・席配置を区別しています。[最新の実装・検証・残作業](docs/paris-digital-twin-phase7-cafes.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
+**実地理のParis Digital Twin（カフェ訪問と歩行者LOD）:** GIS由来の歩道から38か所のカフェへ歩いて立ち寄り、滞在後に元の経路へ戻る行動を追加。遠距離の人物を共有の簡略モデルへ切り替えます。Bでカフェ周辺、F8で散策、Vで視点、Cで車両周辺、F2で全景。739棟・395店先・49テラスの配置と160人・40台の推定シミュレーションを維持しています。起動は `Paris-DigitalTwin.cmd`。[最新の実装・検証・残作業](docs/paris-digital-twin-phase7-visits.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
 
 **Unreal Engine版への移行:** Windows用のUE 5.8プロジェクトを追加しました。起動は `.\unreal\scripts\Start-AIWorldUE.ps1`、初回ビルドは `.\unreal\scripts\Build-AIWorldUE.ps1` です。現在の世界と住民AI・SQLiteを引き継ぎ、UEのネイティブ3D画面と操作で遊べます。[起動方法・移行構成・検証](docs/unreal-migration.md) を参照してください。
 

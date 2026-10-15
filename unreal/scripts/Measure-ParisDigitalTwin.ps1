@@ -4,7 +4,8 @@ param(
     [ValidateSet('Low','Medium','High')][string]$Quality='Medium',
     [ValidateRange(10,120)][int]$Duration=20,
     [string]$ReportPath='',
-    [switch]$LegacyJSON
+    [switch]$LegacyJSON,
+    [switch]$FullPeople
 )
 $ErrorActionPreference='Stop'
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
@@ -15,13 +16,15 @@ $log=Join-Path $saved 'paris-twin-measure.log'
 $performance=Join-Path $saved 'paris-twin-performance.json'
 $shot=Join-Path $saved 'Screenshots\paris-twin.png'
 $suffix=if($LegacyJSON){'-legacy'}else{''}
-if(-not $ReportPath){$ReportPath=Join-Path $repo "docs\paris-twin-phase7-cafes-$($View.ToLower())$suffix-performance.json"}
+if($FullPeople){$suffix+='-fullpeople'}
+if(-not $ReportPath){$ReportPath=Join-Path $repo "docs\paris-twin-phase7-visits-$($View.ToLower())$suffix-performance.json"}
 $reportFolder=Split-Path $ReportPath
 New-Item -ItemType Directory -Path $reportFolder -Force | Out-Null
 $arguments=@('"'+$project+'"','-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-RenderOffscreen','-unattended','-nosound','-NoSplash',
     '-ParisTwinCapture',"-ParisTwinBenchmark=$Duration",'-ParisTwinExit','-ExecCmds="t.MaxFPS 0,r.VSync 0"',
     ('-ParisTwinQuality='+@{Low=0;Medium=1;High=2}[$Quality]),('-abslog="'+$log+'"'))
 if($LegacyJSON){$arguments+='-ParisTwinLegacyJSON'}
+if($FullPeople){$arguments+='-ParisTwinFullPeople'}
 if($View -eq 'Cafe'){$arguments+='-ParisTwinCafeView'}
 if($View -eq 'Traffic'){$arguments+='-ParisTwinTrafficView'}
 if($View -eq 'Street'){$arguments+='-ParisTwinEye'}
@@ -51,7 +54,7 @@ $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $ReportPath -Encod
 if(Test-Path -LiteralPath $shot){
     if((Get-Item -LiteralPath $shot).LastWriteTime -ge $started){
         $screenshots=Join-Path $reportFolder 'screenshots';New-Item -ItemType Directory -Path $screenshots -Force | Out-Null
-        Copy-Item -LiteralPath $shot -Destination (Join-Path $screenshots "paris-twin-phase7-cafes-$($View.ToLower())$suffix.png")
+        Copy-Item -LiteralPath $shot -Destination (Join-Path $screenshots "paris-twin-phase7-visits-$($View.ToLower())$suffix.png")
     }
 }
 Write-Output "Saved $View / $Quality benchmark: $ReportPath"

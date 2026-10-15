@@ -204,6 +204,8 @@ def export(config,dataset):
     instance_batches.extend(business_batches)
     from .pedestrians import generate_routes,person_models
     crowd,pedestrian_network=generate_routes(geo,layers['roads'],terrain,water,building_union,sidewalks,paths_surface,bridge_decks,street_features,extra_obstacles=business_obstacles)
+    from .visits import generate_visits
+    generate_visits(crowd,pedestrian_network,geo,terrain,sidewalks,business_features,roads)
     crowd['models']=person_models(geo,Mesh)
     from .traffic import generate_traffic,vehicle_models
     traffic,traffic_network=generate_traffic(geo,layers['roads'],terrain,water,building_union,roads,paths_surface,bridge_decks,street_features,extra_obstacles=business_obstacles)
