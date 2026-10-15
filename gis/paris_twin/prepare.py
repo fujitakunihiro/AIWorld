@@ -5,7 +5,7 @@ from pathlib import Path
 from .acquire import verify_cache
 from .io import ROOT, paths, read, sha, generation_metadata
 
-PRODUCTS=('Generated/scene.json','Generated/surface-validation.json','Generated/diagnostics.json',
+PRODUCTS=('Generated/scene.json','Generated/runtime.json','Generated/runtime-meshes.bin','Generated/business-placement.json','Generated/surface-validation.json','Generated/diagnostics.json',
           'Generated/map.html','Generated/map.svg','Generated/street-placement.json','Generated/pedestrian-network.json','Generated/traffic-network.json','Processed/district.json','Processed/features.wgs84.geojson')
 
 
@@ -41,4 +41,9 @@ def prepare(config):
             temporary.replace(native)
         finally:
             if temporary.exists():temporary.unlink()
+    for source,name in [('runtime.json','paris-digital-twin-runtime.json'),('runtime-meshes.bin','paris-digital-twin-meshes.bin')]:
+        target=native.parent/name
+        if not target.exists() or sha(target)!=cached['products']['Generated/'+source]:
+            from .runtime import write_bytes
+            write_bytes(target,(folders['Generated']/source).read_bytes())
     return dict(native_file=str(native),sha256=expected,cached=True,**cached['statistics'])

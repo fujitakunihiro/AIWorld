@@ -199,11 +199,14 @@ def export(config,dataset):
     objects.extend(facade_objects)
     from .street_furniture import model_meshes,generate_street_objects
     instance_batches,street_features,street_report=generate_street_objects(geo,layers['street_objects'],terrain,water,building_union,layers['roads'],sidewalks,paths_surface,bridge_decks)
+    from .businesses import generate_businesses,prototypes
+    business_batches,business_features,business_obstacles,business_placement=generate_businesses(geo,layers['businesses'],layers['buildings'],terrain,unary_union([g for g in [sidewalks,paths_surface] if g is not None]),water,roads,street_features,sidewalks)
+    instance_batches.extend(business_batches)
     from .pedestrians import generate_routes,person_models
-    crowd,pedestrian_network=generate_routes(geo,layers['roads'],terrain,water,building_union,sidewalks,paths_surface,bridge_decks,street_features)
+    crowd,pedestrian_network=generate_routes(geo,layers['roads'],terrain,water,building_union,sidewalks,paths_surface,bridge_decks,street_features,extra_obstacles=business_obstacles)
     crowd['models']=person_models(geo,Mesh)
     from .traffic import generate_traffic,vehicle_models
-    traffic,traffic_network=generate_traffic(geo,layers['roads'],terrain,water,building_union,roads,paths_surface,bridge_decks,street_features)
+    traffic,traffic_network=generate_traffic(geo,layers['roads'],terrain,water,building_union,roads,paths_surface,bridge_decks,street_features,extra_obstacles=business_obstacles)
     traffic['models']=vehicle_models(geo,Mesh)
     scene={'format':'paris_twin_scene_v1','generation':dataset['generation'],'district_id':config['district_id'],'georeference':{
         'wgs84_origin':config['origin_wgs84'],'projected_origin_m':list(geo.origin),'projected_crs':geo.crs.to_string(),
@@ -212,7 +215,7 @@ def export(config,dataset):
         'vertical_mode':'orthometric NGF-IGN69 minus shared origin; no ellipsoidal conversion',
         'origin_elevation_ngf_m':terrain.origin_ngf,'vertical_datum':'NGF-IGN69'},
         'terrain':terrain.metadata(),'bridge_profiles':bridge_reports,'facades':facade_report,
-        'instance_models':model_meshes(geo,Mesh),'instance_batches':instance_batches,'street_furniture':street_report,
+        'businesses':business_placement['report'],'instance_models':model_meshes(geo,Mesh)+prototypes(geo,Mesh),'instance_batches':instance_batches,'street_furniture':street_report,
         'pedestrians':crowd,'traffic':traffic,
         'extent_m':config['core_size_m']+config['context_buffer_m']*2,
         'scene_centre_ue_cm':list(geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']),terrain.ngf(geo.centre),terrain.origin_ngf)),
@@ -241,7 +244,7 @@ def export(config,dataset):
                 props['water_level_source']='estimated:river DEM median; no gauge' if props['water_role']=='river' else 'estimated:terrain + 0.12m fountain surface'
                 props.pop('water_level_local_m',None)
             scene['pick_features'].append(picked)
-    scene['pick_features'].extend(street_features)
+    scene['pick_features'].extend(street_features+business_features)
     scene['landmarks'] = []
     for label, layer, name in [('Notre-Dame','buildings','Cathédrale Notre-Dame de Paris'),('Sainte-Chapelle','buildings','Sainte-Chapelle'),('Saint-Michel','squares','Place Saint-Michel')]:
         feature = next((f for f in layers[layer] if f['properties']['name']==name),None)
@@ -270,8 +273,11 @@ def export(config,dataset):
     write(dest/'street-placement.json',{'report':street_report,'features':street_features})
     write(dest/'pedestrian-network.json',pedestrian_network)
     write(dest/'traffic-network.json',traffic_network)
+    write(dest/'business-placement.json',business_placement)
     native=ROOT/'unreal/AIWorld/Content/Data/paris-digital-twin.json'
     write(native,scene)
+    from .runtime import export_runtime
+    export_runtime(scene,dest,native.parent)
     road_result=[g for g in [roads,bridges,paths_surface,sidewalks] if g is not None]
     write(dest/'surface-validation.json',{'generated_road_building_overlap_m2':round(sum(g.intersection(building_union).area for g in road_result),8),
           'surface_area_m2':round(sum(g.area for g in road_result),3),'buildings':len(footprint_seen),

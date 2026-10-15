@@ -15,7 +15,7 @@ from .normalize import positive_number
 from .detail_geometry import box, cylinder, crown, tube
 
 
-def mapped_nodes(raw, manifest, geo):
+def source_nodes(raw, manifest):
     if 'osm-map.xml.gz' in manifest['files']:
         snapshot='osm-map.xml.gz'
         root=ET.fromstring(gzip.decompress((raw/snapshot).read_bytes()))
@@ -24,6 +24,11 @@ def mapped_nodes(raw, manifest, geo):
     else:
         snapshot='osm.json'
         nodes=[e for e in read(raw/snapshot)['elements'] if e['type']=='node']
+    return nodes,snapshot
+
+
+def mapped_nodes(raw, manifest, geo):
+    nodes,snapshot=source_nodes(raw,manifest)
     features=[]
     for node in sorted(nodes,key=lambda n:n['id']):
         tags=node['tags']

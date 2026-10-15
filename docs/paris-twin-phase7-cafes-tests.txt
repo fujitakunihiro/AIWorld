@@ -1,0 +1,81 @@
+test_archived_node_name_and_tag_are_not_an_entrance_claim (test_businesses.BusinessTests.test_archived_node_name_and_tag_are_not_an_entrance_claim) ... ok
+test_mapped_poi_is_retained_and_facade_and_seats_are_inferred (test_businesses.BusinessTests.test_mapped_poi_is_retained_and_facade_and_seats_are_inferred) ... ok
+test_monuments_and_duplicate_facade_space_are_not_decorated (test_businesses.BusinessTests.test_monuments_and_duplicate_facade_space_are_not_decorated) ... ok
+test_no_tag_narrow_walkway_or_road_conflict_never_gets_seats (test_businesses.BusinessTests.test_no_tag_narrow_walkway_or_road_conflict_never_gets_seats) ... ok
+test_bridges_furniture_and_buildings_limit_routes (test_pedestrians.PedestrianTests.test_bridges_furniture_and_buildings_limit_routes) ... ok
+test_joint_models_have_real_human_scale_and_valid_indices (test_pedestrians.PedestrianTests.test_joint_models_have_real_human_scale_and_valid_indices) ... ok
+test_multipart_road_keeps_distinct_reproducible_route_ids (test_pedestrians.PedestrianTests.test_multipart_road_keeps_distinct_reproducible_route_ids) ... ok
+test_new_bin_and_bicycle_proxies_leave_room_for_people (test_pedestrians.PedestrianTests.test_new_bin_and_bicycle_proxies_leave_room_for_people) ... ok
+test_paths_do_not_cut_corners_or_cross_water_and_are_repeatable (test_pedestrians.PedestrianTests.test_paths_do_not_cut_corners_or_cross_water_and_are_repeatable) ... ok
+test_sidewalks_are_inferred_and_private_roads_are_excluded (test_pedestrians.PedestrianTests.test_sidewalks_are_inferred_and_private_roads_are_excluded) ... ok
+test_terrace_footprint_is_excluded_from_walking_routes (test_pedestrians.PedestrianTests.test_terrace_footprint_is_excluded_from_walking_routes) ... ok
+test_adjacent_district_uses_same_origin_and_continuous_coordinates (test_pipeline.PipelineTests.test_adjacent_district_uses_same_origin_and_continuous_coordinates) ... ok
+test_bilinear_terrain_and_shared_vertical_datum (test_pipeline.PipelineTests.test_bilinear_terrain_and_shared_vertical_datum) ... ok
+test_bridge_deck_meets_banks_without_dem_river_dip (test_pipeline.PipelineTests.test_bridge_deck_meets_banks_without_dem_river_dip) ... ok
+test_cached_export_restores_native_and_rejects_changed_config (test_pipeline.PipelineTests.test_cached_export_restores_native_and_rejects_changed_config) ... ok
+test_coordinates_roundtrip_and_cm_axes (test_pipeline.PipelineTests.test_coordinates_roundtrip_and_cm_axes) ... ok
+test_dimensions_are_explicit_and_estimates_labelled (test_pipeline.PipelineTests.test_dimensions_are_explicit_and_estimates_labelled) ... ok
+test_district_id_cannot_escape_data_root (test_pipeline.PipelineTests.test_district_id_cannot_escape_data_root) ... ok
+test_failed_building_refresh_preserves_height_snapshot (test_pipeline.PipelineTests.test_failed_building_refresh_preserves_height_snapshot) ... ok
+test_failed_online_refresh_preserves_previous_offline_cache (test_pipeline.PipelineTests.test_failed_online_refresh_preserves_previous_offline_cache) ... ok
+test_failed_terrain_refresh_preserves_snapshot (test_pipeline.PipelineTests.test_failed_terrain_refresh_preserves_snapshot) ... ok
+test_fixed_ngf_origin_survives_dem_refresh (test_pipeline.PipelineTests.test_fixed_ngf_origin_survives_dem_refresh) ... ok
+test_gutter_absolute_height_and_batch_ids_survive (test_pipeline.PipelineTests.test_gutter_absolute_height_and_batch_ids_survive) ... ok
+test_ign_height_parts_keep_real_steps_and_do_not_use_church_spire_as_wall (test_pipeline.PipelineTests.test_ign_height_parts_keep_real_steps_and_do_not_use_church_spire_as_wall) ... ok
+test_procedural_roofs_preserve_holes_and_ridge_breaks (test_pipeline.PipelineTests.test_procedural_roofs_preserve_holes_and_ridge_breaks) ... ok
+test_real_snapshot_quality_and_reproducibility (test_pipeline.PipelineTests.test_real_snapshot_quality_and_reproducibility) ... ok
+test_road_review_distinguishes_clipped_boundary_and_internal_paths (test_pipeline.PipelineTests.test_road_review_distinguishes_clipped_boundary_and_internal_paths) ... ok
+test_roof_and_ground_triangulation_preserves_courtyards (test_pipeline.PipelineTests.test_roof_and_ground_triangulation_preserves_courtyards) ... ok
+test_binary_roundtrip_preserves_geometry_color_and_source_identity (test_runtime.RuntimeTests.test_binary_roundtrip_preserves_geometry_color_and_source_identity) ... ok
+test_corrupt_truncated_overlapping_and_out_of_bounds_packets_fail (test_runtime.RuntimeTests.test_corrupt_truncated_overlapping_and_out_of_bounds_packets_fail) ... ok
+test_nonfinite_geometry_and_malformed_colours_fail_before_export (test_runtime.RuntimeTests.test_nonfinite_geometry_and_malformed_colours_fail_before_export) ... ok
+test_authored_prototypes_are_small_valid_and_shared (test_streets.StreetTests.test_authored_prototypes_are_small_valid_and_shared) ... ok
+test_bikes_bins_and_only_physical_signal_poles_keep_mapped_positions (test_streets.StreetTests.test_bikes_bins_and_only_physical_signal_poles_keep_mapped_positions) ... ok
+test_clipped_roads_with_point_fragments_can_orient_benches (test_streets.StreetTests.test_clipped_roads_with_point_fragments_can_orient_benches) ... ok
+test_no_relocation_and_bridge_surface_for_mapped_instances (test_streets.StreetTests.test_no_relocation_and_bridge_surface_for_mapped_instances) ... ok
+test_party_walls_omit_windows_and_keep_exposed_courtyards (test_streets.StreetTests.test_party_walls_omit_windows_and_keep_exposed_courtyards) ... ok
+test_xml_and_json_nodes_preserve_ids_tags_and_direction (test_streets.StreetTests.test_xml_and_json_nodes_preserve_ids_tags_and_direction) ... ok
+test_direction_and_speed_caps (test_traffic.TrafficTests.test_direction_and_speed_caps) ... ok
+test_full_vehicle_clearance_water_crossing_and_building (test_traffic.TrafficTests.test_full_vehicle_clearance_water_crossing_and_building) ... ok
+test_restrictions_and_narrow_roads_are_excluded (test_traffic.TrafficTests.test_restrictions_and_narrow_roads_are_excluded) ... ok
+test_stable_generation_and_vehicle_scale (test_traffic.TrafficTests.test_stable_generation_and_vehicle_scale) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 299.634s
+
+OK
+
+UE builds:
+paris-cafes-build.log
+Result: Succeeded
+Total execution time: 187.95 seconds
+paris-cafes-final-build.log
+Result: Succeeded
+Total execution time: 41.31 seconds
+
+paris-cafes-native-tests.log
+[2026.10.15-03.08.49:273][  0]LogTemp: Display: PARIS_TWIN_LOAD mode=compact input_bytes=87079257 ready_ms=1250.000
+[2026.10.15-03.08.55:002][646]LogAutomationController: Display: Test Completed. Result={Success} Name={BusinessesAndTerraces} Path={ParisDigitalTwin.Live.BusinessesAndTerraces}
+[2026.10.15-03.09.06:761][648]LogAutomationController: Display: Test Completed. Result={Success} Name={CoordinateAgreement} Path={ParisDigitalTwin.Live.CoordinateAgreement}
+[2026.10.15-03.09.06:764][651]LogAutomationController: Display: Test Completed. Result={Success} Name={RuntimePacketSafety} Path={ParisDigitalTwin.Live.RuntimePacketSafety}
+[2026.10.15-03.09.18:229][655]LogAutomationController: Display: Test Completed. Result={Success} Name={SceneCollisionAndDebug} Path={ParisDigitalTwin.Live.SceneCollisionAndDebug}
+[2026.10.15-03.09.18:485][659]LogAutomationController: Display: Test Completed. Result={Success} Name={StreetInstancesAndQuality} Path={ParisDigitalTwin.Live.StreetInstancesAndQuality}
+[2026.10.15-03.09.18:792][662]LogAutomationController: Display: Test Completed. Result={Success} Name={TrafficAndMappedProps} Path={ParisDigitalTwin.Live.TrafficAndMappedProps}
+[2026.10.15-03.09.24:924][401]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingAndPedestrians} Path={ParisDigitalTwin.Live.WalkingAndPedestrians}
+[2026.10.15-03.09.24:958][401]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 7 tests performed.
+
+paris-cafes-legacy-tests.log
+[2026.10.15-03.10.59:869][  0]LogTemp: Display: PARIS_TWIN_LOAD mode=legacy_json input_bytes=186193024 ready_ms=12511.251
+[2026.10.15-03.11.05:655][402]LogAutomationController: Display: Test Completed. Result={Success} Name={BusinessesAndTerraces} Path={ParisDigitalTwin.Live.BusinessesAndTerraces}
+[2026.10.15-03.11.18:061][404]LogAutomationController: Display: Test Completed. Result={Success} Name={CoordinateAgreement} Path={ParisDigitalTwin.Live.CoordinateAgreement}
+[2026.10.15-03.11.18:062][406]LogAutomationController: Display: Test Completed. Result={Success} Name={RuntimePacketSafety} Path={ParisDigitalTwin.Live.RuntimePacketSafety}
+[2026.10.15-03.11.30:851][410]LogAutomationController: Display: Test Completed. Result={Success} Name={SceneCollisionAndDebug} Path={ParisDigitalTwin.Live.SceneCollisionAndDebug}
+[2026.10.15-03.11.31:118][413]LogAutomationController: Display: Test Completed. Result={Success} Name={StreetInstancesAndQuality} Path={ParisDigitalTwin.Live.StreetInstancesAndQuality}
+[2026.10.15-03.11.31:444][416]LogAutomationController: Display: Test Completed. Result={Success} Name={TrafficAndMappedProps} Path={ParisDigitalTwin.Live.TrafficAndMappedProps}
+[2026.10.15-03.11.37:642][164]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingAndPedestrians} Path={ParisDigitalTwin.Live.WalkingAndPedestrians}
+[2026.10.15-03.11.37:647][164]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 7 tests performed.
+
+Additional checks:
+Offline prepare restored/cached all three native files; scene SHA-256 7ff8dacce5e320e95fb987a23aea33c2b253a5f47c27bcd404ef93cdd2908658
+Geometry validation: 0 errors. Native staged dependency manifest includes runtime metadata and mesh blob.
+Docker compose base and Unreal overlay: config --quiet passed. No container run or packaged game build in this change.

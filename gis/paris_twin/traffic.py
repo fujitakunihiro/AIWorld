@@ -33,14 +33,14 @@ def allowed(tags):
     return all(tags.get(k) in [None,'yes','permissive','designated'] for k in ['access','vehicle','motor_vehicle','motorcar'])
 
 
-def generate_traffic(geo,roads,terrain,water,buildings,road_surface,paths_surface,bridge_decks,street_features,max_agents=40):
+def generate_traffic(geo,roads,terrain,water,buildings,road_surface,paths_surface,bridge_decks,street_features,max_agents=40,extra_obstacles=()):
     bridge_surface=unary_union([d.geometry for d in bridge_decks])
     driving=unary_union([g for g in [road_surface,bridge_surface] if g is not None])
     if water is not None:driving=driving.difference(water.difference(bridge_surface))
     # Leave all explicit walking areas and mapped furniture clear, including
     # crossings: preview cars stop/recycle before the gap rather than inventing
     # signal priority over a pedestrian crossing.
-    obstacles=[buildings.buffer(.35)]
+    obstacles=[buildings.buffer(.35),*extra_obstacles]
     if paths_surface is not None:obstacles.append(paths_surface)
     for f in street_features:
         p=f['properties'];point=Point(geo.forward.transform(*p['wgs84_centre']))

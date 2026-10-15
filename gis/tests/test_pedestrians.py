@@ -76,6 +76,13 @@ class PedestrianTests(unittest.TestCase):
             self.assertGreaterEqual(shape(route['geometry']).distance(Point(x+35,y)),.79)
             self.assertGreaterEqual(shape(route['geometry']).distance(Point(x+80,y)),1.34)
 
+    def test_terrace_footprint_is_excluded_from_walking_routes(self):
+        x,y=self.x,self.y;line=LineString([(x,y),(x+120,y)])
+        table=Polygon([(x+50,y-2),(x+55,y-2),(x+55,y+2),(x+50,y+2)])
+        _,network=generate_routes(self.geo,[self.road('osm/way/1',line)],self.terrain,None,Polygon(),None,line.buffer(2),[],[],extra_obstacles=[table])
+        self.assertEqual(validate_network(network,{'osm/way/1'}),[])
+        for r in network['routes']:self.assertGreaterEqual(shape(r['geometry']).distance(table),.37)
+
     def test_multipart_road_keeps_distinct_reproducible_route_ids(self):
         x,y=self.x,self.y
         lines=[LineString([(x,y),(x+30,y)]),LineString([(x,y+15),(x+30,y+15)])]

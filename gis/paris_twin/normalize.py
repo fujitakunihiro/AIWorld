@@ -72,7 +72,7 @@ def normalize(config):
             volumes.append(g); rows.append(row)
     tree = STRtree(volumes)
     relation_building_members = {m['ref'] for e in osm if e['type']=='relation' and e.get('tags',{}).get('building') not in [None,'no'] for m in e.get('members',[]) if m['type']=='way'}
-    layers = {key:[] for key in ['buildings','roads','water','parks','squares','elevations','paris_volumes','street_objects']}
+    layers = {key:[] for key in ['buildings','roads','water','parks','squares','elevations','paris_volumes','street_objects','businesses']}
     issues = []
     for e in sorted(osm,key=lambda e:(e['type'],e['id'])):
         tags = e.get('tags',{})
@@ -156,6 +156,8 @@ def normalize(config):
                           'height_ngf_m':point['z'],'accuracy':point.get('acc'),'measures':point.get('measures',[])}})
     from .street_furniture import mapped_nodes
     layers['street_objects']=mapped_nodes(p['Raw'],manifest,geo)
+    from .businesses import mapped_businesses
+    layers['businesses']=mapped_businesses(p['Raw'],manifest,geo)
     for layer in layers.values():
         layer.sort(key=lambda f:f['properties']['source_id'])
     from .building_heights import enrich_buildings

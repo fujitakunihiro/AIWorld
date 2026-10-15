@@ -61,12 +61,12 @@ bool FParisTwinStreetWait::Update() {
     static double Started=0;if(Started==0)Started=FPlatformTime::Seconds();
     for(const auto& Context:GEngine->GetWorldContexts())if(Context.World())for(TActorIterator<AParisTwinScene> It(Context.World());It;++It){auto Scene=*It;if(!Scene->bReady)continue;
         TArray<UHierarchicalInstancedStaticMeshComponent*> Instances;Scene->GetComponents(Instances);
-        Test->TestEqual(TEXT("Eleven shared street prototypes instead of thousands of components"),Instances.Num(),11);
+        Test->TestTrue(TEXT("Shared street and business prototypes instead of thousands of components"),Instances.Num()>11&&Instances.Num()<=19);
         Test->TestTrue(TEXT("Real mapped furniture loaded"),Scene->StreetCount>1500&&Scene->InstanceCount>Scene->StreetCount);
         for(auto Mesh:Instances)if(Mesh->GetInstanceCount()>0){
             auto Source=Scene->StreetInstanceSource(Mesh,0);Test->TestTrue(TEXT("Instance index resolves an original mapped node"),Source.IsValid());if(!Source)continue;
             FTransform Transform;Mesh->GetInstanceTransform(0,Transform,true);FHitResult Pick;Pick.Component=Mesh;Pick.Item=0;Pick.ImpactPoint=Transform.GetLocation();Scene->SelectHit(Pick);
-            Test->TestTrue(TEXT("Instance selection displays the correct original OSM node"),Scene->Selection.Contains(String(Source,TEXT("id")))&&Scene->Selection.Contains(TEXT("Mapped OSM position")));
+            Test->TestTrue(TEXT("Instance selection displays the correct original OSM node"),Scene->Selection.Contains(String(Source,TEXT("id")))&&(Scene->Selection.Contains(TEXT("Mapped OSM position"))||Scene->Selection.Contains(TEXT("Inferred storefront"))));
             Test->TestTrue(TEXT("Instance selection distinguishes inferred appearance"),Scene->Selection.Contains(TEXT("unverified")));
             Test->TestFalse(TEXT("Out-of-range hit index cannot select an unrelated node"),Scene->StreetInstanceSource(Mesh,Mesh->GetInstanceCount()).IsValid());
         }

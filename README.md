@@ -1,6 +1,6 @@
 # AI WORLD — パリと自律する住民
 
-**実地理のParis Digital Twin（車両・街路設備）:** 建物739棟と散策を維持し、40台の推定車両、102か所の自転車置き場、107個のごみ箱、13本の信号柱を追加。160人の歩行者と車両はGIS由来の安全な経路を移動し、距離に応じて描画を省略します。起動は `Paris-DigitalTwin.cmd`、Cで車両周辺、F8で散策、Vで視点、WASDで移動、Shiftで走行、F2で上空。P/Tで人/車、F6で設備、F7で品質を切替。車両・人物・装飾の外観や動きは推定です。[最新の検証・残作業](docs/paris-digital-twin-phase67.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
+**実地理のParis Digital Twin（店舗・カフェと軽量読み込み）:** 395か所の店先と49か所のテラスを追加。Bでカフェ周辺、F8で散策、Vで視点、Cで車両周辺、F2で全景へ移動できます。739棟の地理配置、160人・40台の推定シミュレーションを維持し、読み込みを軽量化しました。起動は `Paris-DigitalTwin.cmd`。実在する地図点と推定の外観・席配置を区別しています。[最新の実装・検証・残作業](docs/paris-digital-twin-phase7-cafes.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
 
 **Unreal Engine版への移行:** Windows用のUE 5.8プロジェクトを追加しました。起動は `.\unreal\scripts\Start-AIWorldUE.ps1`、初回ビルドは `.\unreal\scripts\Build-AIWorldUE.ps1` です。現在の世界と住民AI・SQLiteを引き継ぎ、UEのネイティブ3D画面と操作で遊べます。[起動方法・移行構成・検証](docs/unreal-migration.md) を参照してください。
 

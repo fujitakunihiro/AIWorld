@@ -1,4 +1,4 @@
-param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView)
+param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON)
 $ErrorActionPreference='Stop'
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $gisOptions=@()
@@ -34,6 +34,8 @@ if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}
 if($NoPeople){$launchArgs+='-ParisTwinNoPeople'}
 if($NoTraffic){$launchArgs+='-ParisTwinNoTraffic'}
 if($TrafficView){$launchArgs+='-ParisTwinTrafficView'}
+if($CafeView){$launchArgs+='-ParisTwinCafeView'}
+if($LegacyJSON){$launchArgs+='-ParisTwinLegacyJSON'}
 if($Landmark -gt 0){$launchArgs+="-ParisTwinLandmark=$Landmark"}
 if($Footprints){$launchArgs+='-ParisTwinFootprints'}
 if($Issues){$launchArgs+='-ParisTwinIssues'}

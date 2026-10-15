@@ -19,3 +19,6 @@ gis/**/__pycache__/
 gis/Data/Processed/
 gis/Data/Generated/
 unreal/AIWorld/Content/Data/paris-digital-twin.json
+
+unreal/AIWorld/Content/Data/paris-digital-twin-runtime.json
+unreal/AIWorld/Content/Data/paris-digital-twin-meshes.bin

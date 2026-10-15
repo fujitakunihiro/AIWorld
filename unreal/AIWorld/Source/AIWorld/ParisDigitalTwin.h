@@ -47,7 +47,7 @@ public:
     void ToggleFootprints();void ToggleIssues();void ToggleHelp();
     void ToggleStreetDetails();void CycleDetailQuality();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
-    bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();void ToggleTraffic();void InspectTraffic();
+    bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();void ToggleTraffic();void InspectTraffic();void InspectBusiness();
     void ReturnToFree();
     UPROPERTY() TObjectPtr<AParisTwinCamera> FreeCamera;
     UPROPERTY() TObjectPtr<AParisWalker> Walker;
@@ -68,6 +68,7 @@ public:
     void ToggleLevels();
     void ToggleFootprints();void ToggleIssues();void FocusLandmark(int32 Index);
     void Capture();
+    bool FocusBusiness();
     void ToggleStreetDetails();void CycleDetailQuality();void ApplyDetailQuality();
     bool bReady=false,bLevels=false,bFootprints=false,bIssues=false;
     FString Status=TEXT("GISデータを読み込み中"),Selection;
@@ -76,7 +77,8 @@ public:
     FVector SceneCentre=FVector::ZeroVector;
     FParisGeoReference GeoReference;
     FString IssueSummary;
-    int32 BuildingCount=0,TriangleCount=0;
+    int32 BuildingCount=0,TriangleCount=0,BusinessCount=0,TerraceCount=0;
+    double SceneLoadMs=0;int64 SceneInputBytes=0;bool bCompactRuntime=false;
     int32 StreetCount=0,InstanceCount=0,InstanceTriangles=0,DetailQuality=1;
     bool bStreetDetails=true;
     TSharedPtr<FJsonObject> StreetInstanceSource(UPrimitiveComponent* Component,int32 Instance) const;

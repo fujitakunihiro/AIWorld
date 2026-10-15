@@ -101,20 +101,39 @@ def validate(config):
     for model in models.values():
         if len(model['normals'])!=len(model['positions_cm']) or len(model['indices'])%3 or any(i<0 or i>=len(model['positions_cm']) for i in model['indices']):errors.append('invalid_instance_model:'+model['id'])
     streets={f['properties']['source_id']:f for f in layers.get('street_objects',[])}
+    businesses={f['properties']['source_id']:f for f in layers.get('businesses',[])}
+    business_pick={f['id']:f for f in scene['pick_features'] if f['kind']=='business'}
     for batch in scene.get('instance_batches',[]):
         if batch['model'] not in models:errors.append('missing_instance_model:'+batch['model'])
         used=set()
         for instance in batch['instances']:
             identifier=instance['source_id']
-            if identifier not in streets or identifier in used:errors.append('invalid_or_duplicated_street_instance:'+identifier);continue
-            used.add(identifier);feature=streets[identifier]
+            if identifier not in streets and identifier not in businesses or identifier in used:errors.append('invalid_or_duplicated_street_instance:'+identifier);continue
+            used.add(identifier)
+            if identifier in businesses:
+                picked=business_pick.get(identifier)
+                if not picked:errors.append('unpicked_business_instance');continue
+                expected=picked['properties'].get('terrace_cm') if batch['model'].startswith('terrace_') else picked['point_cm']
+                if expected!=instance['position_cm']:errors.append('business_instance_position_mismatch')
+                if picked['properties']['wgs84_centre']!=businesses[identifier]['properties']['wgs84_centre']:errors.append('business_poi_anchor_changed')
+                continue
+            feature=streets[identifier]
             point=shape(feature['geometry']);expected=(geo.origin[0]+instance['position_cm'][0]/100,geo.origin[1]-instance['position_cm'][1]/100)
             if point.distance(Point(expected))>.001:errors.append('street_point_silently_relocated:'+identifier)
             if len(instance['scale'])!=3 or any(not math.isfinite(v) or v<=0 or v>10 for v in instance['scale']):errors.append('invalid_street_instance_scale:'+identifier)
             if not all(math.isfinite(v) for v in instance['position_cm']) or not math.isfinite(instance['yaw_degrees']):errors.append('nonfinite_street_instance:'+identifier)
     street_pick={f['id'] for f in scene['pick_features'] if f['kind'].startswith('street_')}
     model_ids={i['source_id'] for b in scene.get('instance_batches',[]) for i in b['instances']}
-    if street_pick!=model_ids:errors.append('street_instance_selection_mismatch')
+    if street_pick|set(business_pick)!=model_ids:errors.append('street_instance_selection_mismatch')
+    placement=read(p['Generated']/'business-placement.json')
+    business_walk=shape(placement['walking_geometry']);business_roads=shape(placement['road_geometry'])
+    for terrace in placement['terraces']:
+        foot=shape(terrace['geometry']);source=business_pick.get(terrace['source_id'])
+        if not source or source['properties']['outdoor_seating_tag']!='yes':errors.append('terrace_without_positive_osm_tag')
+        if not business_walk.covers(foot) or foot.intersection(business_roads).area>.001 or foot.intersection(unary_union(shapes)).area>.001:errors.append('terrace_outside_clear_walking_space')
+    from .runtime import validate_runtime
+    runtime_report=validate_runtime(read(p['Generated']/'runtime.json'),(p['Generated']/'runtime-meshes.bin').read_bytes(),scene)
+    if read(p['Generated']/'runtime.json')['source_scene_sha256']!=sha(p['Generated']/'scene.json'):errors.append('runtime_source_hash_mismatch')
     from .pedestrians import validate_network
     crowd=scene.get('pedestrians',{})
     errors.extend(validate_network(read(p['Generated']/'pedestrian-network.json'),ids))
@@ -175,6 +194,8 @@ def validate(config):
             'facades':surface['facades'],'building_render_batches':sum(o['kind']=='building' for o in scene['objects']),
             'street_furniture':surface.get('street_furniture',{}),'instance_batches':len(scene.get('instance_batches',[])),
             'rendered_instances':sum(len(b['instances']) for b in scene.get('instance_batches',[]))}
+    report['businesses']=scene.get('businesses',{})
+    report['runtime_packet']=runtime_report
     report['pedestrians']=crowd.get('report',{})
     report['traffic']=traffic.get('report',{})
     write(p['Generated']/'validation.json',report)
