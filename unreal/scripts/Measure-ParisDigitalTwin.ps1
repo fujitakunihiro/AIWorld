@@ -1,13 +1,15 @@
 param(
     [string]$EngineRoot='D:\Epic Games\UE_5.8',
-    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Routes')][string]$View='Overview',
+    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Routes','Seating')][string]$View='Overview',
     [ValidateSet('Low','Medium','High')][string]$Quality='Medium',
     [ValidateRange(10,120)][int]$Duration=20,
     [string]$ReportPath='',
+    [ValidateRange(1,120)][int]$CaptureAfter=8,
     [switch]$LegacyJSON,
     [switch]$FullPeople
 )
 $ErrorActionPreference='Stop'
+if($CaptureAfter -ge $Duration+5){throw 'CaptureAfter must be before the benchmark exit time (Duration + 5s warmup)'}
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $project=& (Join-Path $PSScriptRoot 'Get-AIWorldProject.ps1')
 $saved=Join-Path (Split-Path $project) 'Saved'
@@ -17,14 +19,15 @@ $performance=Join-Path $saved 'paris-twin-performance.json'
 $shot=Join-Path $saved 'Screenshots\paris-twin.png'
 $suffix=if($LegacyJSON){'-legacy'}else{''}
 if($FullPeople){$suffix+='-fullpeople'}
-if(-not $ReportPath){$ReportPath=Join-Path $repo "docs\paris-twin-phase7-navigation-$($View.ToLower())$suffix-performance.json"}
+if(-not $ReportPath){$ReportPath=Join-Path $repo "docs\paris-twin-phase7-seating-$($View.ToLower())$suffix-performance.json"}
 $reportFolder=Split-Path $ReportPath
 New-Item -ItemType Directory -Path $reportFolder -Force | Out-Null
 $arguments=@('"'+$project+'"','-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-RenderOffscreen','-unattended','-nosound','-NoSplash',
-    '-ParisTwinCapture',"-ParisTwinBenchmark=$Duration",'-ParisTwinExit','-ExecCmds="t.MaxFPS 0,r.VSync 0"',
+    '-ParisTwinCapture',"-ParisTwinCaptureAfter=$CaptureAfter","-ParisTwinBenchmark=$Duration",'-ParisTwinExit','-ExecCmds="t.MaxFPS 0,r.VSync 0"',
     ('-ParisTwinQuality='+@{Low=0;Medium=1;High=2}[$Quality]),('-abslog="'+$log+'"'))
 if($LegacyJSON){$arguments+='-ParisTwinLegacyJSON'}
 if($FullPeople){$arguments+='-ParisTwinFullPeople'}
+if($View -eq 'Seating'){$arguments+='-ParisTwinCafeView';$arguments+='-ParisTwinSeatingView'}
 if($View -eq 'Cafe'){$arguments+='-ParisTwinCafeView'}
 if($View -eq 'Routes'){$arguments+='-ParisTwinCafeView';$arguments+='-ParisTwinRoutes'}
 if($View -eq 'Traffic'){$arguments+='-ParisTwinTrafficView'}
@@ -41,10 +44,11 @@ if(-not $process.WaitForExit(240000)){
 if($process.ExitCode -ne 0 -or -not(Test-Path -LiteralPath $performance) -or (Get-Item -LiteralPath $performance).LastWriteTime -lt $started){throw 'Paris benchmark failed or did not produce a fresh report'}
 if(Select-String -LiteralPath $log -Pattern 'Fatal error|Assertion failed|missing usage flag InstancedStaticMeshes|CPU data not available on selected LOD' -Quiet){throw 'Unreal reported a benchmark mesh/material error'}
 $result=Get-Content -LiteralPath $performance -Raw | ConvertFrom-Json
-if($View -in @('Traffic','Cafe','Routes') -and -not $result.camera_eye){throw 'Traffic inspection did not find an unobstructed eye-level camera'}
+if($View -in @('Traffic','Cafe','Routes','Seating') -and -not $result.camera_eye){throw 'Traffic inspection did not find an unobstructed eye-level camera'}
 if($View -in @('WalkFirst','WalkThird') -and -not $result.walking){throw 'Requested walking view did not become active'}
 $result | Add-Member -NotePropertyName 'render_offscreen' -NotePropertyValue $true
 $result | Add-Member -NotePropertyName 'duration_seconds' -NotePropertyValue $Duration
+$result | Add-Member -NotePropertyName 'capture_after_seconds' -NotePropertyValue $CaptureAfter
 $result | Add-Member -NotePropertyName 'warmup_seconds' -NotePropertyValue 5
 $result | Add-Member -NotePropertyName 'run_utc' -NotePropertyValue $started.ToUniversalTime().ToString('o')
 $result | Add-Member -NotePropertyName 'engine' -NotePropertyValue 'UE 5.8.3 Development Editor -game'
@@ -52,10 +56,11 @@ $result | Add-Member -NotePropertyName 'gpu' -NotePropertyValue ((Get-CimInstanc
 $scene=Join-Path (Split-Path $project) 'Content\Data\paris-digital-twin.json'
 $result | Add-Member -NotePropertyName 'scene_sha256' -NotePropertyValue ((Get-FileHash -LiteralPath $scene -Algorithm SHA256).Hash.ToLowerInvariant())
 $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $ReportPath -Encoding utf8
+if($View -eq 'Seating' -and (-not(Test-Path -LiteralPath $shot) -or (Get-Item -LiteralPath $shot).LastWriteTime -lt $started)){throw 'No fresh seated inspection was captured; no seated visitor with a clear camera was found'}
 if(Test-Path -LiteralPath $shot){
     if((Get-Item -LiteralPath $shot).LastWriteTime -ge $started){
         $screenshots=Join-Path $reportFolder 'screenshots';New-Item -ItemType Directory -Path $screenshots -Force | Out-Null
-        Copy-Item -LiteralPath $shot -Destination (Join-Path $screenshots "paris-twin-phase7-navigation-$($View.ToLower())$suffix.png")
+        Copy-Item -LiteralPath $shot -Destination (Join-Path $screenshots "paris-twin-phase7-seating-$($View.ToLower())$suffix.png")
     }
 }
 Write-Output "Saved $View / $Quality benchmark: $ReportPath"

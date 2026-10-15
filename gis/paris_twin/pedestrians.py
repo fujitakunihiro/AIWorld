@@ -47,18 +47,41 @@ def person_models(geo,Mesh):
             colors.extend([part['color']]*len(part['positions_cm']))
         item=merged.item(f'person_far_{variant}','person_model','#ffffff',{})
         item['vertex_colors']=colors;result.append(item)
+    thigh=Mesh(geo);box(thigh,(x,y),(1,0),(0,1),.12,.14,-.40,0)
+    shin=Mesh(geo);box(shin,(x,y),(1,0),(0,1),.12,.14,-.39,0)
+    box(shin,(x+.025,y),(1,0),(0,1),.19,.145,-.44,-.36)
+    result.extend([thigh.item('person_thigh','person_model','#343b43',{}),shin.item('person_shin','person_model','#343b43',{})])
+    source={m['id']:m for m in result}
+    for variant in range(3):
+        merged=Mesh(geo);colors=[]
+        parts=[(f'person_torso_{variant}',(0,0,-36),0),('person_head',(0,0,110),0),
+               (f'person_arm_{variant}',(0,-23,103),0),(f'person_arm_{variant}',(0,23,103),0),
+               ('person_thigh',(0,-9,48),90),('person_thigh',(0,9,48),90),
+               ('person_shin',(40,-9,48),0),('person_shin',(40,9,48),0)]
+        for name,offset,pitch in parts:
+            part=source[name];start=len(merged.positions);c=math.cos(math.radians(pitch));s=math.sin(math.radians(pitch))
+            def rotate(p):return [c*p[0]-s*p[2],p[1],s*p[0]+c*p[2]]
+            merged.positions.extend([[v+offset[i] for i,v in enumerate(rotate(p))] for p in part['positions_cm']])
+            merged.normals.extend([rotate(n) for n in part['normals']]);merged.indices.extend(i+start for i in part['indices'])
+            colors.extend([part['color']]*len(part['positions_cm']))
+        item=merged.item(f'person_far_seated_{variant}','person_model','#ffffff',{});item['vertex_colors']=colors;result.append(item)
     return result
+
+
+def furniture_obstacles(geo,street_features):
+    obstacles=[]
+    for feature in street_features:
+        props=feature['properties'];point=Point(geo.forward.transform(*props['wgs84_centre']))
+        radius=1.35 if props['kind'] in ['bench','bicycle_rack'] else .8 if props['kind']=='bin' else max(.6,.2*(props.get('crown_diameter_m') or 6)/6+.38) if props['kind']=='tree' else .6
+        obstacles.append(point.buffer(radius))
+    return obstacles
 
 
 def generate_routes(geo,roads,terrain,water,buildings,sidewalks,paths_surface,bridge_decks,street_features,max_agents=160,extra_obstacles=()):
     bridge_surface=unary_union([d.geometry for d in bridge_decks])
     walking=unary_union([g for g in [sidewalks,paths_surface,bridge_surface] if g is not None])
     if water is not None:walking=walking.difference(water.difference(bridge_surface))
-    obstacles=[]
-    for feature in street_features:
-        props=feature['properties'];point=Point(geo.forward.transform(*props['wgs84_centre']))
-        radius=1.35 if props['kind'] in ['bench','bicycle_rack'] else .8 if props['kind']=='bin' else max(.6,.2*(props.get('crown_diameter_m') or 6)/6+.38) if props['kind']=='tree' else .6
-        obstacles.append(point.buffer(radius))
+    obstacles=furniture_obstacles(geo,street_features)
     safe=walking.buffer(-.38).difference(buildings.buffer(.5)).difference(unary_union(obstacles+[g.buffer(.38) for g in extra_obstacles]))
     routes=[]
     for feature in roads:
@@ -118,9 +141,14 @@ def validate_network(network,source_ids):
         ids.add(route['id'])
         if route['source_id'] not in source_ids:errors.append('untraced_pedestrian_road')
         geometry=shape(route['geometry'])
-        if not safe.covers(geometry):errors.append('pedestrian_route_outside_safe_surface')
+        route_safe=safe
+        if route.get('route_source')=='inferred_reserved_seat_approach':
+            reserved=next((s for s in network.get('reserved_seat_surfaces',[]) if s['route_id']==route['id']),None)
+            if reserved is None:errors.append('missing_reserved_seat_surface');continue
+            route_safe=prep(shape(reserved['geometry']).buffer(.001))
+        if not route_safe.covers(geometry):errors.append('pedestrian_route_outside_safe_surface')
         if len(route['points_cm'])<2 or any(len(p)!=3 or not all(math.isfinite(v) for v in p) for p in route['points_cm']):errors.append('invalid_pedestrian_coordinates')
         else:
             ox,oy=network['origin_projected_m'];line=LineString([(ox+p[0]/100,oy-p[1]/100) for p in route['points_cm']])
-            if not safe.covers(line):errors.append('sampled_pedestrian_route_cuts_corner')
+            if not route_safe.covers(line):errors.append('sampled_pedestrian_route_cuts_corner')
     return errors

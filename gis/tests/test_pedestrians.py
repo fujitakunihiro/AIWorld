@@ -57,7 +57,7 @@ class PedestrianTests(unittest.TestCase):
         self.assertEqual(generate_routes(self.geo,[road],self.terrain,None,Polygon(),sidewalk,None,[],[])[0]['agents'],[])
 
     def test_joint_models_have_real_human_scale_and_valid_indices(self):
-        models=person_models(self.geo,Mesh);self.assertEqual(len(models),11)
+        models=person_models(self.geo,Mesh);self.assertEqual(len(models),16)
         for m in models:
             self.assertEqual(len(m['positions_cm']),len(m['normals']))
             self.assertTrue(all(0<=i<len(m['positions_cm']) for i in m['indices']))

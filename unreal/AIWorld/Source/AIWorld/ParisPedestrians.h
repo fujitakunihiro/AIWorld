@@ -9,8 +9,8 @@ class UMaterialInterface;
 class UPrimitiveComponent;
 
 // Six articulated parts. Units are centimetres; Root is the ground underfoot.
-TArray<FTransform> ParisPersonPose(const FVector& Root,double Yaw,double Phase,bool Moving);
-FString ParisPersonPartModel(int32 Part,int32 Variant);
+TArray<FTransform> ParisPersonPose(const FVector& Root,double Yaw,double Phase,bool Moving,double Sit=0,double SeatHeight=48,double Gesture=0);
+FString ParisPersonPartModel(int32 Part,int32 Variant,bool Seated=false);
 
 struct FParisPedestrianRoute {
     FString ID,SourceID,SourceURL,PlacementSource;
@@ -38,11 +38,15 @@ struct FParisPedestrian {
     int32 ResumeRoute=-1,JourneyIndex=0;
     double ResumeDistance=0,VisitDeadline=90,PlannedWalkingCm=0;
     TArray<FParisWalkingLeg> Journey;
+    double SeatBlend=0,SocialRemaining=0,SocialCooldown=0;
+    int32 SocialPartner=-1;
+    FString SocialLine;
 };
 struct FParisVisitDestination {
     FString ID,BusinessID,Name;
     int32 ParentRoute=-1,Route=-1,Owner=-1,Node=-1;
-    double Entry=0,Dwell=12,FacingYaw=0;
+    double Entry=0,Dwell=12,FacingYaw=0,SeatHeight=48,SeatYaw=0;
+    int32 SeatRoute=-1;
 };
 
 UCLASS()
@@ -69,6 +73,7 @@ public:
     int32 NearRenderedCount=0,FarRenderedCount=0,RenderedParts=0,StandingVisitorsRendered=0,CompletedVisits=0,AbortedVisits=0;
     double TravelledCm=0;
     int32 NetworkVisits=0,NetworkVisitsCompleted=0,PlansRejected=0;
+    int32 SeatedRenderedCount=0,SeatedNearRenderedCount=0,SeatArrivals=0,SocialStarted=0,SocialCompleted=0;
     bool bShowNavigation=false;
     bool bEnabled=true,bReady=false;
 private:
@@ -83,6 +88,11 @@ private:
     void StartLeg(FParisPedestrian& Agent,bool Returning);
     void DrawNavigation();
     void FinishVisit(int32 Agent,bool Completed);
+    void UpdateSocial(double Delta);
+    void EndSocial(int32 Agent);
+    bool SocialVisible(int32 A,int32 B) const;
+    bool bSocial=false;
+    double SocialRange=280,SocialDuration=2.5,SocialCooldown=25,SocialAccumulator=0;
     UPROPERTY() TArray<TObjectPtr<UStaticMesh>> Models;
     UPROPERTY() TArray<TObjectPtr<UInstancedStaticMeshComponent>> Instances;
     TMap<FString,UStaticMesh*> ModelByName;

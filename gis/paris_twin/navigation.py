@@ -12,7 +12,7 @@ from .visits import sample
 
 
 def generate_navigation(crowd,network,geo,roads,road_surface,terrain,sidewalks,bridge_decks=()):
-    routes=[r for r in network['routes'] if r['route_source']!='inferred_business_approach']
+    routes=[r for r in network['routes'] if r['route_source'] not in ['inferred_business_approach','inferred_reserved_seat_approach']]
     lines=[LineString([p[:2] for p in r['points_cm']]) for r in routes]
     source={f['properties']['source_id']:f['properties'] for f in roads}
     safe_geometry=shape(network['walkable_geometry'])

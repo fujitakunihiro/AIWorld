@@ -1,6 +1,6 @@
 # AI WORLD — パリと自律する住民
 
-**実地理のParis Digital Twin（歩行経路網）:** 安全な短い接続路と既存経路から経路網を作り、住民が別の通りの店まで往復する行動を追加。人物・店舗の検査欄も随時更新します。Bでカフェ、Nで経路表示、F8で散策、Vで視点、F2で全景。起動は `Paris-DigitalTwin.cmd`。[最新の実装・検証・残作業](docs/paris-digital-twin-phase7-navigation.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
+**実地理のParis Digital Twin（カフェ着席・挨拶）:** 住民が安全な経路を歩いてカフェへ行き、予約した椅子で休み、立ち上がって元の通りへ戻ります。近くの人物との短い挨拶も追加。Bでカフェ、人物・店舗クリックで状態、Nで経路、F8で散策、Vで視点、F2で全景。起動は `Paris-DigitalTwin.cmd`。[最新の実装・検証・残作業](docs/paris-digital-twin-phase7-seating.md) / [既存構成の技術調査](docs/paris-digital-twin-phase0.md)。
 
 **Unreal Engine版への移行:** Windows用のUE 5.8プロジェクトを追加しました。起動は `.\unreal\scripts\Start-AIWorldUE.ps1`、初回ビルドは `.\unreal\scripts\Build-AIWorldUE.ps1` です。現在の世界と住民AI・SQLiteを引き継ぎ、UEのネイティブ3D画面と操作で遊べます。[起動方法・移行構成・検証](docs/unreal-migration.md) を参照してください。
 

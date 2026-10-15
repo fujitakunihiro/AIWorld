@@ -61,7 +61,7 @@ public:
             Test->TestEqual(TEXT("Remote camera omits all crowd instances without deleting agents"),Crowd->RenderedCount,0);
             Camera->Eye(Crowd->People()[0].Position);Camera->Tick(0);PC->PlayerCameraManager->UpdateCamera(0);
             Crowd->UpdateInstances(true);Test->TestTrue(TEXT("Near-camera people return within the visual budget"),Crowd->RenderedCount>0&&Crowd->RenderedCount<=Crowd->VisibleCount);TArray<UInstancedStaticMeshComponent*> Instances;Crowd->GetComponents(Instances);bool FoundPerson=false;
-            Test->TestTrue(TEXT("Far people use one merged part while near people retain six joints"),Crowd->FarRenderedCount>0&&Crowd->RenderedParts==Crowd->NearRenderedCount*6+Crowd->FarRenderedCount&&Crowd->RenderedParts<Crowd->RenderedCount*6);
+            Test->TestTrue(TEXT("Far people use one merged part while near people retain articulated joints (eight for seated knees)"),Crowd->FarRenderedCount>0&&Crowd->RenderedParts==Crowd->NearRenderedCount*6+Crowd->SeatedNearRenderedCount*2+Crowd->FarRenderedCount&&Crowd->RenderedParts<Crowd->RenderedCount*6);
             int32 Parts=0;for(auto Instance:Instances)Parts+=Instance->GetInstanceCount();Test->TestEqual(TEXT("LOD counters match actual GPU instance count"),Parts,Crowd->RenderedParts);
             Test->TestTrue(TEXT("Real snapshot has traceable cafe visit stops"),Crowd->Destinations().Num()>0);
             for(auto Instance:Instances)if(Instance->GetInstanceCount()>0){const FString Description=Crowd->DescribeHit(Instance,0);FoundPerson|=Description.Contains(TEXT("SIMULATED pedestrian"))&&Description.Contains(TEXT("osm/way/"));}

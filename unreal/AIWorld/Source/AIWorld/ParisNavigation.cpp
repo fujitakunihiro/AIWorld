@@ -12,14 +12,14 @@ bool AParisPedestrianCrowd::InitializeNavigation(const TSharedPtr<FJsonObject>& 
     if(InputNodes.IsEmpty()&&InputEdges.IsEmpty())return true;
     if(InputNodes.Num()>20000||InputEdges.Num()>50000)return false;TMap<FString,int32> ByID;
     for(const auto& Value:InputNodes){auto J=Value->AsObject();auto R=RouteByID.Find(String(J,TEXT("route_id")));const FString ID=String(J,TEXT("id"));if(!R||ByID.Contains(ID))return false;
-        FParisWalkingNode N;N.Route=*R;N.Distance=Number(J,TEXT("distance_cm"));const auto& P=Array(J,TEXT("position_cm"));if(P.Num()!=3||!FMath::IsFinite(N.Distance)||N.Distance<0||N.Distance>Routes[*R].Length+.05)return false;
+        FParisWalkingNode N;N.Route=*R;if(Routes[*R].PlacementSource==TEXT("inferred_reserved_seat_approach"))return false;N.Distance=Number(J,TEXT("distance_cm"));const auto& P=Array(J,TEXT("position_cm"));if(P.Num()!=3||!FMath::IsFinite(N.Distance)||N.Distance<0||N.Distance>Routes[*R].Length+.05)return false;
         N.Position=FVector(P[0]->AsNumber(),P[1]->AsNumber(),P[2]->AsNumber());if(N.Position.ContainsNaN()||FVector::Dist(N.Position,Routes[*R].Sample(N.Distance,1))>.1)return false;
         N.Distance=FMath::Clamp(N.Distance,0.,Routes[*R].Length);ByID.Add(ID,Nodes.Num());NodesByRoute[*R].Add(Nodes.Num());Nodes.Add(N);
     }
     for(const auto& Value:InputEdges){auto J=Value->AsObject();auto A=ByID.Find(String(J,TEXT("a")));auto B=ByID.Find(String(J,TEXT("b")));if(!A||!B||*A==*B)return false;
         FParisWalkingEdge E;E.A=*A;E.B=*B;E.Start=Number(J,TEXT("start_cm"));E.End=Number(J,TEXT("end_cm"));E.Length=Number(J,TEXT("length_cm"));const FString RouteID=String(J,TEXT("route_id"));
         if(!FMath::IsFinite(E.Length)||E.Length<0||!FMath::IsFinite(E.Start)||!FMath::IsFinite(E.End))return false;
-        if(!RouteID.IsEmpty()){auto R=RouteByID.Find(RouteID);if(!R)return false;E.Route=*R;const auto& Route=Routes[*R];
+        if(!RouteID.IsEmpty()){auto R=RouteByID.Find(RouteID);if(!R)return false;E.Route=*R;const auto& Route=Routes[*R];if(Route.PlacementSource==TEXT("inferred_reserved_seat_approach"))return false;
             if(E.Start<0||E.End<0||E.Start>Route.Length+.05||E.End>Route.Length+.05||FMath::Abs(FMath::Abs(E.End-E.Start)-E.Length)>.1||FVector::Dist(Route.Sample(E.Start,1),Nodes[*A].Position)>.1||FVector::Dist(Route.Sample(E.End,1),Nodes[*B].Position)>.1)return false;
         }else if(E.Length!=0||FVector::Dist(Nodes[*A].Position,Nodes[*B].Position)>.1)return false;
         if(E.Route>=0){E.Start=FMath::Clamp(E.Start,0.,Routes[E.Route].Length);E.End=FMath::Clamp(E.End,0.,Routes[E.Route].Length);E.Length=FMath::Abs(E.End-E.Start);}
@@ -49,7 +49,7 @@ bool AParisPedestrianCrowd::PlanVisit(int32 Agent){
     int32 Best=-1;double Cost=TNumericLimits<double>::Max();
     for(int32 I=0;I<Visits.Num();I++){const auto& D=Visits[I];if(D.Owner>=0)continue;double Walk=TNumericLimits<double>::Max();
         if(Nodes.IsEmpty()){if(D.ParentRoute==A.Route)Walk=FMath::Abs(A.Distance-D.Entry);}else if(Costs.IsValidIndex(D.Node))Walk=Costs[D.Node];
-        if(Walk>Limit)continue;const double Candidate=2*(Walk+Routes[D.Route].Length);
+        if(Walk>Limit)continue;const double Candidate=2*(Walk+Routes[D.Route].Length+(D.SeatRoute>=0?Routes[D.SeatRoute].Length:0));
         if(Candidate<Cost){Cost=Candidate;Best=I;}
     }
     if(Best<0){PlansRejected++;A.VisitReason=TEXT("No unreserved reachable cafe within 120m on the verified walking graph.");return false;}
@@ -64,7 +64,7 @@ bool AParisPedestrianCrowd::PlanVisit(int32 Agent){
         Append(A.Route,A.Distance,Nodes[N].Distance);
         for(int32 I=Reverse.Num()-1;I>=0;I--)Append(Reverse[I].Route,Reverse[I].Start,Reverse[I].End);
     }
-    Append(D.Route,0,Routes[D.Route].Length);if(Legs.IsEmpty()||Legs.Num()>256){PlansRejected++;A.VisitReason=TEXT("Walking plan exceeds the bounded leg budget.");return false;}
+    Append(D.Route,0,Routes[D.Route].Length);if(D.SeatRoute>=0)Append(D.SeatRoute,0,Routes[D.SeatRoute].Length);if(Legs.IsEmpty()||Legs.Num()>256){PlansRejected++;A.VisitReason=TEXT("Walking plan exceeds the bounded leg budget.");return false;}
     FVector Last=A.Position;for(const auto& L:Legs){if(FVector::Dist(Last,Routes[L.Route].Sample(L.Start,1))>.1){PlansRejected++;A.VisitReason=TEXT("Discontinuous walking plan rejected; staying on the original route.");return false;}Last=Routes[L.Route].Sample(L.End,1);}
     // Claim only after a complete, continuous round trip has been planned.
     D.Owner=Agent;A.Visit=Best;A.ResumeRoute=A.Route;A.ResumeDistance=A.Distance;A.ResumeDirection=A.Direction;A.Journey=MoveTemp(Legs);A.JourneyIndex=0;

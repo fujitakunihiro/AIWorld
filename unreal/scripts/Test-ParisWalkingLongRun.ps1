@@ -6,7 +6,7 @@ $saved=Join-Path (Split-Path $project) 'Saved'
 $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe'
 $raw=Join-Path $saved 'paris-twin-performance.json'
 $log=Join-Path $saved 'paris-navigation-long-run.log'
-if(-not $ReportPath){$ReportPath=Join-Path $repo 'docs\paris-twin-phase7-navigation-long-run.json'}
+if(-not $ReportPath){$ReportPath=Join-Path $repo 'docs\paris-twin-phase7-seating-long-run.json'}
 # t.OverrideFPS sets FApp's simulation delta in the installed engine's
 # UnrealEngine.cpp. Run without a renderer and never interpret this run's
 # synthetic FPS as rendering performance. Each 0.1s frame is two AI steps.
@@ -25,11 +25,12 @@ $output=[ordered]@{
     minimum_ai_steps=([int]$result.frames*2);minimum_simulated_seconds=([int]$result.frames*0.1);
     people=$result.pedestrians_total;navigation_nodes=$result.navigation_nodes;navigation_edges=$result.navigation_edges;
     cross_source_visits_started=$result.network_visits;cross_source_visits_completed=$result.network_visits_completed;
+    seated_arrivals=$result.seated_arrivals;greetings_started=$result.greetings_started;greetings_completed=$result.greetings_completed;
     all_visits_completed=$result.visits_completed;cancelled_returns_completed=$result.visits_aborted;
     distance_travelled_m=$result.pedestrian_distance_travelled_m;wall_time_seconds=((Get-Date)-$started).TotalSeconds;
     scene_sha256=((Get-FileHash -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-digital-twin.json') -Algorithm SHA256).Hash.ToLowerInvariant());
     run_utc=$started.ToUniversalTime().ToString('o')
 }
 $output | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $ReportPath -Encoding utf8
-if($output.minimum_ai_steps -lt 5000 -or $output.cross_source_visits_completed -le 0 -or $output.people -ne 160){throw 'Long-run result did not cover 5000 steps, the full population and a completed cross-source round trip'}
+if($output.minimum_ai_steps -lt 5000 -or $output.cross_source_visits_completed -le 0 -or $output.people -ne 160 -or $output.seated_arrivals -le 0 -or $output.greetings_completed -le 0){throw 'Long-run result did not cover 5000 steps, the full population a completed cross-source round trip, a seated arrival and a completed greeting'}
 Write-Output "Long-run passed: at least $($output.minimum_ai_steps) AI steps; $($output.cross_source_visits_completed) cross-source round trips completed. Not a rendering benchmark."
