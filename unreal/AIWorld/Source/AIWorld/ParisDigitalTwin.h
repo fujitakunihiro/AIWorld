@@ -40,7 +40,7 @@ class AParisTwinController : public APlayerController {
 public:
     virtual void BeginPlay() override;
     virtual void SetupInputComponent() override;
-    void Pick();void ToggleLevels();void Overview();void Eye();void ZoomIn();void ZoomOut();void Capture();
+    void Pick();void ToggleNavigation();void ToggleLevels();void Overview();void Eye();void ZoomIn();void ZoomOut();void Capture();
     void BeginLook();void EndLook();
     FVector2D GetRawLookDelta() const;
     bool IsLooking() const { return bLooking; }
@@ -64,6 +64,8 @@ public:
     virtual void Tick(float Delta) override;
     void Select(UPrimitiveComponent* Component);
     void SelectHit(const FHitResult& Hit);
+    void ClearInspection();
+    FString InspectionText() const;
     TSharedPtr<FJsonObject> SourceAt(const FVector& Point,const FString& Kind=TEXT(""),const TArray<TSharedPtr<FJsonValue>>& Allowed={}) const;
     void ToggleLevels();
     void ToggleFootprints();void ToggleIssues();void FocusLandmark(int32 Index);
@@ -72,6 +74,7 @@ public:
     void ToggleStreetDetails();void CycleDetailQuality();void ApplyDetailQuality();
     bool bReady=false,bLevels=false,bFootprints=false,bIssues=false;
     FString Status=TEXT("GISデータを読み込み中"),Selection;
+    FString SelectedPersonID,SelectedBusinessID,SelectionCoordinates;
     double Extent=800;
     FVector QualityCentre=FVector::ZeroVector;
     FVector SceneCentre=FVector::ZeroVector;

@@ -1,0 +1,22 @@
+{
+  "kind": "fixed_delta_nullrhi_simulation_qa",
+  "not_render_performance": true,
+  "engine": "UE 5.8.3 Development Editor -game",
+  "fixed_frame_seconds": 0.1,
+  "fixed_delta_verified": true,
+  "ai_step_seconds": 0.05,
+  "measured_phase_frames": 6614,
+  "minimum_ai_steps": 13228,
+  "minimum_simulated_seconds": 661.4000000000001,
+  "people": 160,
+  "navigation_nodes": 2978,
+  "navigation_edges": 3467,
+  "cross_source_visits_started": 192,
+  "cross_source_visits_completed": 54,
+  "all_visits_completed": 288,
+  "cancelled_returns_completed": 181,
+  "distance_travelled_m": 157778.9960833433,
+  "wall_time_seconds": 28.3217377,
+  "scene_sha256": "12f43237f5e8ca030baf54692fb02f45ffbfbc8c8aa00f0644b5d9b2c7273ebc",
+  "run_utc": "2026-10-15T04:42:44.4119769Z"
+}

@@ -139,8 +139,10 @@ def validate(config):
     errors.extend(validate_network(read(p['Generated']/'pedestrian-network.json'),ids))
     from .visits import validate_visits
     errors.extend(validate_visits(crowd,set(business_pick)))
+    from .navigation import validate_navigation
+    errors.extend(validate_navigation(crowd))
     for route in crowd.get('routes',[]):
-        if route['route_source']=='inferred_business_approach':
+        if route['route_source'] in ['inferred_business_approach','inferred_walking_connector']:
             points=route['points_cm'];ox,oy=scene['georeference']['projected_origin_m']
             link=LineString([(ox+p[0]/100,oy-p[1]/100) for p in points])
             if link.intersection(business_roads).length>.001:errors.append('cafe_approach_crosses_traffic_surface')

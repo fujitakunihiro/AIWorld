@@ -229,6 +229,8 @@ class PipelineTests(unittest.TestCase):
         self.assertGreater(report['pedestrians']['agents'],100)
         self.assertTrue(report['pedestrians']['inferred_population'])
         self.assertGreater(report['pedestrians']['visits']['destinations'],0)
+        self.assertGreater(report['pedestrians']['navigation']['connectors'],100)
+        self.assertLess(report['pedestrians']['navigation']['components'],500)
         from paris_twin.visits import sample
         import math
         routes={r['id']:r for r in scene['pedestrians']['routes']}
