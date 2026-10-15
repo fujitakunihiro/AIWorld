@@ -123,6 +123,17 @@ def validate(config):
         if agent['id'] in agent_ids or agent['route_id'] not in route_ids:errors.append('invalid_pedestrian_agent')
         agent_ids.add(agent['id'])
         if not .5<=agent['speed_mps']<=2 or agent['direction'] not in [-1,1] or agent['variant'] not in [0,1,2]:errors.append('invalid_pedestrian_motion')
+    from .traffic import validate_traffic
+    traffic=scene.get('traffic',{})
+    errors.extend(validate_traffic(read(p['Generated']/'traffic-network.json'),ids))
+    car_routes={r['id']:r for r in traffic.get('routes',[])};car_ids=set()
+    for car in traffic.get('agents',[]):
+        r=car_routes.get(car['route_id'])
+        if car['id'] in car_ids or r is None:errors.append('invalid_car_agent');continue
+        car_ids.add(car['id'])
+        if not 0<=car['progress_m']<=r['length_m'] or not 0<car['speed_mps']<=r['speed_mps']+.001 or car['variant'] not in [0,1,2]:errors.append('invalid_car_motion')
+    for model in traffic.get('models',[]):
+        if len(model['positions_cm'])!=len(model['normals']) or len(model['indices'])%3 or any(i<0 or i>=len(model['positions_cm']) for i in model['indices']):errors.append('invalid_car_model')
     footprint=scene['footprint_mesh']
     if len(footprint['positions_cm'])!=len(footprint['vertex_colors']):errors.append('footprint_colour_count_mismatch')
     if any(i<0 or i>=len(footprint['positions_cm']) for i in footprint['indices']) or len(footprint['indices'])%3:errors.append('invalid_footprint_mesh_indices')
@@ -165,5 +176,6 @@ def validate(config):
             'street_furniture':surface.get('street_furniture',{}),'instance_batches':len(scene.get('instance_batches',[])),
             'rendered_instances':sum(len(b['instances']) for b in scene.get('instance_batches',[]))}
     report['pedestrians']=crowd.get('report',{})
+    report['traffic']=traffic.get('report',{})
     write(p['Generated']/'validation.json',report)
     return report

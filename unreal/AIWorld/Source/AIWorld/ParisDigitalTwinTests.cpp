@@ -61,8 +61,8 @@ bool FParisTwinStreetWait::Update() {
     static double Started=0;if(Started==0)Started=FPlatformTime::Seconds();
     for(const auto& Context:GEngine->GetWorldContexts())if(Context.World())for(TActorIterator<AParisTwinScene> It(Context.World());It;++It){auto Scene=*It;if(!Scene->bReady)continue;
         TArray<UHierarchicalInstancedStaticMeshComponent*> Instances;Scene->GetComponents(Instances);
-        Test->TestEqual(TEXT("Six shared street prototypes instead of thousands of components"),Instances.Num(),6);
-        Test->TestTrue(TEXT("Real mapped furniture loaded"),Scene->StreetCount>1500&&Scene->InstanceCount==Scene->StreetCount*2);
+        Test->TestEqual(TEXT("Eleven shared street prototypes instead of thousands of components"),Instances.Num(),11);
+        Test->TestTrue(TEXT("Real mapped furniture loaded"),Scene->StreetCount>1500&&Scene->InstanceCount>Scene->StreetCount);
         for(auto Mesh:Instances)if(Mesh->GetInstanceCount()>0){
             auto Source=Scene->StreetInstanceSource(Mesh,0);Test->TestTrue(TEXT("Instance index resolves an original mapped node"),Source.IsValid());if(!Source)continue;
             FTransform Transform;Mesh->GetInstanceTransform(0,Transform,true);FHitResult Pick;Pick.Component=Mesh;Pick.Item=0;Pick.ImpactPoint=Transform.GetLocation();Scene->SelectHit(Pick);

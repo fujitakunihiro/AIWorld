@@ -9,6 +9,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -51,10 +52,15 @@ public:
             for(int32 I=0;I<1000;I++)Crowd->SimulateStep(.05);
             Test->TestTrue(TEXT("Crowd advances through 1000 bounded simulation steps"),Crowd->TravelledCm>TravelBefore+10000);
             for(const auto& Agent:Crowd->People()){const auto& Route=Crowd->Network()[Agent.Route];Test->TestTrue(TEXT("Pedestrians remain finite and on their GIS-derived route"),!Agent.Position.ContainsNaN()&&Agent.Distance>=0&&Agent.Distance<=Route.Length&&FVector::Dist(Agent.Position,Route.Sample(Agent.Distance,Agent.Direction))<.001);}
-            Crowd->UpdateInstances(true);TArray<UInstancedStaticMeshComponent*> Instances;Crowd->GetComponents(Instances);bool FoundPerson=false;
+            // Distance culling must hide a remote fixture view, then restore
+            // picking when the actual camera returns to a person in the city.
+            auto Camera=PC->FreeCamera.Get();Camera->Eye(Fixture);Camera->Tick(0);PC->PlayerCameraManager->UpdateCamera(0);Crowd->UpdateInstances();
+            Test->TestEqual(TEXT("Remote camera omits all crowd instances without deleting agents"),Crowd->RenderedCount,0);
+            Camera->Eye(Crowd->People()[0].Position);Camera->Tick(0);PC->PlayerCameraManager->UpdateCamera(0);
+            Crowd->UpdateInstances(true);Test->TestTrue(TEXT("Near-camera people return within the visual budget"),Crowd->RenderedCount>0&&Crowd->RenderedCount<=Crowd->VisibleCount);TArray<UInstancedStaticMeshComponent*> Instances;Crowd->GetComponents(Instances);bool FoundPerson=false;
             for(auto Instance:Instances)if(Instance->GetInstanceCount()>0){const FString Description=Crowd->DescribeHit(Instance,0);FoundPerson|=Description.Contains(TEXT("SIMULATED pedestrian"))&&Description.Contains(TEXT("osm/way/"));}
             Test->TestTrue(TEXT("Crowd picking distinguishes simulated people and their source road"),FoundPerson);
-            const int32 Count=Crowd->People().Num();Scene->TogglePeople();Test->TestEqual(TEXT("People can be hidden without deleting their data"),Crowd->VisibleCount,0);Scene->ToggleFootprints();Scene->ToggleFootprints();Test->TestFalse(TEXT("Footprints preserve disabled people"),Crowd->bEnabled);Scene->TogglePeople();Test->TestEqual(TEXT("People display toggle preserves agent state"),Crowd->People().Num(),Count);return true;
+            const int32 Count=Crowd->People().Num();Scene->TogglePeople();Test->TestEqual(TEXT("People can be hidden without deleting their data"),Crowd->VisibleCount,0);Scene->ToggleFootprints();Scene->ToggleFootprints();Test->TestFalse(TEXT("Footprints preserve disabled people"),Crowd->bEnabled);Scene->TogglePeople();Test->TestEqual(TEXT("People display toggle preserves agent state"),Crowd->People().Num(),Count);PC->Overview();return true;
         }
         return false;
     }

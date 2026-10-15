@@ -12,7 +12,7 @@ from shapely.geometry import Point, mapping, shape
 from shapely.strtree import STRtree
 from .io import read
 from .normalize import positive_number
-from .detail_geometry import box, cylinder, crown
+from .detail_geometry import box, cylinder, crown, tube
 
 
 def mapped_nodes(raw, manifest, geo):
@@ -28,7 +28,8 @@ def mapped_nodes(raw, manifest, geo):
     for node in sorted(nodes,key=lambda n:n['id']):
         tags=node['tags']
         kind=('tree' if tags.get('natural')=='tree' else 'lamp' if tags.get('highway')=='street_lamp'
-              else 'bench' if tags.get('amenity')=='bench' else None)
+              else 'bench' if tags.get('amenity')=='bench' else 'bin' if tags.get('amenity')=='waste_basket'
+              else 'bicycle_rack' if tags.get('amenity')=='bicycle_parking' else 'signal' if tags.get('highway')=='traffic_signals' else None)
         if not kind:continue
         point=Point(geo.forward.transform(node['lon'],node['lat']))
         if not geo.extent.covers(point):continue
@@ -49,7 +50,7 @@ def mapped_nodes(raw, manifest, geo):
             source_license='ODbL-1.0',name=tags.get('name',''),tags=tags,kind=kind,
             wgs84_centre=[node['lon'],node['lat']],position_source='osm:mapped_node; not surveyed by this project',
             appearance_source='procedural:authored proxy; actual species/design unverified',
-            height_m=height or (10. if kind=='tree' else 4.5 if kind=='lamp' else .92),
+            height_m=height or dict(tree=10.,lamp=4.5,bench=.92,bin=.95,bicycle_rack=1.1,signal=3.2)[kind],
             height_source='osm:height (unverified tag)' if height else 'estimated:generic street object',
             crown_diameter_m=diameter or 6. if kind=='tree' else None,
             crown_diameter_source='osm:diameter_crown (unverified tag)' if diameter else 'estimated:6m' if kind=='tree' else None,
@@ -58,8 +59,8 @@ def mapped_nodes(raw, manifest, geo):
 
 
 def model_meshes(geo, Mesh):
-    """Five reusable cm prototypes; the renderer builds each static mesh once."""
-    x,y=geo.origin;meshes={k:Mesh(geo) for k in ['tree_trunk','tree_crown','lamp_metal','lamp_glass','bench_wood','bench_metal']}
+    """Shared cm prototypes; the renderer builds each static mesh once."""
+    x,y=geo.origin;meshes={k:Mesh(geo) for k in ['tree_trunk','tree_crown','lamp_metal','lamp_glass','bench_wood','bench_metal','bin_metal','bicycle_metal','bicycle_rubber','signal_metal','signal_lens']}
     cylinder(meshes['tree_trunk'],(x,y),.2,0,4.8,10,.09)
     crown(meshes['tree_crown'],(x,y,7.1),(2.65,2.45,2.9),2)
     crown(meshes['tree_crown'],(x+1.6,y+.3,6.4),(1.6,1.85,2.35),4)
@@ -78,12 +79,36 @@ def model_meshes(geo, Mesh):
     for dx in [-.64,.64]:
         for dy in [-.2,.2]:box(legs,(x+dx,y+dy),(1,0),(0,1),.06,.06,0,.44)
         box(legs,(x+dx,y+.29),(1,0),(0,1),.05,.05,.25,.92)
-    colors=dict(tree_trunk='#64523b',tree_crown='#536a38',lamp_metal='#303c3a',lamp_glass='#d5d7bc',bench_wood='#68533b',bench_metal='#283b34')
+    cylinder(meshes['bin_metal'],(x,y),.23,.06,.85,12,.27)
+    cylinder(meshes['bin_metal'],(x,y),.29,.85,.95,12,.24)
+    # One inferred bicycle and one generic stand per mapped parking point;
+    # neither mapped capacity nor actual occupancy is asserted.
+    metal=meshes['bicycle_metal'];rubber=meshes['bicycle_rubber']
+    for dx in [-.55,.55]:
+        for i in range(24):
+            a,b=i*math.tau/24,(i+1)*math.tau/24
+            tube(rubber,(x+dx+.33*math.cos(a),y,.36+.33*math.sin(a)),(x+dx+.33*math.cos(b),y,.36+.33*math.sin(b)),.027,6)
+        for i in range(8):
+            a=i*math.tau/8
+            tube(metal,(x+dx,y,.35),(x+dx+.31*math.cos(a),y,.35+.31*math.sin(a)),.005,4)
+    frame=[(-.55,.35),(-.12,.78),(.12,.35),(-.55,.35)]
+    for a,b in zip(frame,frame[1:]):tube(metal,(x+a[0],y,a[1]),(x+b[0],y,b[1]),.022)
+    for a,b in [((-.12,.78),(.34,.81)),((.34,.81),(.12,.35)),((.34,.81),(.55,.35)),((-.12,.78),(-.16,.95)),((.34,.81),(.39,1.03))]:
+        tube(metal,(x+a[0],y,a[1]),(x+b[0],y,b[1]),.022)
+    tube(metal,(x+.39,y-.24,1.03),(x+.39,y+.24,1.03),.022)
+    box(rubber,(x-.17,y),(1,0),(0,1),.23,.15,.94,.99)
+    for dx in [-.65,.65]:tube(metal,(x+dx,y+.3,0),(x+dx,y+.3,.72),.035)
+    tube(metal,(x-.65,y+.3,.72),(x+.65,y+.3,.72),.035)
+    cylinder(meshes['signal_metal'],(x,y),.065,0,3.2,10)
+    box(meshes['signal_metal'],(x,y),(1,0),(0,1),.22,.3,2.25,3.16)
+    # Unlit lenses: these proxies do not claim a real signal phase/controller.
+    for z in [2.42,2.7,2.98]:tube(meshes['signal_lens'],(x+.115,y,z),(x+.13,y,z),.09,12)
+    colors=dict(tree_trunk='#64523b',tree_crown='#536a38',lamp_metal='#303c3a',lamp_glass='#d5d7bc',bench_wood='#68533b',bench_metal='#283b34',bin_metal='#3c574c',bicycle_metal='#6c7e84',bicycle_rubber='#24282d',signal_metal='#303b39',signal_lens='#49504a')
     return [m.item(name,'street_model',colors[name],dict(authored_proxy=True)) for name,m in meshes.items()]
 
 
 def generate_street_objects(geo, features, terrain, water, buildings, roads, sidewalks, paths_surface, bridge_decks):
-    batches={name:[] for name in ['tree_trunk','tree_crown','lamp_metal','lamp_glass','bench_wood','bench_metal']}
+    batches={name:[] for name in ['tree_trunk','tree_crown','lamp_metal','lamp_glass','bench_wood','bench_metal','bin_metal','bicycle_metal','bicycle_rubber','signal_metal','signal_lens']}
     rendered=[];skipped=[];by_kind=Counter();source_heights=0
     def line_parts(g):
         if g.geom_type=='LineString':return [g] if g.length>.001 else []
@@ -95,7 +120,9 @@ def generate_street_objects(geo, features, terrain, water, buildings, roads, sid
         reason=None
         if kind=='lamp' and props['tags'].get('lamp_mount') in ['wall','suspended','ceiling']:
             reason='non_pole_mount_needs_custom_asset'
-        footprint=point.buffer(.22 if kind=='tree' else .22 if kind=='lamp' else .95)
+        if kind=='signal' and props['tags'].get('traffic_signals')!='signal':
+            reason='logical_signal_node_not_a_mapped_physical_pole'
+        footprint=point.buffer(.22 if kind in ['tree','lamp','signal'] else .3 if kind=='bin' else .95)
         if footprint.intersects(buildings):reason=reason or 'mapped_point_conflicts_with_building_footprint'
         deck=next((d for d in bridge_decks if d.geometry.covers(point)),None)
         if water and water.covers(point) and deck is None:reason=reason or 'mapped_point_in_water_without_bridge'
@@ -109,10 +136,12 @@ def generate_street_objects(geo, features, terrain, water, buildings, roads, sid
             distance=line.project(point);a=line.interpolate(max(0,distance-.5));b=line.interpolate(min(line.length,distance+.5))
             yaw=math.degrees(math.atan2(-(b.y-a.y),b.x-a.x))
         p={**props,'base_height_ngf_m':round(z+terrain.origin_ngf,3),'base_height_source':'estimated:shared IGN terrain / generated road-deck surface',
-            'yaw_degrees':round(yaw,3),'orientation_road_source_id':nearest_id}
+            'yaw_degrees':round(yaw,3),'orientation_road_source_id':nearest_id,
+            'occupancy_source':'inferred:one proxy bicycle; no observed occupancy' if kind=='bicycle_rack' else None,
+            'signal_state_source':'unlit proxy; no controller or phase observation' if kind=='signal' else None}
         rendered.append(dict(id=props['source_id'],kind='street_'+kind,point_cm=[round(v,3) for v in geo.to_ue(*props['wgs84_centre'],z+terrain.origin_ngf,terrain.origin_ngf)],properties=p))
-        height=props['height_m'];scale=[props['crown_diameter_m']/6,props['crown_diameter_m']/6,height/10] if kind=='tree' else [1.,1.,height/4.5] if kind=='lamp' else [1.,1.,height/.92]
-        names=['tree_trunk','tree_crown'] if kind=='tree' else ['lamp_metal','lamp_glass'] if kind=='lamp' else ['bench_wood','bench_metal']
+        height=props['height_m'];scale=[props['crown_diameter_m']/6,props['crown_diameter_m']/6,height/10] if kind=='tree' else [1.,1.,height/dict(lamp=4.5,bench=.92,bin=.95,bicycle_rack=1.1,signal=3.2)[kind]]
+        names=dict(tree=['tree_trunk','tree_crown'],lamp=['lamp_metal','lamp_glass'],bench=['bench_wood','bench_metal'],bin=['bin_metal'],bicycle_rack=['bicycle_metal','bicycle_rubber'],signal=['signal_metal','signal_lens'])[kind]
         for name in names:
             batches[name].append(dict(source_id=props['source_id'],position_cm=rendered[-1]['point_cm'],yaw_degrees=round(yaw,3),scale=[round(v,5) for v in scale]))
         by_kind[kind]+=1;source_heights+=props['height_source'].startswith('osm:')

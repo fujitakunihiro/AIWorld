@@ -42,7 +42,7 @@ public:
     UStaticMesh* Model(const FString& Name) const;
     const TArray<FParisPedestrian>& People() const { return Agents; }
     const TArray<FParisPedestrianRoute>& Network() const { return Routes; }
-    int32 VisibleCount=0,RecoveryTurns=0;
+    int32 VisibleCount=0,RenderedCount=0,RecoveryTurns=0;
     double TravelledCm=0;
     bool bEnabled=true,bReady=false;
 private:

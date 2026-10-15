@@ -55,13 +55,27 @@ class StreetTests(unittest.TestCase):
 
     def test_authored_prototypes_are_small_valid_and_shared(self):
         models=model_meshes(self.geo,Mesh)
-        self.assertEqual(len(models),6)
+        self.assertEqual(len(models),11)
         for model in models:
             self.assertTrue(model['indices'])
             self.assertEqual(len(model['positions_cm']),len(model['normals']))
             self.assertTrue(all(0<=i<len(model['positions_cm']) for i in model['indices']))
-            self.assertLess(len(model['indices'])//3,500)
+            self.assertLess(len(model['indices'])//3,2500)
             self.assertGreaterEqual(min(p[2] for p in model['positions_cm']),0)
+
+    def test_bikes_bins_and_only_physical_signal_poles_keep_mapped_positions(self):
+        x,y=self.x,self.y
+        kinds=['bicycle_rack','bin','signal','signal']
+        features=[self.feature(f'osm/node/{i+1}',(x+i*5,y),kind) for i,kind in enumerate(kinds)]
+        features[-1]['properties']['tags']={'traffic_signals':'signal'}
+        for f in features:f['properties']['height_m']={'bicycle_rack':1.1,'bin':.95,'signal':3.2}[f['properties']['kind']]
+        batches,picks,report=generate_street_objects(self.geo,features,self.terrain,None,Polygon(),[],None,None,[])
+        self.assertEqual({p['id'] for p in picks},{'osm/node/1','osm/node/2','osm/node/4'})
+        self.assertEqual(report['skipped'],[dict(source_id='osm/node/3',reason='logical_signal_node_not_a_mapped_physical_pole')])
+        bike=next(p for p in picks if p['id']=='osm/node/1')
+        self.assertIn('no observed occupancy',bike['properties']['occupancy_source'])
+        self.assertEqual(bike['point_cm'][:2],[0.,0.])
+        self.assertEqual({b['model'] for b in batches},{'bicycle_metal','bicycle_rubber','bin_metal','signal_metal','signal_lens'})
 
     def test_clipped_roads_with_point_fragments_can_orient_benches(self):
         x,y=self.x,self.y

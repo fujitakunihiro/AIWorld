@@ -2,6 +2,8 @@
 #include "ParisStreetMeshes.h"
 #include "ParisWalker.h"
 #include "ParisPedestrians.h"
+#include "ParisTraffic.h"
+#include "TimerManager.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WorldProtocol.h"
@@ -74,6 +76,8 @@ static FString FeatureText(const TSharedPtr<FJsonObject>& J) {
     }
     else if(P.IsValid()&&P->HasField(TEXT("width_m")))Text+=FString::Printf(TEXT(" / width %.2fm\n%s"),Number(P,TEXT("width_m")),*String(P,TEXT("width_source")));
     else if(P.IsValid()&&P->HasField(TEXT("water_level_ngf_m")))Text+=FString::Printf(TEXT("\nWater level estimate NGF %.2fm | %s"),Number(P,TEXT("water_level_ngf_m")),*String(P,TEXT("water_level_source")));
+    if(!String(P,TEXT("occupancy_source")).IsEmpty())Text+=TEXT("\n")+String(P,TEXT("occupancy_source"));
+    if(!String(P,TEXT("signal_state_source")).IsEmpty())Text+=TEXT("\n")+String(P,TEXT("signal_state_source"));
     Text+=TEXT("\n")+String(P,TEXT("source_url"));return Text;
 }
 
@@ -114,6 +118,8 @@ void AParisTwinController::SetupInputComponent() {
     InputComponent->BindKey(EKeys::F8,IE_Pressed,this,&AParisTwinController::Walk);
     InputComponent->BindKey(EKeys::V,IE_Pressed,this,&AParisTwinController::ToggleWalkView);
     InputComponent->BindKey(EKeys::P,IE_Pressed,this,&AParisTwinController::TogglePeople);
+    InputComponent->BindKey(EKeys::T,IE_Pressed,this,&AParisTwinController::ToggleTraffic);
+    InputComponent->BindKey(EKeys::C,IE_Pressed,this,&AParisTwinController::InspectTraffic);
     InputComponent->BindKey(EKeys::H,IE_Pressed,this,&AParisTwinController::ToggleHelp);
     InputComponent->BindKey(EKeys::One,IE_Pressed,this,&AParisTwinController::LandmarkOne);
     InputComponent->BindKey(EKeys::Two,IE_Pressed,this,&AParisTwinController::LandmarkTwo);
@@ -156,6 +162,34 @@ bool AParisTwinController::EnterWalk(bool ThirdPerson){
 void AParisTwinController::Walk(){if(Cast<AParisWalker>(GetPawn()))Walker->ToggleView();else EnterWalk(false);}
 void AParisTwinController::ToggleWalkView(){if(Cast<AParisWalker>(GetPawn()))Walker->ToggleView();else EnterWalk(true);}
 void AParisTwinController::TogglePeople(){if(auto S=Twin(GetWorld()))S->TogglePeople();}
+void AParisTwinController::ToggleTraffic(){if(auto S=Twin(GetWorld()))S->ToggleTraffic();}
+void AParisTwinController::InspectTraffic(){
+    auto S=Twin(GetWorld());if(!S||!S->Traffic)return;ReturnToFree();auto C=Cast<AParisTwinCamera>(GetPawn());if(!C)return;
+    const FParisVehicle* Best=nullptr;double Distance=TNumericLimits<double>::Max();
+    for(const auto& A:S->Traffic->Vehicles())if(A.bActive){const double D=FVector::DistSquared2D(A.Position,S->QualityCentre);if(D<Distance){Distance=D;Best=&A;}}
+    if(!Best)return;
+    const FVector Forward=FRotator(0,Best->Yaw,0).Vector();
+    FCollisionQueryParams Params;Params.AddIgnoredActor(S->Traffic);if(S->Crowd)Params.AddIgnoredActor(S->Crowd);if(Walker)Params.AddIgnoredActor(Walker);
+    for(double CameraOffset:{800.,600.,1000.,500.,1200.,-700.}){
+        FVector Centre;if(!S->FindWalkingSpawn(Best->Position-Forward*CameraOffset,Centre))continue;
+        const FVector Eye=Centre+FVector(0,0,82),Target=Best->Position+FVector(0,0,90);bool Occupied=false;
+        for(const auto& Other:S->Traffic->Vehicles())if(Other.bActive&&FVector::DistSquared2D(Eye,Other.Position)<400*400){Occupied=true;break;}
+        if(Occupied)continue;FHitResult Blocker;if(GetWorld()->LineTraceSingleByChannel(Blocker,Eye,Target,ECC_Visibility,Params))continue;
+        C->Eye(Centre-FVector(0,0,88));const FRotator Look=(Target-Eye).Rotation();C->Yaw=Look.Yaw;C->Pitch=Look.Pitch;return;
+    }
+    // Clear overhead fallback; never put an unchecked orbit inside a facade.
+    C->Focus(Best->Position,10000);C->Yaw=Best->Yaw;C->Pitch=80;
+}
+
+// Collision cooks asynchronously. CLI inspection must wait for walkable
+// geometry; the interactive C key already runs after the world is ready.
+static void ParisInitialTrafficView(AParisTwinScene* Scene,int32 Attempts){
+    if(!IsValid(Scene)||!Scene->GetWorld())return;
+    auto PC=Cast<AParisTwinController>(Scene->GetWorld()->GetFirstPlayerController());
+    if(PC){PC->InspectTraffic();if(auto Camera=Cast<AParisTwinCamera>(PC->GetPawn()))if(Camera->bEye)return;}
+    if(Attempts<=1)return;FTimerHandle Retry;
+    Scene->GetWorld()->GetTimerManager().SetTimer(Retry,FTimerDelegate::CreateWeakLambda(Scene,[Scene,Attempts](){ParisInitialTrafficView(Scene,Attempts-1);}),.5,false);
+}
 
 AParisTwinScene::AParisTwinScene(){PrimaryActorTick.bCanEverTick=true;RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("GISRoot"));}
 void AParisTwinScene::BeginPlay() {
@@ -213,7 +247,7 @@ void AParisTwinScene::BeginPlay() {
     TMap<FString,UStaticMesh*> Models;TMap<FString,int32> ModelTriangles;
     auto CrownMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisFoliage.M_ParisFoliage"));
     for(const auto& Value:Array(Data,TEXT("instance_models"))){auto Model=Value->AsObject();const FString Name=String(Model,TEXT("id"));
-        UMaterialInterface* Mat=Name==TEXT("tree_crown")?CrownMaterial:Name.Contains(TEXT("metal"))?IronMaterial.Get():Name==TEXT("lamp_glass")?GlassMaterial.Get():WoodMaterial.Get();
+        UMaterialInterface* Mat=Name==TEXT("tree_crown")?CrownMaterial:Name.Contains(TEXT("metal"))?IronMaterial.Get():(Name==TEXT("lamp_glass")||Name==TEXT("signal_lens"))?GlassMaterial.Get():Name==TEXT("bicycle_rubber")?LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisCloth.M_ParisCloth")):WoodMaterial.Get();
         auto Mesh=BuildParisStreetMesh(this,Model,Mat?Mat:VertexMaterial.Get());if(!Mesh){Status=TEXT("街路設備モデルが不正です");return;}Models.Add(Name,Mesh);StreetModels.Add(Mesh);ModelTriangles.Add(Name,Array(Model,TEXT("indices")).Num()/3);
     }
     for(const auto& Value:Array(Data,TEXT("instance_batches"))){auto Batch=Value->AsObject();const FString Name=String(Batch,TEXT("model"));auto Model=Models.Find(Name);if(!Model){Status=TEXT("街路設備モデルがありません");return;}
@@ -226,6 +260,8 @@ void AParisTwinScene::BeginPlay() {
     }
     for(const auto& F:SourceFeatures)StreetCount+=String(F,TEXT("kind")).StartsWith(TEXT("street_"))?1:0;
     Crowd=GetWorld()->SpawnActor<AParisPedestrianCrowd>();if(!Crowd->Initialize(Object(Data,TEXT("pedestrians")))){Status=TEXT("歩行者データか材質が不正です。再生成とビルドを実行してください。");return;}
+    Traffic=GetWorld()->SpawnActor<AParisTraffic>();if(!Traffic->Initialize(Object(Data,TEXT("traffic")))){Status=TEXT("車両データか材質が不正です。再生成とビルドを実行してください。");return;}Traffic->Crowd=Crowd;
+    bTraffic=!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoTraffic"));
     bPeople=!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoPeople"));
     FParse::Value(FCommandLine::Get(),TEXT("ParisTwinQuality="),DetailQuality);DetailQuality=FMath::Clamp(DetailQuality,0,2);
     bStreetDetails=!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoStreetDetails"));ApplyDetailQuality();
@@ -241,6 +277,7 @@ void AParisTwinScene::BeginPlay() {
     int32 Landmark=0;if(FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),Landmark)&&Landmark>=1&&Landmark<=3)FocusLandmark(Landmark-1);
     if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFootprints")))ToggleFootprints();
     if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinIssues")))ToggleIssues();
+    if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinTrafficView"))){FTimerHandle Launch;GetWorld()->GetTimerManager().SetTimer(Launch,FTimerDelegate::CreateWeakLambda(this,[this](){ParisInitialTrafficView(this,20);}),.5,false);}
     bReady=true;ReadyAt=FPlatformTime::Seconds();Status=FString::Printf(TEXT("実データ地区: %d棟 / %d triangles / EPSG:2154 / 1m=100cm"),BuildingCount,TriangleCount);
     bWalkLaunchPending=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinWalk"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinThirdPerson"));
     UE_LOG(LogTemp,Display,TEXT("PARIS_TWIN_READY buildings=%d triangles=%d extent=%.0fm world_partition=%d"),BuildingCount,TriangleCount,Extent,GetWorld()->GetWorldPartition()!=nullptr);
@@ -261,7 +298,8 @@ void AParisTwinScene::SelectHit(const FHitResult& Hit) {
     else if(StreetInstanceIDs.Contains(Hit.GetComponent()))Source=StreetInstanceSource(Hit.GetComponent(),Hit.Item);
     else if(Found){const auto J=*Found;auto P=Object(J,TEXT("properties"));const FString Kind=String(J,TEXT("kind"));const FString SourceKind=Kind==TEXT("roof")||Kind.StartsWith(TEXT("facade_"))?TEXT("building"):Kind==TEXT("quay")?TEXT("water"):Kind;if(!String(P,TEXT("source_id")).IsEmpty())Source=J;else Source=SourceAt(Hit.ImpactPoint,SourceKind,Array(P,TEXT("source_ids")));if(!Source&&Kind.StartsWith(TEXT("facade_")))Source=SourceAt(Hit.ImpactPoint-Hit.ImpactNormal*15,TEXT("building"),Array(P,TEXT("source_ids")));}
     const FString Person=Crowd&&Hit.GetActor()==Crowd?Crowd->DescribeHit(Hit.GetComponent(),Hit.Item):TEXT("");
-    Selection=!Person.IsEmpty()?Person:Source?FeatureText(Source):TEXT("Geographic inspection point");
+    const FString Car=Traffic&&Hit.GetActor()==Traffic?Traffic->DescribeHit(Hit.GetComponent(),Hit.Item):TEXT("");
+    Selection=!Car.IsEmpty()?Car:!Person.IsEmpty()?Person:Source?FeatureText(Source):TEXT("Geographic inspection point");
     const auto LL=GeoReference.WGS84FromUE(Hit.ImpactPoint),EN=GeoReference.ProjectedFromUE(Hit.ImpactPoint);
     Selection+=FString::Printf(TEXT("\nCLICK WGS84 lon %.7f / lat %.7f | EPSG:2154 %.3f, %.3fm\nUE %.1f, %.1f, %.1fcm | NGF-IGN69 %.3fm (shared origin %.2fm)"),LL.X,LL.Y,EN.X,EN.Y,Hit.ImpactPoint.X,Hit.ImpactPoint.Y,Hit.ImpactPoint.Z,GeoReference.NGFFromUE(Hit.ImpactPoint),GeoReference.OriginElevationNGF);
 }
@@ -272,10 +310,12 @@ TSharedPtr<FJsonObject> AParisTwinScene::StreetInstanceSource(UPrimitiveComponen
 void AParisTwinScene::ToggleStreetDetails(){bStreetDetails=!bStreetDetails;ApplyDetailQuality();}
 void AParisTwinScene::CycleDetailQuality(){DetailQuality=(DetailQuality+1)%3;ApplyDetailQuality();}
 void AParisTwinScene::TogglePeople(){bPeople=!bPeople;ApplyDetailQuality();}
+void AParisTwinScene::ToggleTraffic(){bTraffic=!bTraffic;ApplyDetailQuality();}
 void AParisTwinScene::ApplyDetailQuality(){
     for(auto& Pair:Features){const FString Kind=String(Pair.Value,TEXT("kind"));if(Kind.StartsWith(TEXT("facade_"))){const double Base=Number(Object(Pair.Value,TEXT("properties")),TEXT("render_distance_m"),300);Pair.Key->SetCullDistance(Base*(DetailQuality==0?.5:DetailQuality==2?1.7:1.)*100);}}
     for(auto HISM:StreetMeshes){const bool Tree=StreetModelNames[HISM].StartsWith(TEXT("tree_"));const int32 Distance=Tree?(DetailQuality==0?90000:DetailQuality==1?120000:180000):(DetailQuality==0?12000:DetailQuality==1?25000:45000);HISM->SetCullDistances(Distance*.8,Distance);HISM->SetVisibility(bStreetDetails&&!bFootprints);HISM->SetCollisionEnabled(bStreetDetails&&!bFootprints?(StreetModelNames[HISM]==TEXT("tree_crown")?ECollisionEnabled::QueryOnly:ECollisionEnabled::QueryAndPhysics):ECollisionEnabled::NoCollision);}
     if(Crowd)Crowd->SetDisplay(bPeople&&!bFootprints,DetailQuality);
+    if(Traffic)Traffic->SetDisplay(bTraffic&&!bFootprints,DetailQuality);
 }
 bool AParisTwinScene::FindWalkingSpawn(const FVector& Desired,FVector& Centre) const {
     FCollisionQueryParams Params;Params.AddIgnoredActor(GetWorld()->GetFirstPlayerController()->GetPawn());
@@ -319,18 +359,18 @@ void AParisTwinScene::Tick(float Delta) {
     if(bIssues)for(const auto& Issue:Issues)for(const auto& Line:Array(Issue,TEXT("polylines_cm"))){const auto& Points=Line->AsArray();for(int32 I=1;I<Points.Num();I++){FVector A,B;if(Vector(Points[I-1],A)&&Vector(Points[I],B))DrawDebugLine(GetWorld(),A,B,String(Issue,TEXT("kind"))==TEXT("building_overlap")?FColor(235,65,92):FColor(245,161,46),false,-1,0,2);}}
     if(!bCaptured&&Age>8&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinCapture"))){bCaptured=true;Capture();}
     double Duration=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinBenchmark="),Duration);
-    if(Duration>0&&Age>5&&!bMeasured){FrameTimes.Add(Delta*1000.);if(Age>=5+Duration){bMeasured=true;double Sum=0;for(double T:FrameTimes)Sum+=T;FrameTimes.Sort();auto J=MakeShared<FJsonObject>();J->SetNumberField(TEXT("fps"),FrameTimes.Num()*1000/FMath::Max(Sum,1.));J->SetNumberField(TEXT("frame_p95_ms"),FrameTimes[FMath::Clamp(FMath::CeilToInt(FrameTimes.Num()*.95)-1,0,FrameTimes.Num()-1)]);J->SetNumberField(TEXT("frames"),FrameTimes.Num());J->SetNumberField(TEXT("buildings"),BuildingCount);J->SetNumberField(TEXT("triangles"),TriangleCount);J->SetNumberField(TEXT("mesh_components"),Meshes.Num());J->SetNumberField(TEXT("instance_components"),StreetMeshes.Num());J->SetNumberField(TEXT("street_objects"),StreetCount);J->SetNumberField(TEXT("instances"),InstanceCount);J->SetNumberField(TEXT("instance_triangles_before_culling"),InstanceTriangles);J->SetNumberField(TEXT("detail_quality"),DetailQuality);J->SetNumberField(TEXT("pedestrians_total"),Crowd?Crowd->People().Num():0);J->SetNumberField(TEXT("pedestrians_visible_budget"),Crowd?Crowd->VisibleCount:0);J->SetNumberField(TEXT("pedestrian_distance_travelled_m"),Crowd?Crowd->TravelledCm/100:0);J->SetBoolField(TEXT("people_enabled"),bPeople);auto Walker=Cast<AParisWalker>(GetWorld()->GetFirstPlayerController()->GetPawn());J->SetBoolField(TEXT("walking"),Walker!=nullptr);J->SetBoolField(TEXT("third_person"),Walker&&Walker->bThirdPerson);J->SetBoolField(TEXT("street_details"),bStreetDetails);J->SetBoolField(TEXT("shadows_disabled"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));FVector2D Size;GEngine->GameViewport->GetViewportSize(Size);J->SetNumberField(TEXT("viewport_width"),Size.X);J->SetNumberField(TEXT("viewport_height"),Size.Y);J->SetStringField(TEXT("rhi"),TEXT("DX11 preview; no Nanite/Lumen claim"));int32 LandmarkIndex=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),LandmarkIndex);J->SetNumberField(TEXT("landmark_index"),LandmarkIndex);J->SetBoolField(TEXT("footprints"),bFootprints);J->SetStringField(TEXT("view"),Walker?(Walker->bThirdPerson?TEXT("walk_third"):TEXT("walk_first")):LandmarkIndex>0?TEXT("landmark"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))?TEXT("eye_1.7m"):TEXT("overview"));FString Output;FJsonSerializer::Serialize(J,TJsonWriterFactory<>::Create(&Output));FFileHelper::SaveStringToFile(Output,*(FPaths::ProjectSavedDir()/TEXT("paris-twin-performance.json")));UE_LOG(LogTemp,Display,TEXT("PARIS_TWIN_BENCHMARK %s"),*Output);if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinExit")))FPlatformMisc::RequestExit(false);}}
+    if(Duration>0&&Age>5&&!bMeasured){FrameTimes.Add(Delta*1000.);if(Age>=5+Duration){bMeasured=true;double Sum=0;for(double T:FrameTimes)Sum+=T;FrameTimes.Sort();auto J=MakeShared<FJsonObject>();J->SetNumberField(TEXT("fps"),FrameTimes.Num()*1000/FMath::Max(Sum,1.));J->SetNumberField(TEXT("frame_p95_ms"),FrameTimes[FMath::Clamp(FMath::CeilToInt(FrameTimes.Num()*.95)-1,0,FrameTimes.Num()-1)]);J->SetNumberField(TEXT("frames"),FrameTimes.Num());J->SetNumberField(TEXT("buildings"),BuildingCount);J->SetNumberField(TEXT("triangles"),TriangleCount);J->SetNumberField(TEXT("mesh_components"),Meshes.Num());J->SetNumberField(TEXT("instance_components"),StreetMeshes.Num());J->SetNumberField(TEXT("street_objects"),StreetCount);J->SetNumberField(TEXT("instances"),InstanceCount);J->SetNumberField(TEXT("instance_triangles_before_culling"),InstanceTriangles);J->SetNumberField(TEXT("detail_quality"),DetailQuality);J->SetNumberField(TEXT("pedestrians_total"),Crowd?Crowd->People().Num():0);J->SetNumberField(TEXT("pedestrians_visible_budget"),Crowd?Crowd->VisibleCount:0);J->SetNumberField(TEXT("pedestrian_distance_travelled_m"),Crowd?Crowd->TravelledCm/100:0);J->SetBoolField(TEXT("people_enabled"),bPeople);J->SetNumberField(TEXT("pedestrians_instanced_now"),Crowd?Crowd->RenderedCount:0);J->SetNumberField(TEXT("vehicles_instanced_now"),Traffic?Traffic->RenderedCount:0);J->SetNumberField(TEXT("vehicles_total"),Traffic?Traffic->Vehicles().Num():0);J->SetNumberField(TEXT("vehicle_visible_budget"),Traffic?Traffic->VisibleBudget:0);J->SetNumberField(TEXT("vehicle_distance_travelled_m"),Traffic?Traffic->TravelledCm/100:0);J->SetNumberField(TEXT("vehicle_recycles"),Traffic?Traffic->Recycles:0);J->SetNumberField(TEXT("vehicle_yield_steps"),Traffic?Traffic->YieldSteps:0);J->SetBoolField(TEXT("traffic_enabled"),bTraffic);auto Walker=Cast<AParisWalker>(GetWorld()->GetFirstPlayerController()->GetPawn());J->SetBoolField(TEXT("walking"),Walker!=nullptr);auto Camera=Cast<AParisTwinCamera>(GetWorld()->GetFirstPlayerController()->GetPawn());J->SetBoolField(TEXT("camera_eye"),Camera&&Camera->bEye);J->SetNumberField(TEXT("camera_pitch_degrees"),Camera?Camera->Pitch:0);J->SetNumberField(TEXT("camera_elevation_ngf_m"),Camera?GeoReference.NGFFromUE(Camera->Target):0);J->SetBoolField(TEXT("third_person"),Walker&&Walker->bThirdPerson);J->SetBoolField(TEXT("street_details"),bStreetDetails);J->SetBoolField(TEXT("shadows_disabled"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));FVector2D Size;GEngine->GameViewport->GetViewportSize(Size);J->SetNumberField(TEXT("viewport_width"),Size.X);J->SetNumberField(TEXT("viewport_height"),Size.Y);J->SetStringField(TEXT("rhi"),TEXT("DX11 preview; no Nanite/Lumen claim"));int32 LandmarkIndex=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),LandmarkIndex);J->SetNumberField(TEXT("landmark_index"),LandmarkIndex);J->SetBoolField(TEXT("footprints"),bFootprints);J->SetStringField(TEXT("view"),Walker?(Walker->bThirdPerson?TEXT("walk_third"):TEXT("walk_first")):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinTrafficView"))?TEXT("traffic_inspection"):LandmarkIndex>0?TEXT("landmark"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))?TEXT("eye_1.7m"):TEXT("overview"));FString Output;FJsonSerializer::Serialize(J,TJsonWriterFactory<>::Create(&Output));FFileHelper::SaveStringToFile(Output,*(FPaths::ProjectSavedDir()/TEXT("paris-twin-performance.json")));UE_LOG(LogTemp,Display,TEXT("PARIS_TWIN_BENCHMARK %s"),*Output);if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinExit")))FPlatformMisc::RequestExit(false);}}
 }
 struct FParisButton{int32 Action;FString Label;FVector2D Position,Size;};
 static TArray<FParisButton> ParisButtons(float Width,bool Help=false) {
-    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("Help [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Walk [F8]"),TEXT("View [V]"),TEXT("People [P]")};
-    TArray<int32> Order={0,1,10,11,12,8,9,4,5,6,7};if(Help){Order.Add(2);Order.Add(3);}
+    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("Help [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Walk [F8]"),TEXT("View [V]"),TEXT("People [P]"),TEXT("Traffic [T]")};
+    TArray<int32> Order={0,1,10,11,12,8,9,4,5,6,7};if(Help){Order.Add(2);Order.Add(3);Order.Add(13);}
     TArray<FParisButton> Result;float X=16,Y=36;
     for(int32 I:Order){const float W=Labels[I].Len()*7.f+18;if(X+W>Width-16&&X>16){X=16;Y+=34;}Result.Add({I,Labels[I],FVector2D(X,Y),FVector2D(W,28)});X+=W+5;}return Result;
 }
 bool AParisTwinHUD::HandleClick(const FVector2D& P) {
     if(!Canvas)return false;auto C=Cast<AParisTwinController>(PlayerOwner);if(!C)return false;
-    for(const auto& B:ParisButtons(Canvas->SizeX,bHelp))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;case 7:C->ToggleHelp();break;case 8:C->ToggleStreetDetails();break;case 9:C->CycleDetailQuality();break;case 10:C->Walk();break;case 11:C->ToggleWalkView();break;default:C->TogglePeople();break;}return true;}
+    for(const auto& B:ParisButtons(Canvas->SizeX,bHelp))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;case 7:C->ToggleHelp();break;case 8:C->ToggleStreetDetails();break;case 9:C->CycleDetailQuality();break;case 10:C->Walk();break;case 11:C->ToggleWalkView();break;case 12:C->TogglePeople();break;default:C->ToggleTraffic();break;}return true;}
     return P.Y<ParisButtons(Canvas->SizeX,bHelp).Last().Position.Y+38;
 }
 void AParisTwinHUD::DrawHUD() {
@@ -338,14 +378,14 @@ void AParisTwinHUD::DrawHUD() {
     auto Text=[this](const FString& Message,float X,float Y,float Scale=1.f){Canvas->SetDrawColor(FColor::White);Canvas->DrawText(GEngine->GetSmallFont(),Message,X,Y,Scale,Scale,FFontRenderInfo());};
     const auto Buttons=ParisButtons(Canvas->SizeX,bHelp);const float Bottom=Buttons.Last().Position.Y+38;
     DrawRect(FLinearColor(.015f,.02f,.03f,.88f),8,8,Canvas->SizeX-16,Bottom-8);
-    Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | %d buildings | %d mapped street objects | %d simulated people | Quality: %s"),S->BuildingCount,S->StreetCount,S->Crowd?S->Crowd->People().Num():0,S->DetailQuality==0?TEXT("LOW"):S->DetailQuality==1?TEXT("MEDIUM"):TEXT("HIGH")),16,15,1.05f);
-    for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp)||(B.Action==8&&S->bStreetDetails)||(B.Action==10&&Cast<AParisWalker>(PlayerOwner->GetPawn()))||(B.Action==12&&S->bPeople);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
-    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(720.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("WASD: move | F8: walk with gravity | V: first/third person | Shift: run | F2: overview"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("F1: building accuracy | F4/F5: issues/footprints | F9: screenshot | P: simulated people"),16,Bottom+84);}
+    Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | %d buildings | %d mapped props | %d people + %d cars (simulated) | %s"),S->BuildingCount,S->StreetCount,S->Crowd?S->Crowd->People().Num():0,S->Traffic?S->Traffic->Vehicles().Num():0,S->DetailQuality==0?TEXT("LOW"):S->DetailQuality==1?TEXT("MEDIUM"):TEXT("HIGH")),16,15,1.05f);
+    for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp)||(B.Action==8&&S->bStreetDetails)||(B.Action==10&&Cast<AParisWalker>(PlayerOwner->GetPawn()))||(B.Action==12&&S->bPeople)||(B.Action==13&&S->bTraffic);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
+    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(720.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("WASD: move | F8: walk with gravity | V: first/third person | Shift: run | F2: overview"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("F1: building accuracy | F4/F5: issues/footprints | F9: shot | P/T: people/cars | C: car view"),16,Bottom+84);}
     if(S->bIssues){DrawRect(FLinearColor(.07f,.025f,.01f,.88f),8,Bottom+(bHelp?126:4),FMath::Min(720.f,float(Canvas->SizeX-16)),42);Text(S->IssueSummary,16,Bottom+(bHelp?134:12));Text(TEXT("Red: source overlap | Orange: separate road paths (review; not automatically errors)"),16,Bottom+(bHelp?152:30));}
     if(!S->Selection.IsEmpty()){TArray<FString> Lines;S->Selection.ParseIntoArrayLines(Lines);const float Height=Lines.Num()*19+16,Y=Canvas->SizeY-50-Height;DrawRect(FLinearColor(.015f,.02f,.03f,.9f),8,Y,Canvas->SizeX-16,Height);for(int32 I=0;I<Lines.Num();I++)Text(Lines[I],16,Y+8+I*19);}
     DrawRect(FLinearColor(.015f,.02f,.03f,.85f),8,Canvas->SizeY-48,Canvas->SizeX-16,44);
     const auto Walker=Cast<AParisWalker>(PlayerOwner->GetPawn());
-    const FString Movement=Walker?(Walker->bThirdPerson?TEXT("THIRD PERSON | "):TEXT("FIRST PERSON 1.7m | "))+FString(TEXT("WASD walk | Shift run | Right-drag look | V view | F2 overview")):TEXT("Right-drag: look | WASD: fly | F8: walk with gravity | V: third person | P: simulated people");
+    const FString Movement=Walker?(Walker->bThirdPerson?TEXT("THIRD PERSON | "):TEXT("FIRST PERSON 1.7m | "))+FString(TEXT("WASD walk | Shift run | Right-drag look | V view | F2 overview")):TEXT("Right-drag: look | WASD: fly | F8: walk with gravity | V: third person | P/T: people/cars | C: car view");
     Text(Movement,16,Canvas->SizeY-42);
     Text(TEXT("OpenStreetMap contributors / Ville de Paris (ODbL) | IGN BD TOPO / RGE ALTI (Etalab 2.0)"),16,Canvas->SizeY-22,.85f);
 }

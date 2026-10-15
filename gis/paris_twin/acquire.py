@@ -122,6 +122,7 @@ way["highway"]({bbox});way["natural"="water"]({bbox});relation["natural"="water"
 way["waterway"="riverbank"]({bbox});relation["waterway"="riverbank"]({bbox});
 way["leisure"~"park|garden"]({bbox});way["place"="square"]({bbox});
 node["natural"="tree"]({bbox});node["highway"="street_lamp"]({bbox});node["amenity"="bench"]({bbox});
+node["amenity"="bicycle_parking"]({bbox});node["amenity"="waste_basket"]({bbox});node["highway"="traffic_signals"]({bbox});
 );out geom;'''
     files = {}
     def save(name, data, source, license_name, license_url, extra=None):

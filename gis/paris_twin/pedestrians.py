@@ -43,7 +43,7 @@ def generate_routes(geo,roads,terrain,water,buildings,sidewalks,paths_surface,br
     obstacles=[]
     for feature in street_features:
         props=feature['properties'];point=Point(geo.forward.transform(*props['wgs84_centre']))
-        radius=1.25 if props['kind']=='bench' else max(.6,.2*(props.get('crown_diameter_m') or 6)/6+.38) if props['kind']=='tree' else .6
+        radius=1.35 if props['kind'] in ['bench','bicycle_rack'] else .8 if props['kind']=='bin' else max(.6,.2*(props.get('crown_diameter_m') or 6)/6+.38) if props['kind']=='tree' else .6
         obstacles.append(point.buffer(radius))
     safe=walking.buffer(-.38).difference(buildings.buffer(.5)).difference(unary_union(obstacles))
     routes=[]

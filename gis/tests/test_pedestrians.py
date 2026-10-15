@@ -67,6 +67,15 @@ class PedestrianTests(unittest.TestCase):
         head=next(m for m in models if m['id']=='person_head')
         self.assertEqual(max(p[2] for p in head['positions_cm']),26)
 
+    def test_new_bin_and_bicycle_proxies_leave_room_for_people(self):
+        x,y=self.x,self.y;line=LineString([(x,y),(x+120,y)])
+        furniture=[dict(properties=dict(kind=kind,wgs84_centre=list(self.geo.inverse.transform(x+dx,y)))) for kind,dx in [('bin',35),('bicycle_rack',80)]]
+        _,network=generate_routes(self.geo,[self.road('osm/way/1',line)],self.terrain,None,Polygon(),None,line.buffer(2),[],furniture)
+        self.assertEqual(validate_network(network,{'osm/way/1'}),[])
+        for route in network['routes']:
+            self.assertGreaterEqual(shape(route['geometry']).distance(Point(x+35,y)),.79)
+            self.assertGreaterEqual(shape(route['geometry']).distance(Point(x+80,y)),1.34)
+
     def test_multipart_road_keeps_distinct_reproducible_route_ids(self):
         x,y=self.x,self.y
         lines=[LineString([(x,y),(x+30,y)]),LineString([(x,y+15),(x+30,y+15)])]

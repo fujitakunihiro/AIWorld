@@ -1,6 +1,6 @@
 # PROJECT PARIS DIGITAL TWIN — Phase 0 / 1
 
-最新の実装と検証結果は [Phase 6・散策と歩行者の報告書](paris-digital-twin-phase6.md) を参照してください。[Phase 5続き・Phase 6静的設備](paris-digital-twin-phase56.md)、[Phase 4・5基盤](paris-digital-twin-phase45.md)、[Phase 3報告書](paris-digital-twin-phase3.md)、[Phase 2報告書](paris-digital-twin-phase2.md) と以下は各段階の完了時の記録です。
+最新の実装と検証結果は [車両・街路設備・表示予算の報告書](paris-digital-twin-phase67.md) を参照してください。[Phase 6・散策と歩行者](paris-digital-twin-phase6.md)、[Phase 5続き・Phase 6静的設備](paris-digital-twin-phase56.md)、[Phase 4・5基盤](paris-digital-twin-phase45.md)、[Phase 3報告書](paris-digital-twin-phase3.md)、[Phase 2報告書](paris-digital-twin-phase2.md) と以下は各段階の完了時の記録です。
 
 旧箱庭と独立した実地理モードを追加しました。都市配置はOSMの実輪郭・道路中心線・セーヌ川ポリゴンから生成します。現時点のUE表示は地理とデータ契約を検証するL1の簡易柱状メッシュで、写真品質の完成品ではありません。
 

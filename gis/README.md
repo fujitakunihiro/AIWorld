@@ -2,7 +2,7 @@
 
 Python 3.12で動作する実データ取得・正規化・検証・UEプレビュー出力です。住民AIやSQLiteを変更しません。取得と生成を分離し、`Data/Raw` の固定スナップショットだけで再生成できます。
 
-最新は[Phase 6・散策と歩行者](../docs/paris-digital-twin-phase6.md)です。NGF原点35.38mと既存の建物・装飾・街路設備を保持し、現実スケールの一人称/三人称散策とGIS由来の経路を歩く160人のシミュレーションを追加しました。人数・人物・外観は推定であり、建物全体の再現レベルはL1を維持します。
+最新は[車両・街路設備・表示予算](../docs/paris-digital-twin-phase67.md)です。40台の推定車両と地図上の自転車置き場・ごみ箱・信号柱を追加。NGF原点35.38mと既存の建物・装飾・街路設備を保持し、現実スケールの一人称/三人称散策とGIS由来の経路を歩く160人のシミュレーションを追加しました。人数・人物・外観は推定であり、建物全体の再現レベルはL1を維持します。
 
 ```powershell
 py -3.12 -m venv gis/.venv
@@ -55,7 +55,7 @@ Phase 5の `facades.py` は元の建物IDを保持して壁を100mごとにま�
 
 Phase 5続きでは隣接建物で塞がれる壁の窓を省略し、推定入口・バルコニー・コーニス・屋根窓を追加しました。元ID・輪郭・高さ・L1/L2の区別は維持します。薄い鉄柵は両面の面形状を用いた描画用代理モデルです。
 
-Phase 6の `street_furniture.py` は、既存の `osm-map.xml.gz` から街路設備ノードを読み取ります。Overpassを使う新規取得では `osm.json` のノードを使用します。新しい取得は不要です。点を黙って移動せず、建物との干渉・河川上の橋なし・壁付け灯などを `Generated/street-placement.json` に理由付きで保存します。UEでは6つの自作StaticMeshをHISMで使い回し、クリックしたインスタンスから元ノード・座標・推定寸法を確認できます。F6で設備表示、F7で低・中・高の描画距離を切り替えます。`Start-ParisDigitalTwin.ps1 -Quality Low` でも設定できます。
+Phase 6の `street_furniture.py` は、既存の `osm-map.xml.gz` から街路設備ノードを読み取ります。Overpassを使う新規取得では `osm.json` のノードを使用します。新しい取得は不要です。点を黙って移動せず、建物との干渉・河川上の橋なし・壁付け灯などを `Generated/street-placement.json` に理由付きで保存します。UEでは11種の自作StaticMeshをHISMで使い回し、クリックしたインスタンスから元ノード・座標・推定寸法を確認できます。F6で設備表示、F7で低・中・高の描画距離を切り替えます。`Start-ParisDigitalTwin.ps1 -Quality Low` でも設定できます。
 
 再計測は `Measure-ParisDigitalTwin.ps1 -View Overview` または `-View Street`。事前に生成とビルドを済ませてください。隠した補助プロセスでDX11のオフスクリーン描画を測定し、JSONと画像をdocsへ保存します。ウィンドウ表示時の計測とは条件が異なるため、以前のFPSとの厳密な比較には使いません。
 
@@ -75,3 +75,5 @@ Phase 6の `street_furniture.py` は、既存の `osm-map.xml.gz` から街路�
 | certifi | 2025.10.5 | pyprojの依存 | MPL-2.0 / https://pypi.org/project/certifi/2025.10.5/ |
 
 osmnx・GeoPandas・rasterio・trimeshは今回は導入していません。取得と小地区のベクトル処理を最小の構成で実装しました。DEMラスタと広域GISを扱うPhaseで追加・固定します。
+
+`traffic.py` は元道路から方向・通行制限を解釈し、車体全体が道路内に収まる独立経路を生成します。`Generated/traffic-network.json` の安全領域と元道路IDを自動検証し、車両・交通量・駐輪の占有状態が推定であることを記録します。人物と車両のシミュレーション数は描画予算から独立しています。

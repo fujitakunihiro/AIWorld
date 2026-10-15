@@ -1,6 +1,7 @@
 #include "ParisPedestrians.h"
 #include "ParisStreetMeshes.h"
 #include "ParisWalker.h"
+#include "Camera/PlayerCameraManager.h"
 #include "WorldProtocol.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -51,7 +52,7 @@ bool AParisPedestrianCrowd::Initialize(const TSharedPtr<FJsonObject>& Data){
     for(const auto& V:Array(Data,TEXT("agents"))){auto J=V->AsObject();const auto Route=RouteByID.Find(String(J,TEXT("route_id")));if(!Route||Agents.Num()>=512)return false;
         FParisPedestrian A;A.ID=String(J,TEXT("id"));A.Route=*Route;A.Variant=FMath::Clamp(int32(Number(J,TEXT("variant"))),0,2);A.Direction=Number(J,TEXT("direction"),1)>0?1:-1;A.Speed=Number(J,TEXT("speed_mps"),1.2)*100;A.Distance=FMath::Clamp(Number(J,TEXT("progress_m"))*100,0.,Routes[*Route].Length);A.Phase=Agents.Num()*.8;A.Position=Routes[*Route].Sample(A.Distance,A.Direction,&A.Yaw);Agents.Add(A);
     }
-    for(auto& Pair:ModelByName){auto ISM=NewObject<UInstancedStaticMeshComponent>(this);AddInstanceComponent(ISM);ISM->SetupAttachment(RootComponent);ISM->SetStaticMesh(Pair.Value);ISM->SetMobility(EComponentMobility::Movable);ISM->SetCanEverAffectNavigation(false);ISM->SetCollisionEnabled(ECollisionEnabled::QueryOnly);ISM->SetCollisionResponseToAllChannels(ECR_Ignore);ISM->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);ISM->SetCastShadow(true);ISM->RegisterComponent();Instances.Add(ISM);InstanceByName.Add(Pair.Key,ISM);}
+    for(auto& Pair:ModelByName){auto ISM=NewObject<UInstancedStaticMeshComponent>(this);AddInstanceComponent(ISM);ISM->SetupAttachment(RootComponent);ISM->SetStaticMesh(Pair.Value);ISM->SetMobility(EComponentMobility::Movable);ISM->SetCanEverAffectNavigation(false);ISM->SetCollisionEnabled(ECollisionEnabled::QueryOnly);ISM->SetCollisionResponseToAllChannels(ECR_Ignore);ISM->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);ISM->SetCastShadow(!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));ISM->RegisterComponent();Instances.Add(ISM);InstanceByName.Add(Pair.Key,ISM);}
     bReady=true;SetDisplay(true,1);return true;
 }
 UStaticMesh* AParisPedestrianCrowd::Model(const FString& Name) const {auto Found=ModelByName.Find(Name);return Found?*Found:nullptr;}
@@ -69,7 +70,13 @@ void AParisPedestrianCrowd::SimulateStep(double Delta,const FVector* Player){
 }
 void AParisPedestrianCrowd::UpdateInstances(bool TraceGround){
     TMap<FString,TArray<FTransform>> Transforms;TMap<FString,TArray<int32>> Lookup;
-    for(int32 I=0;I<VisibleCount;I++){auto& A=Agents[I];
+    TArray<int32> Visible;FVector View=FVector::ZeroVector;
+    if(auto PC=GetWorld()->GetFirstPlayerController())if(PC->PlayerCameraManager)View=PC->PlayerCameraManager->GetCameraLocation();
+    const double Range=DetailQuality==0?10000:DetailQuality==1?20000:35000;
+    for(int32 I=0;I<Agents.Num();I++)if(FVector::DistSquared2D(Agents[I].Position,View)<=Range*Range)Visible.Add(I);
+    Visible.Sort([&](int32 A,int32 B){const double DA=FVector::DistSquared2D(Agents[A].Position,View),DB=FVector::DistSquared2D(Agents[B].Position,View);return DA==DB?A<B:DA<DB;});
+    if(Visible.Num()>VisibleCount)Visible.SetNum(VisibleCount);RenderedCount=Visible.Num();
+    for(int32 I:Visible){auto& A=Agents[I];
         if(TraceGround){FHitResult Hit;FCollisionQueryParams Params;Params.AddIgnoredActor(this);if(GetWorld()->LineTraceSingleByChannel(Hit,A.Position+FVector(0,0,80),A.Position-FVector(0,0,120),ECC_Pawn,Params)&&Hit.Normal.Z>.7)A.GroundOffset=Hit.ImpactPoint.Z-A.Position.Z;}
         const auto Pose=ParisPersonPose(A.Position+FVector(0,0,A.GroundOffset),A.Yaw,A.Phase,A.Moving);
         for(int32 P=0;P<6;P++){const FString Name=ParisPersonPartModel(P,A.Variant);Transforms.FindOrAdd(Name).Add(Pose[P]);Lookup.FindOrAdd(Name).Add(I);}

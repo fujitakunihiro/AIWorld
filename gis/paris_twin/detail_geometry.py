@@ -2,6 +2,24 @@
 import math
 
 
+def tube(mesh, a, b, radius, sides=8):
+    """Capped arbitrary-axis pipe, in projected metres, with finite normals."""
+    axis=[b[i]-a[i] for i in range(3)];length=math.sqrt(sum(v*v for v in axis))
+    if length<1e-6:return
+    axis=[v/length for v in axis];ref=(0,0,1) if abs(axis[2])<.9 else (0,1,0)
+    u=[axis[1]*ref[2]-axis[2]*ref[1],axis[2]*ref[0]-axis[0]*ref[2],axis[0]*ref[1]-axis[1]*ref[0]]
+    size=math.sqrt(sum(v*v for v in u));u=[v/size for v in u]
+    v=[axis[1]*u[2]-axis[2]*u[1],axis[2]*u[0]-axis[0]*u[2],axis[0]*u[1]-axis[1]*u[0]]
+    def ring(p,t):return mesh.vertex((p[0]+radius*(math.cos(t)*u[0]+math.sin(t)*v[0]),p[1]+radius*(math.cos(t)*u[1]+math.sin(t)*v[1])),p[2]+radius*(math.cos(t)*u[2]+math.sin(t)*v[2]))
+    for i in range(sides):
+        t,q=i*math.tau/sides,(i+1)*math.tau/sides;m=(t+q)/2
+        normal=[math.cos(m)*u[j]+math.sin(m)*v[j] for j in range(3)];normal[1]*=-1
+        mesh.face([ring(a,t),ring(a,q),ring(b,q),ring(b,t)],normal)
+        for p,n,reverse in [(a,[-axis[0],axis[1],-axis[2]],True),(b,[axis[0],-axis[1],axis[2]],False)]:
+            points=[mesh.vertex(p[:2],p[2]),ring(p,t),ring(p,q)]
+            mesh.face(list(reversed(points)) if reverse else points,n)
+
+
 def box(mesh, centre, along, outward, width, depth, bottom, top, offset=0):
     cx,cy=centre;dx,dy=along;nx,ny=outward
     def p(x,y,z):

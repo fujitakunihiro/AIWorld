@@ -16,6 +16,7 @@ class UHierarchicalInstancedStaticMeshComponent;
 class UStaticMesh;
 class AParisWalker;
 class AParisPedestrianCrowd;
+class AParisTraffic;
 
 UCLASS()
 class AParisTwinCamera : public APawn {
@@ -46,7 +47,7 @@ public:
     void ToggleFootprints();void ToggleIssues();void ToggleHelp();
     void ToggleStreetDetails();void CycleDetailQuality();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
-    bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();
+    bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();void ToggleTraffic();void InspectTraffic();
     void ReturnToFree();
     UPROPERTY() TObjectPtr<AParisTwinCamera> FreeCamera;
     UPROPERTY() TObjectPtr<AParisWalker> Walker;
@@ -81,6 +82,9 @@ public:
     TSharedPtr<FJsonObject> StreetInstanceSource(UPrimitiveComponent* Component,int32 Instance) const;
     bool FindWalkingSpawn(const FVector& Desired,FVector& Centre) const;
     void TogglePeople();
+    void ToggleTraffic();
+    bool bTraffic=true;
+    UPROPERTY() TObjectPtr<AParisTraffic> Traffic;
     bool bPeople=true;
     UPROPERTY() TObjectPtr<AParisPedestrianCrowd> Crowd;
 private:

@@ -202,6 +202,9 @@ def export(config,dataset):
     from .pedestrians import generate_routes,person_models
     crowd,pedestrian_network=generate_routes(geo,layers['roads'],terrain,water,building_union,sidewalks,paths_surface,bridge_decks,street_features)
     crowd['models']=person_models(geo,Mesh)
+    from .traffic import generate_traffic,vehicle_models
+    traffic,traffic_network=generate_traffic(geo,layers['roads'],terrain,water,building_union,roads,paths_surface,bridge_decks,street_features)
+    traffic['models']=vehicle_models(geo,Mesh)
     scene={'format':'paris_twin_scene_v1','generation':dataset['generation'],'district_id':config['district_id'],'georeference':{
         'wgs84_origin':config['origin_wgs84'],'projected_origin_m':list(geo.origin),'projected_crs':geo.crs.to_string(),
         'units':'cm','axes':'X=east, Y=south, Z=up','cesium_transform_applied':False,
@@ -210,7 +213,7 @@ def export(config,dataset):
         'origin_elevation_ngf_m':terrain.origin_ngf,'vertical_datum':'NGF-IGN69'},
         'terrain':terrain.metadata(),'bridge_profiles':bridge_reports,'facades':facade_report,
         'instance_models':model_meshes(geo,Mesh),'instance_batches':instance_batches,'street_furniture':street_report,
-        'pedestrians':crowd,
+        'pedestrians':crowd,'traffic':traffic,
         'extent_m':config['core_size_m']+config['context_buffer_m']*2,
         'scene_centre_ue_cm':list(geo.to_ue(*config.get('district_center_wgs84',config['origin_wgs84']),terrain.ngf(geo.centre),terrain.origin_ngf)),
         'quality_centre_ue_cm':list(geo.to_ue(*config['quality_center_wgs84'],terrain.ngf(geo.forward.transform(*config['quality_center_wgs84'])),terrain.origin_ngf)),
@@ -218,7 +221,7 @@ def export(config,dataset):
         'attribution':'OpenStreetMap contributors / Ville de Paris (ODbL); IGN BD TOPO + RGE ALTI (Etalab 2.0)',
         'limitations':['Overall L1; body L2 only with near-complete official gutter coverage; roofs remain inferred',
                         'Sampled/interpolated terrain; water level and bridge cross sections estimated','No L3-L5 landmark facades',
-                        'Road widths partly estimated; simulated pedestrians and proxy character appearance are inferred']}
+                        'Road widths partly estimated; simulated people, vehicles and bicycle occupancy are inferred; no observed traffic or live signal phases']}
     review = analyse(dataset, geo)
     scene['diagnostics'] = {k:v for k,v in review.items() if k != 'issues'}
     scene['diagnostics']['issues'] = []
@@ -266,6 +269,7 @@ def export(config,dataset):
     write(dest/'diagnostics.json',review)
     write(dest/'street-placement.json',{'report':street_report,'features':street_features})
     write(dest/'pedestrian-network.json',pedestrian_network)
+    write(dest/'traffic-network.json',traffic_network)
     native=ROOT/'unreal/AIWorld/Content/Data/paris-digital-twin.json'
     write(native,scene)
     road_result=[g for g in [roads,bridges,paths_surface,sidewalks] if g is not None]
