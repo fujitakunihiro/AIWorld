@@ -45,7 +45,7 @@ public:
     FVector2D GetRawLookDelta() const;
     bool IsLooking() const { return bLooking; }
     void ToggleFootprints();void ToggleIssues();void ToggleHelp();
-    void ToggleStreetDetails();void CycleDetailQuality();
+    void ToggleStreetDetails();void CycleDetailQuality();void ToggleSurfaces();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
     bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();void ToggleTraffic();void InspectTraffic();void InspectBusiness();
     void ReturnToFree();
@@ -72,6 +72,8 @@ public:
     void Capture();
     bool FocusBusiness();
     void ToggleStreetDetails();void CycleDetailQuality();void ApplyDetailQuality();
+    void ToggleSurfaces();
+    bool bDetailedSurfaces=true;
     bool bReady=false,bLevels=false,bFootprints=false,bIssues=false;
     FString Status=TEXT("GISデータを読み込み中"),Selection;
     FString SelectedPersonID,SelectedBusinessID,SelectionCoordinates;
@@ -102,7 +104,11 @@ private:
     UPROPERTY() TObjectPtr<UMaterialInterface> ZincMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> IronMaterial;
     UPROPERTY() TObjectPtr<UMaterialInterface> WoodMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInterface> PavingMaterial;
+    UPROPERTY() TObjectPtr<UMaterialInterface> AsphaltMaterial;
     UPROPERTY() TArray<TObjectPtr<UStaticMesh>> StreetModels;
+    UPROPERTY() TObjectPtr<UStaticMesh> PhotoTreeModel;
+    UPROPERTY() TObjectPtr<UStaticMesh> ProxyTreeCrownModel;
     UPROPERTY() TArray<TObjectPtr<UHierarchicalInstancedStaticMeshComponent>> StreetMeshes;
     TMap<UPrimitiveComponent*,TArray<FString>> StreetInstanceIDs;
     TMap<UPrimitiveComponent*,FString> StreetModelNames;
@@ -111,8 +117,10 @@ private:
     TSet<FString> OverlapIDs;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> FootprintMesh;
     void RefreshAppearance();
+    UMaterialInterface* SurfaceMaterialFor(const TSharedPtr<FJsonObject>& Feature) const;
     double ReadyAt=0;
     bool bCaptured=false,bMeasured=false;
+    bool bGPUProfiled=false;
     bool bWalkLaunchPending=false;
     TArray<double> FrameTimes;
 };

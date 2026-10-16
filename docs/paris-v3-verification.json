@@ -1,0 +1,75 @@
+{
+  "native_tests": {
+    "photo": 17,
+    "legacy": 17,
+    "village": 5
+  },
+  "python_tests": 4,
+  "gis": {
+    "errors": [],
+    "warnings": [
+      "OSM footprint overlaps require source review; not silently treated as surveyed",
+      "362 buildings lack near-complete official gutter coverage; roof profiles remain inferred",
+      "Road network has disconnected components; inspect clipped paths and source gaps",
+      "2 low bridge fragments (2 boundary-clipped) need full coverage / surveyed deck elevations; estimates retained"
+    ],
+    "buildings": 739,
+    "estimated_heights": 89,
+    "source_declared_heights": 6,
+    "coordinate_roundtrip_max_m": 2.7939677238464355e-09,
+    "scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb"
+  },
+  "geometry_contract": {
+    "sha256": "7ad69c15c2e697908b321b49e0b456c240cd83f59714330371847107003fd1e8",
+    "buildings": 739,
+    "source_features": 4799,
+    "core_meshes": 191
+  },
+  "performance": {
+    "front": {
+      "fps": 43.6114389828494,
+      "frame_p95_ms": 28.02480012178421,
+      "rhi": "D3D12",
+      "shader_feature_level": "SM6",
+      "gi_method": 1,
+      "reflection_method": 1,
+      "virtual_shadow_maps": 1,
+      "baked_visual_components": 17,
+      "photo_tree_instances": 201,
+      "photo_tree_nanite_instances": 201,
+      "authored_west_facade_triangles": 102773,
+      "baked_bounds_max_error_cm": 0,
+      "baked_palette_mismatch_samples": 0
+    },
+    "before": {
+      "fps": 50.39671747269659,
+      "frame_p95_ms": 24.278301745653152,
+      "rhi": "D3D12",
+      "shader_feature_level": "SM6",
+      "gi_method": 1,
+      "reflection_method": 1,
+      "virtual_shadow_maps": 1,
+      "baked_visual_components": 17,
+      "photo_tree_instances": 0,
+      "photo_tree_nanite_instances": 0,
+      "authored_west_facade_triangles": 0,
+      "baked_bounds_max_error_cm": 0,
+      "baked_palette_mismatch_samples": 0
+    },
+    "riverside": {
+      "fps": 51.46693647668847,
+      "frame_p95_ms": 24.103298783302307,
+      "rhi": "D3D12",
+      "shader_feature_level": "SM6",
+      "gi_method": 1,
+      "reflection_method": 1,
+      "virtual_shadow_maps": 1,
+      "baked_visual_components": 17,
+      "photo_tree_instances": 201,
+      "photo_tree_nanite_instances": 201,
+      "authored_west_facade_triangles": 102773,
+      "baked_bounds_max_error_cm": 0,
+      "baked_palette_mismatch_samples": 0
+    }
+  }
+}

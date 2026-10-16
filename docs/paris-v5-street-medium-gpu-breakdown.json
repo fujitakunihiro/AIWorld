@@ -1,0 +1,53 @@
+{
+  "basis": "Single sampled GPU frame near 3s, before benchmark warmup completes. Queue times overlap; inclusive values must not be summed.",
+  "selected": [
+    {
+      "queue": "Compute",
+      "event": "<root>",
+      "self_ms": 0.004,
+      "inclusive_ms": 26.09
+    },
+    {
+      "queue": "Compute",
+      "event": "LumenScreenProbeGather",
+      "self_ms": 0.021,
+      "inclusive_ms": 14.912
+    },
+    {
+      "queue": "Graphics",
+      "event": "<root>",
+      "self_ms": 0.003,
+      "inclusive_ms": 36.305
+    },
+    {
+      "queue": "Graphics",
+      "event": "LumenScreenProbeGather",
+      "self_ms": 0.003,
+      "inclusive_ms": 0.051
+    },
+    {
+      "queue": "Graphics",
+      "event": "BasePass",
+      "self_ms": 0.001,
+      "inclusive_ms": 10.965
+    },
+    {
+      "queue": "Graphics",
+      "event": "ShadowDepths",
+      "self_ms": 0.001,
+      "inclusive_ms": 17.585
+    },
+    {
+      "queue": "Graphics",
+      "event": "RenderVirtualShadowMaps(Non-Nanite)",
+      "self_ms": 0.001,
+      "inclusive_ms": 14.615
+    },
+    {
+      "queue": "Graphics",
+      "event": "LumenReflections",
+      "self_ms": 0.006,
+      "inclusive_ms": 0.954
+    }
+  ]
+}

@@ -9,7 +9,7 @@
   "core_size_m": 500,
   "context_buffer_m": 150,
   "quality_size_m": 100,
-  "quality_center_wgs84": [2.3436, 48.85325],
+  "quality_center_wgs84": [2.349068261914508, 48.85324992205622],
   "elevation_grid_steps": 10,
   "terrain_grid_steps": 40,
   "osm_provider": "official_map_api",

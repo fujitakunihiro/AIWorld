@@ -13,6 +13,8 @@ unreal/**/*.sln
 unreal/**/*.suo
 unreal/AIWorld/Content/Data/models.json
 unreal/.toolchain/
+unreal/scripts/__pycache__/
+unreal/**/__pycache__/
 unreal/Builds/
 gis/.venv/
 gis/**/__pycache__/
@@ -22,3 +24,11 @@ unreal/AIWorld/Content/Data/paris-digital-twin.json
 
 unreal/AIWorld/Content/Data/paris-digital-twin-runtime.json
 unreal/AIWorld/Content/Data/paris-digital-twin-meshes.bin
+unreal/assets/notre-dame/notre-dame.glb
+unreal/assets/paris-nature/*.bin
+unreal/assets/paris-nature/*.gltf
+unreal/assets/paris-nature/textures/
+unreal/AIWorld/Content/Data/paris-photo-architecture-source.json
+unreal/AIWorld/Content/Data/paris-photo-street-source.json
+unreal/AIWorld/Content/Data/paris-photo-ground-source.json
+unreal/AIWorld/Content/Data/paris-photo-frontages-source.json

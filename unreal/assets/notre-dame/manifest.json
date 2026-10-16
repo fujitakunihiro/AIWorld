@@ -1,0 +1,16 @@
+{
+  "format": "paris_notredame_source_v1",
+  "uid": "b5808186c49a451bbf815fbccdb727a3",
+  "author": "francois.bouille",
+  "title": "Notre-Dame de Paris",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "original_url": "https://sketchfab.com/3d-models/notre-dame-de-paris-b5808186c49a451bbf815fbccdb727a3",
+  "dataset_url": "https://huggingface.co/datasets/allenai/objaverse",
+  "file_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-115/b5808186c49a451bbf815fbccdb727a3.glb",
+  "database_license": "ODC-By-1.0",
+  "file": "notre-dame.glb",
+  "bytes": 35120084,
+  "sha256": "1edc3e67d32b3a223591625a9322a9155ab271fb0591a1465eb22a2fa409d3c7",
+  "modification": "To be inspected; no architectural acceptance or source survey accuracy assumed"
+}

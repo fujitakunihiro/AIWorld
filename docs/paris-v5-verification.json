@@ -1,0 +1,130 @@
+{
+  "verified_utc": "2026-10-16T03:49:05.602461+00:00",
+  "native_binary_sha256": "807456c52afa6b71648b212f596c8a6b09e7d5862ebce02b498b879e15342ed6",
+  "native_tests": [
+    {
+      "log": "paris-v5-native-photo-tests.log",
+      "passed": 18
+    },
+    {
+      "log": "paris-v5-native-legacy-tests.log",
+      "passed": 18
+    },
+    {
+      "log": "paris-v5-village-tests.log",
+      "passed": 5
+    }
+  ],
+  "python_tests": {
+    "paris-v5-architecture-tests.txt": 2,
+    "paris-v5-source-tests.txt": 5,
+    "paris-v5-lantern-tests.txt": 1,
+    "paris-v5-ground-tests.txt": 1
+  },
+  "geometry": {
+    "sha256": "7ad69c15c2e697908b321b49e0b456c240cd83f59714330371847107003fd1e8",
+    "buildings": 739,
+    "source_features": 4799,
+    "core_meshes": 191
+  },
+  "ground_render_validation": {
+    "asset": "/Game/ParisPhotoreal/Ground/SM_ParisTerrainCut_4b6178b9763f",
+    "generated_triangles": 30896,
+    "render_triangles": 30419,
+    "copied_render_triangles": 30419,
+    "symmetric_difference_m2": 0.07420772138778847,
+    "area_difference_outside_0_5mm_edge_band_m2": 0.0,
+    "max_sampled_z_error_cm": 0.00036092116829422594,
+    "expected_area_m2": 273692.2397117526,
+    "passed": true
+  },
+  "views": {
+    "street-high": {
+      "fps": 28.643649295131443,
+      "frame_p95_ms": 41.67550057172775,
+      "screen_percentage": 100,
+      "requested_view": "PhotoStreet",
+      "run_utc": "2026-10-16T03:42:32.6760428Z",
+      "ground_cutout_triangles": 30419
+    },
+    "front-high": {
+      "fps": 37.32498486128971,
+      "frame_p95_ms": 34.49619933962822,
+      "screen_percentage": 100,
+      "requested_view": "Front",
+      "run_utc": "2026-10-16T03:43:18.3666545Z",
+      "ground_cutout_triangles": 30419
+    },
+    "riverside-medium": {
+      "fps": 45.69467769771099,
+      "frame_p95_ms": 27.27220207452774,
+      "screen_percentage": 80,
+      "requested_view": "Riverside",
+      "run_utc": "2026-10-16T03:44:03.8533698Z",
+      "ground_cutout_triangles": 30419
+    },
+    "street-medium-gpu": {
+      "fps": 32.410743391722846,
+      "frame_p95_ms": 36.813799291849136,
+      "screen_percentage": 80,
+      "requested_view": "PhotoStreet",
+      "run_utc": "2026-10-16T03:45:48.9321841Z",
+      "ground_cutout_triangles": 30419
+    }
+  },
+  "gpu_frame": {
+    "basis": "Single sampled GPU frame near 3s, before benchmark warmup completes. Queue times overlap; inclusive values must not be summed.",
+    "selected": [
+      {
+        "queue": "Compute",
+        "event": "<root>",
+        "self_ms": 0.004,
+        "inclusive_ms": 26.09
+      },
+      {
+        "queue": "Compute",
+        "event": "LumenScreenProbeGather",
+        "self_ms": 0.021,
+        "inclusive_ms": 14.912
+      },
+      {
+        "queue": "Graphics",
+        "event": "<root>",
+        "self_ms": 0.003,
+        "inclusive_ms": 36.305
+      },
+      {
+        "queue": "Graphics",
+        "event": "LumenScreenProbeGather",
+        "self_ms": 0.003,
+        "inclusive_ms": 0.051
+      },
+      {
+        "queue": "Graphics",
+        "event": "BasePass",
+        "self_ms": 0.001,
+        "inclusive_ms": 10.965
+      },
+      {
+        "queue": "Graphics",
+        "event": "ShadowDepths",
+        "self_ms": 0.001,
+        "inclusive_ms": 17.585
+      },
+      {
+        "queue": "Graphics",
+        "event": "RenderVirtualShadowMaps(Non-Nanite)",
+        "self_ms": 0.001,
+        "inclusive_ms": 14.615
+      },
+      {
+        "queue": "Graphics",
+        "event": "LumenReflections",
+        "self_ms": 0.006,
+        "inclusive_ms": 0.954
+      }
+    ]
+  },
+  "full_photorealism_achieved": false,
+  "target_60fps_achieved": false
+}

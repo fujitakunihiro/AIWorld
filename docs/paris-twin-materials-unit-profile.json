@@ -1,0 +1,18 @@
+{
+  "method": "Visual reading of UE stat unit in the attached diagnostic screenshot; smoothed on-screen values at capture, not benchmark averages",
+  "screenshot": "screenshots/paris-twin-materials-unit-profile.png",
+  "quality": "Medium",
+  "render_offscreen": true,
+  "viewport": [1280, 720],
+  "render_resolution": [1024, 576],
+  "screen_percentage": 80,
+  "frame_ms": 17.01,
+  "game_thread_ms": 4.39,
+  "draw_thread_ms": 17.04,
+  "rhi_thread_ms": 4.80,
+  "gpu_ms": 17.22,
+  "draws": 593,
+  "visible_primitives_approximate": 301700,
+  "process_memory_gb_displayed": 2.91,
+  "interpretation": "At capture, rendering thread and GPU both exceed 16.67ms while game thread is lower. Per-pass GPU timings and render-thread wait breakdown were not captured; do not attribute all cost to shadows or geometry alone."
+}

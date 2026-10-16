@@ -1,0 +1,277 @@
+{
+  "verified_utc": "2026-10-16T20:30:51.235515+09:00",
+  "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+  "native_tests": [
+    {
+      "log": "paris-v8-native-photo-tests.log",
+      "passed": 19
+    },
+    {
+      "log": "paris-v8-native-legacy-tests.log",
+      "passed": 19
+    },
+    {
+      "log": "paris-v8-village-tests.log",
+      "passed": 5
+    }
+  ],
+  "python_tests": {
+    "paris-v8-frontage-tests.txt": 7
+  },
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "source_blob_sha256": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8",
+  "geometry": {
+    "sha256": "7ad69c15c2e697908b321b49e0b456c240cd83f59714330371847107003fd1e8",
+    "buildings": 739,
+    "source_features": 4799,
+    "core_meshes": 191
+  },
+  "nanite_materials": {
+    "meshes": 33,
+    "materials": [
+      {
+        "material": "/Game/Materials/M_ParisCastIron.M_ParisCastIron",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisCathedralStone.M_ParisCathedralStone",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisGlass.M_ParisGlass",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisIron.M_ParisIron",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisLanternGlass.M_ParisLanternGlass",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisLimestone.M_ParisLimestone",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisLimestoneProcedural.M_ParisLimestoneProcedural",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisSlate.M_ParisSlate",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisSlatePhotographic.M_ParisSlatePhotographic",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisWindowGlass.M_ParisWindowGlass",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisWindowPaintedWood.M_ParisWindowPaintedWood",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisWood.M_ParisWood",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_ParisZinc.M_ParisZinc",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/Materials/M_Vertex.M_Vertex",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/ParisPhotoreal/Nature/Materials/M_ParisBroadleaf_0.M_ParisBroadleaf_0",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/ParisPhotoreal/Nature/Materials/M_ParisBroadleaf_1.M_ParisBroadleaf_1",
+        "nanite_usage": true,
+        "changed": false
+      },
+      {
+        "material": "/Game/ParisPhotoreal/Nature/Materials/M_ParisBroadleaf_2.M_ParisBroadleaf_2",
+        "nanite_usage": true,
+        "changed": false
+      }
+    ]
+  },
+  "performance": {
+    "entry-source-only": {
+      "fps": 30.49735347003509,
+      "frame_p95_ms": 36.62960231304169,
+      "screen_percentage": 100,
+      "requested_view": "EntryDetail",
+      "run_utc": "2026-10-16T11:24:23.9114788Z",
+      "frontage_components": 0,
+      "frontage_windows": 0,
+      "frontage_entrances": 0,
+      "frontage_cornices": 0,
+      "frontage_triangles": 0,
+      "process_physical_mb": 4950.23046875,
+      "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+      "benchmark_assets_pending": 0
+    },
+    "entry-detail": {
+      "fps": 25.95004144108345,
+      "frame_p95_ms": 42.71009936928749,
+      "screen_percentage": 100,
+      "requested_view": "EntryDetail",
+      "run_utc": "2026-10-16T11:20:00.0883943Z",
+      "frontage_components": 4,
+      "frontage_windows": 573,
+      "frontage_entrances": 11,
+      "frontage_cornices": 107,
+      "frontage_triangles": 381510,
+      "process_physical_mb": 5122.48046875,
+      "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+      "benchmark_assets_pending": 0
+    },
+    "entry-medium": {
+      "fps": 35.06400847533154,
+      "frame_p95_ms": 33.74990075826645,
+      "screen_percentage": 80,
+      "requested_view": "EntryDetail",
+      "run_utc": "2026-10-16T11:25:11.3779641Z",
+      "frontage_components": 4,
+      "frontage_windows": 573,
+      "frontage_entrances": 11,
+      "frontage_cornices": 107,
+      "frontage_triangles": 381510,
+      "process_physical_mb": 5143.3359375,
+      "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+      "benchmark_assets_pending": 0
+    },
+    "street-high": {
+      "fps": 29.98526638991202,
+      "frame_p95_ms": 38.003697991371155,
+      "screen_percentage": 100,
+      "requested_view": "PhotoStreet",
+      "run_utc": "2026-10-16T11:25:59.0416548Z",
+      "frontage_components": 4,
+      "frontage_windows": 573,
+      "frontage_entrances": 11,
+      "frontage_cornices": 107,
+      "frontage_triangles": 381510,
+      "process_physical_mb": 5122.1640625,
+      "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+      "benchmark_assets_pending": 0
+    },
+    "street-medium": {
+      "fps": 34.61014195178313,
+      "frame_p95_ms": 33.406198024749756,
+      "screen_percentage": 80,
+      "requested_view": "PhotoStreet",
+      "run_utc": "2026-10-16T11:26:47.4862186Z",
+      "frontage_components": 4,
+      "frontage_windows": 573,
+      "frontage_entrances": 11,
+      "frontage_cornices": 107,
+      "frontage_triangles": 381510,
+      "process_physical_mb": 5102.91015625,
+      "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+      "benchmark_assets_pending": 0
+    },
+    "front-high": {
+      "fps": 40.08101946461215,
+      "frame_p95_ms": 29.064200818538666,
+      "screen_percentage": 100,
+      "requested_view": "Front",
+      "run_utc": "2026-10-16T11:27:34.8511575Z",
+      "frontage_components": 4,
+      "frontage_windows": 573,
+      "frontage_entrances": 11,
+      "frontage_cornices": 107,
+      "frontage_triangles": 381510,
+      "process_physical_mb": 5083.52734375,
+      "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+      "benchmark_assets_pending": 0
+    },
+    "riverside-medium": {
+      "fps": 47.335296217912465,
+      "frame_p95_ms": 25.029301643371582,
+      "screen_percentage": 80,
+      "requested_view": "Riverside",
+      "run_utc": "2026-10-16T11:28:23.5722385Z",
+      "frontage_components": 4,
+      "frontage_windows": 573,
+      "frontage_entrances": 11,
+      "frontage_cornices": 107,
+      "frontage_triangles": 381510,
+      "process_physical_mb": 5028.85546875,
+      "native_binary_sha256": "3f9ebdcbfb12f347aa9ba7ea5b2d10d9af9647d3fcb7916c924c45916d0d8d8b",
+      "benchmark_assets_pending": 0
+    }
+  },
+  "frontage": {
+    "format": "paris_inferred_frontages_v2",
+    "entrances": 11,
+    "cornices": 107,
+    "windows": 573,
+    "source_windows_retained_in_gis": 584,
+    "overlapping_window_reliefs_omitted": 11,
+    "triangles": 381510
+  },
+  "visual_review": {
+    "images": [
+      "screenshots/paris-v8-entry-source-only.png",
+      "screenshots/paris-v8-entry-detail.png",
+      "screenshots/paris-v8-entry-medium.png",
+      "screenshots/paris-v8-street-high.png",
+      "screenshots/paris-v8-street-medium.png",
+      "screenshots/paris-v8-front-high.png",
+      "screenshots/paris-v8-riverside-medium.png"
+    ],
+    "method": "Actual UE5 offscreen DX12 images inspected; no image-generation or image edits",
+    "findings": [
+      "Doorway and header now fit the frame",
+      "Window sills no longer cross door faces",
+      "Raised wood panels and iron pulls are visible",
+      "Stepped eaves are visible in the existing district",
+      "Large walls and full landmark geometry remain simplified"
+    ]
+  },
+  "initial_runs_excluded": {
+    "reason": "Old three-part benchmark guard, overlapping window sill and cropped inspection pose; corrected before final runs",
+    "diagnostic_report": "paris-v8-initial-inspection.json"
+  },
+  "archived_unused_intermediate_meshes": [
+    "SM_ParisFrontage_stone_a282ed055dc7.uasset",
+    "SM_ParisFrontage_joinery_ebf67edc48f2.uasset"
+  ],
+  "constraints": [
+    "Single 20-second samples after assets ready plus 5-second warmup, not statistical speedup proof",
+    "1280x720 UE 5.8.3 Development Editor -game on AMD integrated Radeon; 60fps not reached",
+    "Source-only control disables the entire additional frontage layer, including prior window profiles; not isolated door-only cost",
+    "No surveyed facade or full Notre-Dame replacement model; decorative appearance is inferred"
+  ],
+  "visible_preview": {
+    "process_id": 37488,
+    "responding": true,
+    "window_title": "AIWorld (64-bit Development PCD3D_SM6) ",
+    "ready_buildings": 739,
+    "view": "EntryDetail",
+    "quality": "Medium",
+    "checked_utc": "2026-10-16T11:34:33.7062619Z"
+  }
+}

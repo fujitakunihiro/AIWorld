@@ -1,0 +1,108 @@
+{
+  "format": "paris_original_architecture_study_v1",
+  "source_id": "osm/way/201611261",
+  "source_url": "https://www.openstreetmap.org/way/201611261",
+  "dimensions_reference": "https://www.notredamedeparis.fr/comprendre/architecture/plans/",
+  "dimension_facts_m": {
+    "west_width": 43.5,
+    "tower_height": 69,
+    "west_rose_diameter": 9.7
+  },
+  "appearance_provenance": "Original inferred architectural study: west facade, open belfry, upper nave and nearby hospital window relief. Not a surveyed cathedral model; sculpture, depths and opening placement are approximate. Existing GIS/collision retained.",
+  "source_ids": [
+    "osm/way/201611261",
+    "osm/relation/2449758"
+  ],
+  "local_frame": {
+    "front_cm": [
+      14308.9902,
+      16242.7923,
+      -76.6547
+    ],
+    "across": [
+      0.4538288404804823,
+      -0.891088875224094,
+      0
+    ],
+    "depth": [
+      0.891088875224094,
+      0.4538288404804823,
+      0
+    ]
+  },
+  "belfry_voids": {
+    "tower_centres": [
+      -15.25,
+      15.25
+    ],
+    "front_centres": [
+      -17.95,
+      -12.55,
+      12.55,
+      17.95
+    ],
+    "side_centres": [
+      4.8,
+      10.2
+    ],
+    "half_width": 2.3,
+    "bottom": 48,
+    "spring": 58,
+    "top": 64.7,
+    "depth_min": -2,
+    "depth_max": 16
+  },
+  "inferred_details": {
+    "upper_side_bays": 31,
+    "flying_buttresses": 22,
+    "neighbour_windows": 852,
+    "side_cornice_sections": 93,
+    "flying_rib_section": "rectangular masonry; inferred"
+  },
+  "anchor_wgs84": [
+    2.349068261910986,
+    48.853249922128704
+  ],
+  "origin_wgs84": [
+    2.3471,
+    48.8547
+  ],
+  "origin_elevation_ngf_m": 35.38,
+  "objects": [
+    {
+      "id": "stone",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a",
+      "geometry_sha256": "df8d56f4fe0a6ddbfdf4d8007903410af49c14327665bbabc273eb6343af302b",
+      "triangles": 244197,
+      "fallback_triangles": 244197
+    },
+    {
+      "id": "recess",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_recess_d07e08f9c990",
+      "geometry_sha256": "d07e08f9c9901969b95bc470f39700731c12bf6d7ccf834a63d73cc99379ba18",
+      "triangles": 1725,
+      "fallback_triangles": 1725
+    },
+    {
+      "id": "wood",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_9490fd94902c",
+      "geometry_sha256": "9490fd94902cbf55058c73adf73fd90e1ad81bafdf8002b8c26df551d4e52beb",
+      "triangles": 41556,
+      "fallback_triangles": 41556
+    },
+    {
+      "id": "glass",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_glass_1962bde72ea6",
+      "geometry_sha256": "1962bde72ea628c47753e39073745a447391de4542411cecc2ef4df08be25e77",
+      "triangles": 3317,
+      "fallback_triangles": 3317
+    },
+    {
+      "id": "iron",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_iron_ac9f8377f47d",
+      "geometry_sha256": "ac9f8377f47dde1b658a08ddba5b44e1b7b199bf9a32758dbb751c52dd53fe54",
+      "triangles": 540,
+      "fallback_triangles": 540
+    }
+  ]
+}

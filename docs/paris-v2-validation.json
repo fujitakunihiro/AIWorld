@@ -1,0 +1,82 @@
+{
+  "native_suites": {
+    "compact": {
+      "passed": 15,
+      "tests": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "LocalSocialInteraction",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ]
+    },
+    "legacy": {
+      "passed": 15,
+      "tests": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "LocalSocialInteraction",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ]
+    },
+    "village": {
+      "passed": 5,
+      "tests": [
+        "AuthoredModels",
+        "SavedVillage",
+        "ArchivedGISMesh",
+        "NativeCommands",
+        "SaveAndTerrain"
+      ]
+    }
+  },
+  "final_python_photo_tests": {
+    "passed": 2
+  },
+  "earlier_full_python_suite": {
+    "passed": 71,
+    "note": "Run before final camera and lighting adjustments; final photo tests and native suites were rerun."
+  },
+  "gis": {
+    "errors": [],
+    "warnings": [
+      "OSM footprint overlaps require source review; not silently treated as surveyed",
+      "362 buildings lack near-complete official gutter coverage; roof profiles remain inferred",
+      "Road network has disconnected components; inspect clipped paths and source gaps",
+      "2 low bridge fragments (2 boundary-clipped) need full coverage / surveyed deck elevations; estimates retained"
+    ],
+    "buildings": 739,
+    "estimated_heights": 89,
+    "source_declared_heights": 6,
+    "coordinate_roundtrip_max_m": 2.7939677238464355e-09,
+    "scene_sha256": "253647f729bb2eb271faec96f1aa3c2f02f87fe9a8be2eef6f10e28325991dea"
+  },
+  "core_geometry_contract": {
+    "sha256": "7ad69c15c2e697908b321b49e0b456c240cd83f59714330371847107003fd1e8",
+    "buildings": 739,
+    "source_features": 4799,
+    "core_meshes": 191
+  },
+  "native_binary_sha256": "0eda4d71c70364ac77793e33d05169dc9a1c15608326b883989e84f555afda19"
+}

@@ -1,0 +1,230 @@
+{
+  "format": "paris_photo_surfaces_v1",
+  "license_url": "https://polyhaven.com/license",
+  "api_terms": "https://github.com/Poly-Haven/Public-API/blob/master/ToS.md",
+  "usage": "Offline bundled assets; no live API in the game",
+  "resolution": 2048,
+  "sets": [
+    {
+      "id": "white_plaster_02",
+      "tile_cm": 100,
+      "author": "Rob Tuytel",
+      "material": "M_ParisLimestone",
+      "description": "Scanned fine plaster grain plus inferred dressed-limestone coursing; not surveyed Paris stone",
+      "key": "stone",
+      "license": "CC0-1.0",
+      "source_url": "https://polyhaven.com/a/white_plaster_02",
+      "metadata_url": "https://api.polyhaven.com/files/white_plaster_02",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "photographic": true,
+      "paris_site_reference": false,
+      "maps": {
+        "albedo": {
+          "file": "stone_albedo_2k.jpg",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/white_plaster_02/white_plaster_02_diff_2k.jpg",
+          "bytes": 2568315,
+          "provider_md5": "35f9c96c16aa0d934da7884b232f6d07",
+          "sha256": "0ca5245ba70777d3e41ff4566c9f8d363855461891802c55cb7dc0f6f85f084e",
+          "srgb": true
+        },
+        "normal": {
+          "file": "stone_normal_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_nor_dx_2k.png",
+          "bytes": 24664322,
+          "provider_md5": "3b0839a30985ec8ba67130ff52358283",
+          "sha256": "3c5bef5be1d0871848bb1d59aa770933cd626dc514b5f833f79fb9b1e71ead4b",
+          "srgb": false
+        },
+        "orm": {
+          "file": "stone_orm_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_plaster_02/white_plaster_02_arm_2k.png",
+          "bytes": 18860869,
+          "provider_md5": "9f9c452ef1824ae987a683b5336c8810",
+          "sha256": "08d767f455e46ded85d41aff247d8fb33bb5aa2504d679069e1ed479ade522b5",
+          "srgb": false
+        }
+      }
+    },
+    {
+      "id": "cobblestone_pavement",
+      "tile_cm": 250,
+      "author": "Charlotte Baglioni",
+      "material": "M_ParisPaving",
+      "description": "Photographic cobblestone appearance proxy; not a surveyed Paris pavement",
+      "key": "paving",
+      "license": "CC0-1.0",
+      "source_url": "https://polyhaven.com/a/cobblestone_pavement",
+      "metadata_url": "https://api.polyhaven.com/files/cobblestone_pavement",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "photographic": true,
+      "paris_site_reference": false,
+      "maps": {
+        "albedo": {
+          "file": "paving_albedo_2k.jpg",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/cobblestone_pavement/cobblestone_pavement_diff_2k.jpg",
+          "bytes": 3437228,
+          "provider_md5": "7e1a36a54633669eb8a0f53dfee3683c",
+          "sha256": "e4c9917cd32faecd56986e029c63d8662ab99075448e5b3f0d862493577b731a",
+          "srgb": true
+        },
+        "normal": {
+          "file": "paving_normal_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/cobblestone_pavement/cobblestone_pavement_nor_dx_2k.png",
+          "bytes": 21227211,
+          "provider_md5": "232c24d42ba1e18f729d3230b30ff299",
+          "sha256": "92bc162c81f91b6894ddc23a045d7a36fe6630d6b18fa3a59d62e54952f514a3",
+          "srgb": false
+        },
+        "orm": {
+          "file": "paving_orm_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/cobblestone_pavement/cobblestone_pavement_arm_2k.png",
+          "bytes": 15654754,
+          "provider_md5": "5ce2caf2c560e6fea60169ff5c7e83b7",
+          "sha256": "7be0708a5c59aaaab2af2e169e6604774c56d0e62a04a79d9028fdd6e704d5b3",
+          "srgb": false
+        }
+      }
+    },
+    {
+      "id": "roof_slates_02",
+      "tile_cm": 200,
+      "author": "Rob Tuytel",
+      "material": "M_ParisSlatePhotographic",
+      "description": "Photographic slate roof appearance proxy; not surveyed Notre-Dame roofing",
+      "key": "slate",
+      "license": "CC0-1.0",
+      "source_url": "https://polyhaven.com/a/roof_slates_02",
+      "metadata_url": "https://api.polyhaven.com/files/roof_slates_02",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "photographic": true,
+      "paris_site_reference": false,
+      "maps": {
+        "albedo": {
+          "file": "slate_albedo_2k.jpg",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_slates_02/roof_slates_02_diff_2k.jpg",
+          "bytes": 1838933,
+          "provider_md5": "2bd2c8593d8cbaea04878203be4bc7ad",
+          "sha256": "5be7e739997e9f5560b07ee42f335d7ad70213359d48cbffc9c04ad129e9a2c4",
+          "srgb": true
+        },
+        "normal": {
+          "file": "slate_normal_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/roof_slates_02/roof_slates_02_nor_dx_2k.png",
+          "bytes": 23806898,
+          "provider_md5": "c01fb6b21f212ea5b65bd4c569565815",
+          "sha256": "2267bb3dfabeb23c4223c2e8484407c1fbe846dd0585cd93c5ba68d796139502",
+          "srgb": false
+        },
+        "orm": {
+          "file": "slate_orm_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/roof_slates_02/roof_slates_02_arm_2k.png",
+          "bytes": 17339988,
+          "provider_md5": "a93a056735c1f9f2f67c25d5cfbc27d4",
+          "sha256": "f29dd87ab6480a7edd47f563831745dd63ea543569faf0a66c60c290eaa0892f",
+          "srgb": false
+        }
+      }
+    },
+    {
+      "id": "sparse_grass",
+      "tile_cm": 200,
+      "author": "Amal Kumar",
+      "material": "M_ParisGrassPhotographic",
+      "description": "Photographic grass/soil appearance proxy on mapped parks; not surveyed Paris vegetation",
+      "key": "grass",
+      "license": "CC0-1.0",
+      "source_url": "https://polyhaven.com/a/sparse_grass",
+      "metadata_url": "https://api.polyhaven.com/files/sparse_grass",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "photographic": true,
+      "paris_site_reference": false,
+      "maps": {
+        "albedo": {
+          "file": "grass_albedo_2k.jpg",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sparse_grass/sparse_grass_diff_2k.jpg",
+          "bytes": 3733797,
+          "provider_md5": "b181e9c61bae87c1bb9b14eecd767d65",
+          "sha256": "3b655de96161164bf2324e136b3409ad8417c9f94750bc008e9c93ee507c2fac",
+          "srgb": true
+        },
+        "normal": {
+          "file": "grass_normal_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sparse_grass/sparse_grass_nor_dx_2k.png",
+          "bytes": 24333177,
+          "provider_md5": "ed2f81c673da092cecbf67431935c9bd",
+          "sha256": "220a41e36d6c63f9f230068ff26c486939060968b22cf5f009fc162aed8bdd25",
+          "srgb": false
+        },
+        "orm": {
+          "file": "grass_orm_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sparse_grass/sparse_grass_arm_2k.png",
+          "bytes": 15077462,
+          "provider_md5": "a956382aab773678ca3ee079c6a9fd04",
+          "sha256": "a3f0684562d5caeed8e1179206bb7bcf630eb99f9fbcb6c50e50287170228684",
+          "srgb": false
+        }
+      }
+    },
+    {
+      "id": "asphalt_02",
+      "tile_cm": 300,
+      "author": "Rob Tuytel",
+      "material": "M_ParisAsphaltPhotographic",
+      "description": "Photographic asphalt at source scale; inferred road finish, not a surveyed Paris pavement",
+      "key": "asphalt",
+      "license": "CC0-1.0",
+      "source_url": "https://polyhaven.com/a/asphalt_02",
+      "metadata_url": "https://api.polyhaven.com/files/asphalt_02",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "photographic": true,
+      "paris_site_reference": false,
+      "maps": {
+        "albedo": {
+          "file": "asphalt_albedo_2k.jpg",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_diff_2k.jpg",
+          "bytes": 3075676,
+          "provider_md5": "336af399fd98a39ab986d8b3bf73b4ff",
+          "sha256": "28f5ba8690553f192c0e5e1a5ff40f34765b4b93f4cc7059b1a3e9c795b6c28c",
+          "srgb": true
+        },
+        "normal": {
+          "file": "asphalt_normal_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/asphalt_02/asphalt_02_nor_dx_2k.png",
+          "bytes": 9117875,
+          "provider_md5": "8efb99b8fc265ced7728974d9bfb0acd",
+          "sha256": "5005be1e5825b4a28b701e60a1a9f73569447deecf59574b1cfa7b1394d4293b",
+          "srgb": false
+        },
+        "orm": {
+          "file": "asphalt_orm_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/asphalt_02/asphalt_02_arm_2k.png",
+          "bytes": 7120781,
+          "provider_md5": "4002a43c5941707d51f572358ad30d0c",
+          "sha256": "d55172b4aeb248cb85742321125d608b7da5f09d26328c55735e88fa7c483129",
+          "srgb": false
+        }
+      }
+    }
+  ],
+  "environment": {
+    "id": "kloppenheim_05_puresky",
+    "source_url": "https://polyhaven.com/a/kloppenheim_05_puresky",
+    "authors": [
+      "Greg Zaal",
+      "Jarod Guest"
+    ],
+    "license": "CC0-1.0",
+    "file": "kloppenheim_05_puresky_4k.hdr",
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/kloppenheim_05_puresky_4k.hdr",
+    "provider_md5": "7e626c52b9566fea733485bcf12bd5e3",
+    "sha256": "410314822cf8978ba3262c0e368c3b065e375429fa46528d5939d9bf4890a956",
+    "bytes": 16098667,
+    "resolution": 4096,
+    "use": "Visible sky, sky lighting and reflection environment; not the surveyed Paris sky"
+  }
+}

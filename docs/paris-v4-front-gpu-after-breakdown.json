@@ -1,0 +1,151 @@
+{
+  "basis": "Single sampled GPU frame; queue times overlap; inclusive times must not be summed",
+  "selected": [
+    {
+      "queue": "Compute",
+      "event": "<root>",
+      "self_ms": 0.004,
+      "inclusive_ms": 11.11
+    },
+    {
+      "queue": "Graphics",
+      "event": "<root>",
+      "self_ms": 0.003,
+      "inclusive_ms": 27.295
+    },
+    {
+      "queue": "Graphics",
+      "event": "ShadowDepths",
+      "self_ms": 0.001,
+      "inclusive_ms": 12.313
+    },
+    {
+      "queue": "Graphics",
+      "event": "RenderVirtualShadowMaps(Non-Nanite)",
+      "self_ms": 0.001,
+      "inclusive_ms": 10.338
+    }
+  ],
+  "top_self": [
+    {
+      "queue": "Graphics",
+      "event": "RasterPasses",
+      "self_ms": 9.448,
+      "inclusive_ms": 9.448
+    },
+    {
+      "queue": "Graphics",
+      "event": "ParallelDraw (Index: 0, Num: 2)",
+      "self_ms": 3.657,
+      "inclusive_ms": 3.657
+    },
+    {
+      "queue": "Compute",
+      "event": "TraceFromProbes Res=32x32 SkyVisibility:0",
+      "self_ms": 2.618,
+      "inclusive_ms": 2.618
+    },
+    {
+      "queue": "Graphics",
+      "event": "ParallelDraw (Index: 1, Num: 2)",
+      "self_ms": 1.213,
+      "inclusive_ms": 1.213
+    },
+    {
+      "queue": "Graphics",
+      "event": "InitializePhysicalMemoryIndirect",
+      "self_ms": 1.068,
+      "inclusive_ms": 1.068
+    },
+    {
+      "queue": "Graphics",
+      "event": "CullPerPageDrawCommands",
+      "self_ms": 0.867,
+      "inclusive_ms": 0.867
+    },
+    {
+      "queue": "Graphics",
+      "event": "ParallelDraw (Index: 1, Num: 2)",
+      "self_ms": 0.843,
+      "inclusive_ms": 0.843
+    },
+    {
+      "queue": "Compute",
+      "event": "TemporalReprojection(1280x720)",
+      "self_ms": 0.785,
+      "inclusive_ms": 0.785
+    },
+    {
+      "queue": "Compute",
+      "event": "DistanceFieldTracing 4x4 probes at 4 spacing",
+      "self_ms": 0.772,
+      "inclusive_ms": 0.772
+    },
+    {
+      "queue": "Compute",
+      "event": "TraceGlobalSDFAndApplyRadianceCache",
+      "self_ms": 0.637,
+      "inclusive_ms": 0.637
+    },
+    {
+      "queue": "Compute",
+      "event": "ScreenProbeIntegrate SupportImportanceSampleBRDF DownsampleFactor:1",
+      "self_ms": 0.533,
+      "inclusive_ms": 0.533
+    },
+    {
+      "queue": "Graphics",
+      "event": "TileClassificationMark",
+      "self_ms": 0.512,
+      "inclusive_ms": 0.512
+    },
+    {
+      "queue": "Graphics",
+      "event": "VirtualShadowMapProjection(Input:GBuffer)",
+      "self_ms": 0.508,
+      "inclusive_ms": 0.508
+    },
+    {
+      "queue": "Compute",
+      "event": "TraceGlobalSDFAndInterpolateRadianceCache 3x3",
+      "self_ms": 0.495,
+      "inclusive_ms": 0.495
+    },
+    {
+      "queue": "Graphics",
+      "event": "DiffuseIndirectComposite(DiffuseIndirect=ScreenProbeGather) 1280x720",
+      "self_ms": 0.476,
+      "inclusive_ms": 0.476
+    },
+    {
+      "queue": "Graphics",
+      "event": "CardPage Commands:1",
+      "self_ms": 0.395,
+      "inclusive_ms": 0.395
+    },
+    {
+      "queue": "Graphics",
+      "event": "TAA(MainUpsampling Quality=High) 1280x720 -> 1280x720",
+      "self_ms": 0.393,
+      "inclusive_ms": 0.393
+    },
+    {
+      "queue": "Compute",
+      "event": "DistanceFieldShadowPass",
+      "self_ms": 0.391,
+      "inclusive_ms": 0.391
+    },
+    {
+      "queue": "Compute",
+      "event": "ShortRangeAO_ScreenSpace_HorizonSearch(Rays=2, Steps=3, DownsampleFactor:1, BentNormal:1)",
+      "self_ms": 0.375,
+      "inclusive_ms": 0.375
+    },
+    {
+      "queue": "Compute",
+      "event": "ScreenProbeGatherScreenData",
+      "self_ms": 0.365,
+      "inclusive_ms": 0.365
+    }
+  ]
+}

@@ -231,6 +231,9 @@ def export(config,dataset):
         'limitations':['Overall L1; body L2 only with near-complete official gutter coverage; roofs remain inferred',
                         'Sampled/interpolated terrain; water level and bridge cross sections estimated','No L3-L5 landmark facades',
                         'Road widths partly estimated; simulated people, vehicles and bicycle occupancy are inferred; no observed traffic or live signal phases']}
+    from .photo_scene import cameras,baked_visuals
+    scene['photo_cameras']=cameras(geo,layers['buildings'],water,terrain,business_features,street_features,layers['roads'])
+    scene['baked_visuals']=baked_visuals(objects,geo)
     review = analyse(dataset, geo)
     scene['diagnostics'] = {k:v for k,v in review.items() if k != 'issues'}
     scene['diagnostics']['issues'] = []

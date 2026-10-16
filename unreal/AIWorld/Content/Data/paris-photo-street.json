@@ -1,0 +1,19 @@
+{
+  "format": "paris_original_street_detail_v1",
+  "canonical_height_cm": 448,
+  "appearance_provenance": "Original inferred cast-iron Paris-style lantern; actual fixture design unverified. Original OSM placement, scale, source IDs and collision retained.",
+  "objects": [
+    {
+      "id": "lamp_metal",
+      "asset": "/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7",
+      "geometry_sha256": "2e9ccc7d25e76c4c90ab0473563acbdc4816f0d48ef57410f74d7824c309a50c",
+      "triangles": 5208
+    },
+    {
+      "id": "lamp_glass",
+      "asset": "/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_glass_d8905ca93097",
+      "geometry_sha256": "d8905ca93097947104074a63184984dca6da33468fb255e38c01e0cd44b9b906",
+      "triangles": 12
+    }
+  ]
+}

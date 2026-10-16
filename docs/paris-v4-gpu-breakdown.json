@@ -1,0 +1,182 @@
+{
+  "basis": "Single GPU frame; inclusive timings overlap and are not summed",
+  "inclusive": [
+    {
+      "event": "<root>",
+      "self_ms": 0.003,
+      "inclusive_ms": 30.698
+    },
+    {
+      "event": "Frame 38",
+      "self_ms": 0.008,
+      "inclusive_ms": 30.695
+    },
+    {
+      "event": "SceneRender - ViewFamilies",
+      "self_ms": 0.048,
+      "inclusive_ms": 30.595
+    },
+    {
+      "event": "RenderGraphExecute - /ViewFamilies",
+      "self_ms": 0.021,
+      "inclusive_ms": 30.546
+    },
+    {
+      "event": "Scene",
+      "self_ms": 0.037,
+      "inclusive_ms": 30.392
+    },
+    {
+      "event": "ShadowDepths",
+      "self_ms": 0.001,
+      "inclusive_ms": 14.267
+    },
+    {
+      "event": "<root>",
+      "self_ms": 0.006,
+      "inclusive_ms": 13.648
+    },
+    {
+      "event": "Frame 38",
+      "self_ms": 0.003,
+      "inclusive_ms": 13.639
+    },
+    {
+      "event": "SceneRender - ViewFamilies",
+      "self_ms": 0.003,
+      "inclusive_ms": 13.635
+    },
+    {
+      "event": "RenderGraphExecute - /ViewFamilies",
+      "self_ms": 0.002,
+      "inclusive_ms": 13.631
+    },
+    {
+      "event": "Scene",
+      "self_ms": 0.01,
+      "inclusive_ms": 13.629
+    },
+    {
+      "event": "RenderVirtualShadowMaps(Non-Nanite)",
+      "self_ms": 0.0,
+      "inclusive_ms": 12.457
+    },
+    {
+      "event": "Batched",
+      "self_ms": 0.001,
+      "inclusive_ms": 12.457
+    },
+    {
+      "event": "RasterPasses",
+      "self_ms": 11.446,
+      "inclusive_ms": 11.446
+    },
+    {
+      "event": "DiffuseIndirectAndAO",
+      "self_ms": 0.003,
+      "inclusive_ms": 10.367
+    }
+  ],
+  "self": [
+    {
+      "event": "RasterPasses",
+      "self_ms": 11.446,
+      "inclusive_ms": 11.446
+    },
+    {
+      "event": "ParallelDraw (Index: 0, Num: 2)",
+      "self_ms": 4.535,
+      "inclusive_ms": 4.535
+    },
+    {
+      "event": "TraceFromProbes Res=32x32 SkyVisibility:0",
+      "self_ms": 2.545,
+      "inclusive_ms": 2.545
+    },
+    {
+      "event": "ParallelDraw (Index: 1, Num: 2)",
+      "self_ms": 1.178,
+      "inclusive_ms": 1.178
+    },
+    {
+      "event": "DistanceFieldTracing 4x4 probes at 4 spacing",
+      "self_ms": 1.084,
+      "inclusive_ms": 1.084
+    },
+    {
+      "event": "CullPerPageDrawCommands",
+      "self_ms": 0.989,
+      "inclusive_ms": 0.989
+    },
+    {
+      "event": "InitializePhysicalMemoryIndirect",
+      "self_ms": 0.968,
+      "inclusive_ms": 0.968
+    },
+    {
+      "event": "ParallelDraw (Index: 1, Num: 2)",
+      "self_ms": 0.892,
+      "inclusive_ms": 0.892
+    },
+    {
+      "event": "ScreenProbeIntegrate SupportImportanceSampleBRDF DownsampleFactor:1",
+      "self_ms": 0.867,
+      "inclusive_ms": 0.867
+    },
+    {
+      "event": "VirtualShadowMapProjection(Input:GBuffer)",
+      "self_ms": 0.785,
+      "inclusive_ms": 0.785
+    },
+    {
+      "event": "TemporalReprojection(1280x720)",
+      "self_ms": 0.741,
+      "inclusive_ms": 0.741
+    },
+    {
+      "event": "TAA(MainUpsampling Quality=High) 1280x720 -> 1280x720",
+      "self_ms": 0.699,
+      "inclusive_ms": 0.699
+    },
+    {
+      "event": "ShortRangeAO_ScreenSpace_HorizonSearch(Rays=2, Steps=3, DownsampleFactor:1, BentNormal:1)",
+      "self_ms": 0.662,
+      "inclusive_ms": 0.662
+    },
+    {
+      "event": "TraceGlobalSDFAndInterpolateRadianceCache 3x3",
+      "self_ms": 0.655,
+      "inclusive_ms": 0.655
+    },
+    {
+      "event": "TraceGlobalSDFAndApplyRadianceCache",
+      "self_ms": 0.601,
+      "inclusive_ms": 0.601
+    },
+    {
+      "event": "ParallelDraw (Index: 0, Num: 2)",
+      "self_ms": 0.597,
+      "inclusive_ms": 0.597
+    },
+    {
+      "event": "TileClassificationMark",
+      "self_ms": 0.557,
+      "inclusive_ms": 0.557
+    },
+    {
+      "event": "DistanceFieldShadowPass",
+      "self_ms": 0.502,
+      "inclusive_ms": 0.502
+    },
+    {
+      "event": "DiffuseIndirectComposite(DiffuseIndirect=ScreenProbeGather) 1280x720",
+      "self_ms": 0.48,
+      "inclusive_ms": 0.48
+    },
+    {
+      "event": "FilterProbeRadiance Res=32x32",
+      "self_ms": 0.456,
+      "inclusive_ms": 0.456
+    }
+  ]
+}

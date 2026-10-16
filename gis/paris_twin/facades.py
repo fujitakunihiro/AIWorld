@@ -10,7 +10,7 @@ from shapely.ops import unary_union
 from shapely.prepared import prep
 from .building_mesh import gutter_at, roof_surfaces
 from .building_heights import polygon_parts
-from .detail_geometry import box
+from .detail_geometry import box, tube, crown
 
 
 def batch_bodies(objects, geo, Mesh):
@@ -41,13 +41,60 @@ def batch_bodies(objects, geo, Mesh):
 
 
 def generate_facades(geo, buildings, terrain, Mesh):
-    buckets={};sources=defaultdict(set);decorated=set()
-    counts=dict(windows=0,entrances=0,balconies=0,cornices=0,dormers=0,party_wall_columns_omitted=0)
+    buckets={};sources=defaultdict(set);detail_sources=defaultdict(set);decorated=set()
+    counts=dict(windows=0,entrances=0,balconies=0,cornices=0,dormers=0,party_wall_columns_omitted=0,detailed_windows=0,planters=0,detailed_balconies=0)
+    qx,qy=geo.forward.transform(*geo.config.get('quality_center_wgs84',geo.config['origin_wgs84']))
+    half=geo.config.get('quality_size_m',100)/2
+    quality_bounds=(qx-half,qy-half,qx+half,qy+half);detail_buildings=set()
     occupied=prep(unary_union([shape(f['geometry']) for f in buildings]))
     def bucket(cell,kind):
         key=(*cell,kind)
         if key not in buckets:buckets[key]=Mesh(geo)
         return buckets[key]
+    def window_detail(cell,centre,along,outward,bottom,top,source_id):
+        # Raised stone jambs/lintel and painted joinery surround the glass. These
+        # are cosmetic reliefs, not cuts into the surveyed building footprint.
+        relief=bucket(cell,'facade_relief');joinery=bucket(cell,'facade_joinery')
+        for side in [-1,1]:
+            at=(centre[0]+along[0]*side*.515,centre[1]+along[1]*side*.515)
+            box(relief,at,along,outward,.11,.14,bottom-.09,top+.09,.09)
+        box(relief,centre,along,outward,1.16,.18,top+.015,top+.15,.1)
+        box(relief,centre,along,outward,1.22,.32,bottom-.14,bottom-.065,.15)
+        start=len(joinery.positions)
+        for side in [-1,0,1]:
+            at=(centre[0]+along[0]*side*.425,centre[1]+along[1]*side*.425)
+            box(joinery,at,along,outward,.035,.038,bottom+.015,top-.015,.112)
+        for z in [bottom+.02,top-.55,top-.02]:
+            box(joinery,centre,along,outward,.88,.038,z-.022,z+.022,.112)
+        if not hasattr(joinery,'colors'):joinery.colors=[]
+        palette=['#605c50','#4c5d56','#6e6355','#7a7666']
+        joinery.colors.extend([palette[sum(source_id.encode())%len(palette)]]*(len(joinery.positions)-start))
+        counts['detailed_windows']+=1;detail_buildings.add(source_id);detail_sources[cell].add(source_id)
+    def balcony_detail(cell,centre,along,outward,slab):
+        rail=bucket(cell,'facade_railing')
+        def p(side,depth,z):return (centre[0]+along[0]*side+outward[0]*depth,centre[1]+along[1]*side+outward[1]*depth,z)
+        for z in [slab+.18,slab+.99]:
+            tube(rail,p(-.81,.58,z),p(.81,.58,z),.018,6)
+            for side in [-.81,.81]:tube(rail,p(side,.04,z),p(side,.58,z),.018,6)
+        for k in range(9):tube(rail,p((k-4)*.20,.58,slab+.07),p((k-4)*.20,.58,slab+.99),.011,6)
+        counts['detailed_balconies']+=1
+    def planter(cell,centre,along,outward,bottom,source_id,row,column):
+        seed=sum(source_id.encode())+row*17+column*31
+        # Site and flowers are inferred decoration, never recorded as OSM facts.
+        if row<1 or seed%3:return
+        pot=bucket(cell,'facade_planter');garden=bucket(cell,'facade_garden')
+        box(pot,centre,along,outward,.84,.27,bottom-.24,bottom-.02,.30)
+        box(pot,centre,along,outward,.91,.31,bottom-.065,bottom-.015,.30)
+        if not hasattr(garden,'colors'):garden.colors=[]
+        def lobe(side,depth,z,radii,color):
+            start=len(garden.positions)
+            crown(garden,(centre[0]+along[0]*side+outward[0]*depth,centre[1]+along[1]*side+outward[1]*depth,z),radii,seed=seed+side,sides=6,rings=4)
+            garden.colors.extend([color]*(len(garden.positions)-start))
+        for k in range(5):lobe((k-2)*.16,.32,bottom+.015,(.14,.17,.12),['#304f27','#466d31'][k%2])
+        for k in range(7):
+            side=(k-3)*.105
+            lobe(side,.36+(k%2)*.045,bottom+.13+(k%3)*.035,(.048,.048,.045),['#c43250','#d76b94','#eee6cd'][(seed+k)%3])
+        counts['planters']+=1
     for feature in buildings:
         props=feature['properties'];tags=props['tags']
         # Churches and singular monuments need documented custom facades.
@@ -93,9 +140,13 @@ def generate_facades(geo, buildings, terrain, Mesh):
                                 right=(cx+dx*half+outward[0]*offset,cy+dy*half+outward[1]*offset)
                                 mesh.face([mesh.vertex(left,z0),mesh.vertex(right,z0),mesh.vertex(right,z1),mesh.vertex(left,z1)],(outward[0],-outward[1],0))
                             quad(trim,.56,bottom-.09,top+.09,.065)
-                            quad(glass,.45,bottom,top,.085)
+                            detailed=quality_bounds[0]<=cx<=quality_bounds[2] and quality_bounds[1]<=cy<=quality_bounds[3]
+                            quad(glass,.45,bottom,top,.09 if detailed else .085)
                             # Slim central stone mullion, with a projecting sill.
-                            quad(trim,.027,bottom,top,.10)
+                            if detailed:
+                                window_detail(cell,(cx,cy),(dx,dy),outward,bottom,top,props['source_id'])
+                                if ring_index==0:planter(cell,(cx,cy),(dx,dy),outward,bottom,props['source_id'],row,column)
+                            else:quad(trim,.027,bottom,top,.10)
                             left=(cx-dx*.61+outward[0]*.065,cy-dy*.61+outward[1]*.065)
                             right=(cx+dx*.61+outward[0]*.065,cy+dy*.61+outward[1]*.065)
                             farleft=(left[0]+outward[0]*.2,left[1]+outward[1]*.2)
@@ -105,14 +156,15 @@ def generate_facades(geo, buildings, terrain, Mesh):
                             if row in {1,rows-1} and rows>=3 and ring_index==0 and length/count>2.35:
                                 slab=bottom-.2
                                 box(trim,(cx,cy),(dx,dy),outward,1.7,.58,slab-.12,slab,.31)
-                                for z in [slab+.18,slab+.98]:
+                                if detailed:balcony_detail(cell,(cx,cy),(dx,dy),outward,slab)
+                                for z in ([] if detailed else [slab+.18,slab+.98]):
                                     quad(iron,.825,z,z+.045,.58)
-                                for side in [-1,1]:
+                                for side in ([] if detailed else [-1,1]):
                                     at=(cx+dx*side*.8,cy+dy*side*.8)
                                     near=(at[0]+outward[0]*.04,at[1]+outward[1]*.04)
                                     far=(at[0]+outward[0]*.58,at[1]+outward[1]*.58)
                                     iron.face([iron.vertex(near,slab+.98),iron.vertex(far,slab+.98),iron.vertex(far,slab+1.025),iron.vertex(near,slab+1.025)],(dx,-dy,0))
-                                for k in range(7):
+                                for k in range(0 if detailed else 7):
                                     # Two-sided thin profiles keep distant ironwork
                                     # legible without twelve triangles per tiny bar.
                                     centre=cx+dx*(k-3)*.255,cy+dy*(k-3)*.255
@@ -157,10 +209,16 @@ def generate_facades(geo, buildings, terrain, Mesh):
     for key,mesh in sorted(buckets.items()):
         if not mesh.positions:continue
         x,y,kind=key
-        colors=dict(facade_trim='#d7ccb5',facade_glass='#283d47',facade_iron='#303a39',facade_wood='#514236',facade_roof='#71818c')
-        objects.append(mesh.item(f'{kind}-cell/{x}/{y}',kind,colors[kind],
-             dict(source_ids=sorted(sources[(x,y)]),facade_source='procedural:inferred windows, entrances, balconies, cornices and dormers; not photographed facades',
+        colors=dict(facade_trim='#d7ccb5',facade_glass='#283d47',facade_iron='#303a39',facade_wood='#514236',facade_roof='#71818c',
+                    facade_relief='#d7ccb5',facade_joinery='#605c50',facade_railing='#242b29',facade_planter='#373b31',facade_garden='#49733a')
+        detail=kind in ('facade_relief','facade_joinery','facade_railing','facade_planter','facade_garden')
+        item=mesh.item(f'{kind}-cell/{x}/{y}',kind,colors[kind],
+             dict(source_ids=sorted(detail_sources[(x,y)] if detail else sources[(x,y)]),facade_source='procedural:inferred windows, entrances, balconies, cornices and dormers; not photographed facades',
                   placement_source='actual OSM exterior/courtyard edges + inferred 3.2m floor spacing',
-                  reproduction_level='L1',render_distance_m=180 if kind in ['facade_iron','facade_wood'] else 300)))
+                  reproduction_level='L1',quality_only=detail,cosmetic_only=detail,
+                  render_distance_m=100 if detail else 180 if kind in ['facade_iron','facade_wood'] else 300))
+        if hasattr(mesh,'colors'):item['vertex_colors']=mesh.colors
+        objects.append(item)
     return objects,dict(**counts,decorated_buildings=len(decorated),
+                         detail_buildings=len(detail_buildings),detail_bounds_projected_m=list(quality_bounds),
                          facade_source='inferred modules; churches/monuments excluded; overall fidelity remains L1')

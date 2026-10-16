@@ -1,0 +1,160 @@
+{
+  "uri": "https://api.sketchfab.com/v3/models/b5808186c49a451bbf815fbccdb727a3",
+  "uid": "b5808186c49a451bbf815fbccdb727a3",
+  "name": "Notre-Dame de Paris",
+  "staffpickedAt": null,
+  "viewCount": 1001,
+  "likeCount": 16,
+  "animationCount": 0,
+  "viewerUrl": "https://sketchfab.com/3d-models/b5808186c49a451bbf815fbccdb727a3",
+  "embedUrl": "https://sketchfab.com/models/b5808186c49a451bbf815fbccdb727a3/embed",
+  "commentCount": 3,
+  "isDownloadable": true,
+  "publishedAt": "2021-04-15T20:50:29.826917",
+  "tags": [
+    {
+      "name": "notre",
+      "slug": "notre",
+      "uri": "https://api.sketchfab.com/v3/tags/notre"
+    },
+    {
+      "name": "dame",
+      "slug": "dame",
+      "uri": "https://api.sketchfab.com/v3/tags/dame"
+    },
+    {
+      "name": "paris",
+      "slug": "paris",
+      "uri": "https://api.sketchfab.com/v3/tags/paris"
+    },
+    {
+      "name": "photogrammetry",
+      "slug": "photogrammetry",
+      "uri": "https://api.sketchfab.com/v3/tags/photogrammetry"
+    }
+  ],
+  "categories": [
+    {
+      "name": "architecture"
+    },
+    {
+      "name": "cultural-heritage-history"
+    }
+  ],
+  "thumbnails": {
+    "images": [
+      {
+        "uid": "ca93a17aa4ec4cb7b0e2ecec07058668",
+        "size": 544510,
+        "width": 1920,
+        "url": "https://media.sketchfab.com/models/b5808186c49a451bbf815fbccdb727a3/thumbnails/731200abf58346b9b2505cb8471754d3/0b32a7ad3517495094dd79acc808b093.jpeg",
+        "height": 1080
+      },
+      {
+        "uid": "4f1e8f6aae454153851d8c8dfc39fa96",
+        "size": 150961,
+        "width": 1024,
+        "url": "https://media.sketchfab.com/models/b5808186c49a451bbf815fbccdb727a3/thumbnails/731200abf58346b9b2505cb8471754d3/f77106599f604e0f8fbed4d2c579efdd.jpeg",
+        "height": 576
+      },
+      {
+        "uid": "8e3f3bbef11e4d83a5ce6557c863713e",
+        "size": 79313,
+        "width": 720,
+        "url": "https://media.sketchfab.com/models/b5808186c49a451bbf815fbccdb727a3/thumbnails/731200abf58346b9b2505cb8471754d3/6a1b546fe8bd4cab84f66d1ad131fc12.jpeg",
+        "height": 405
+      },
+      {
+        "uid": "b90f05aa0c8e43cc95d7a8f03fe28d9a",
+        "size": 11008,
+        "width": 256,
+        "url": "https://media.sketchfab.com/models/b5808186c49a451bbf815fbccdb727a3/thumbnails/731200abf58346b9b2505cb8471754d3/8279c3ccaf7c4474965c36a06c5e5b27.jpeg",
+        "height": 144
+      },
+      {
+        "uid": "c98c4f00c8ae46239ae75cf3fbdac5fc",
+        "size": 1182,
+        "width": 64,
+        "url": "https://media.sketchfab.com/models/b5808186c49a451bbf815fbccdb727a3/thumbnails/731200abf58346b9b2505cb8471754d3/3c0c11e4e63844d687f931e4f6b69023.jpeg",
+        "height": 36
+      }
+    ]
+  },
+  "user": {
+    "uid": "70120bd380d4445a962ac15bb6fd7440",
+    "username": "francois.bouille",
+    "displayName": "francois.bouille",
+    "profileUrl": "https://sketchfab.com/francois.bouille",
+    "account": "basic",
+    "avatar": {
+      "uri": "https://api.sketchfab.com/v3/avatars/6f921a5c5576495ca2abd8da9f63ad55",
+      "images": [
+        {
+          "size": 4291,
+          "width": 100,
+          "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/6e37bfcc73c942e2ab1938d107151b25.jpeg",
+          "height": 100
+        },
+        {
+          "size": 3646,
+          "width": 90,
+          "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/573bc996ebfc45788f4b6eb438ad06fe.jpeg",
+          "height": 90
+        },
+        {
+          "size": 1307,
+          "width": 48,
+          "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/609cbb59259b4d6db5997182d63199e9.jpeg",
+          "height": 48
+        },
+        {
+          "size": 781,
+          "width": 32,
+          "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/1ed95ea8b045466c85a165e819e5181c.jpeg",
+          "height": 32
+        }
+      ]
+    },
+    "uri": "https://api.sketchfab.com/v3/users/70120bd380d4445a962ac15bb6fd7440"
+  },
+  "description": "20M tris model reduced to 300K tris. 16K textures to 8K",
+  "faceCount": 303751,
+  "createdAt": "2021-04-15T20:44:37.146293",
+  "vertexCount": 371457,
+  "isAgeRestricted": false,
+  "archives": {
+    "glb": {
+      "textureCount": 16,
+      "size": 219677924,
+      "type": "glb",
+      "textureMaxResolution": 8192,
+      "faceCount": 303731,
+      "vertexCount": 474148
+    },
+    "gltf": {
+      "textureCount": 16,
+      "size": 203774285,
+      "type": "gltf",
+      "textureMaxResolution": 8192,
+      "faceCount": 303731,
+      "vertexCount": 474148
+    },
+    "source": {
+      "textureCount": null,
+      "size": 90544768,
+      "type": "source",
+      "textureMaxResolution": null,
+      "faceCount": null,
+      "vertexCount": null
+    },
+    "usdz": {
+      "textureCount": null,
+      "size": 22033483,
+      "type": "usdz",
+      "textureMaxResolution": null,
+      "faceCount": null,
+      "vertexCount": null
+    }
+  },
+  "license": "by"
+}

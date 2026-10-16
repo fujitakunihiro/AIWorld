@@ -1,0 +1,10 @@
+test_bevels_preserve_box_bounds_and_form_a_closed_solid (test_paris_frontages.FrontageGeometryTests.test_bevels_preserve_box_bounds_and_form_a_closed_solid) ... ok
+test_glazing_remains_parallel_to_original_at_five_centimetres (test_paris_frontages.FrontageGeometryTests.test_glazing_remains_parallel_to_original_at_five_centimetres) ... ok
+test_regeneration_is_deterministic_and_source_is_read_only (test_paris_frontages.FrontageGeometryTests.test_regeneration_is_deterministic_and_source_is_read_only) ... ok
+test_render_geometry_is_finite_clockwise_and_well_formed (test_paris_frontages.FrontageGeometryTests.test_render_geometry_is_finite_clockwise_and_well_formed) ... ok
+test_windows_match_original_glass_quads_and_source_ids (test_paris_frontages.FrontageGeometryTests.test_windows_match_original_glass_quads_and_source_ids) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 18.383s
+
+OK

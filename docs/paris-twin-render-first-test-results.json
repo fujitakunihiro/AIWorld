@@ -1,0 +1,57 @@
+{
+  "stage": "initial prototype; defects fixed in following build",
+  "tests": [
+    {
+      "name": "BusinessesAndTerraces",
+      "result": "Success"
+    },
+    {
+      "name": "CafeSeatingLifecycle",
+      "result": "Success"
+    },
+    {
+      "name": "CafeVisitLifecycle",
+      "result": "Success"
+    },
+    {
+      "name": "CoordinateAgreement",
+      "result": "Success"
+    },
+    {
+      "name": "LocalSocialInteraction",
+      "result": "Success"
+    },
+    {
+      "name": "RenderCacheParityAndModes",
+      "result": "Fail"
+    },
+    {
+      "name": "RuntimePacketSafety",
+      "result": "Success"
+    },
+    {
+      "name": "SceneCollisionAndDebug",
+      "result": "Fail"
+    },
+    {
+      "name": "StreetInstancesAndQuality",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    },
+    {
+      "name": "TrafficAndMappedProps",
+      "result": "Success"
+    },
+    {
+      "name": "WalkingAndPedestrians",
+      "result": "Success"
+    },
+    {
+      "name": "WalkingGraphRouting",
+      "result": "Success"
+    }
+  ]
+}

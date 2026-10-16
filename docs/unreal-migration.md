@@ -4,6 +4,8 @@ Windows用のネイティブUE 5.8プロジェクトを `unreal/AIWorld` に追�
 
 ## 起動
 
+実地理に基づくパリ地区は **`Paris-DigitalTwin.cmd`**、素材と窓枠の確認は **`Paris-Materials.cmd`** で開きます。どちらもUE Editorのゲームモードを使います。開発ターゲットの `Binaries/Win64/AIWorld.exe` を直接開くと、Cook済みGlobal shader libraryがなく終了するため、起動用CMDを使用してください。[最新の素材・起動・検証](paris-digital-twin-materials.md)。
+
 UE 5.8.3の現在の場所は `D:\Epic Games\UE_5.8` です。Docker Desktopを起動して、リポジトリーのルートで実行します。
 
 初回ビルドにはUE 5.8、Visual Studio C++ツールとWindows SDK、Node.js 22以上が必要です。このPCではUE 5.8.3、MSVC 14.44、Windows SDK 10.0.22621.0、Node.js 24.16.0を確認しています。ビルド済みのこの環境では、ルートの **`AIWorld-Unreal.cmd` をダブルクリック**して起動できます。

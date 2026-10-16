@@ -1,0 +1,296 @@
+{
+  "format": "paris_rendering_audit_v1",
+  "errors": [],
+  "engine": {
+    "MajorVersion": 5,
+    "MinorVersion": 8,
+    "PatchVersion": 3,
+    "Changelist": 58210709,
+    "CompatibleChangelist": 55116800,
+    "IsLicenseeVersion": 0,
+    "IsPromotedBuild": 1,
+    "BranchName": "++UE5+Release-5.8"
+  },
+  "gpu_capability_probe": {
+    "format": "paris_gpu_probe_v1",
+    "run_utc": "2026-10-15T11:21:58.0680053Z",
+    "gpu": [
+      {
+        "Name": "AMD Radeon(TM) Graphics",
+        "DriverVersion": "32.0.21045.5002"
+      }
+    ],
+    "method": "D3D12CreateDevice(default adapter, FL11_0) + ID3D12Device.CheckFeatureSupport",
+    "d3d12_device_created": true,
+    "shader_model": "6.8",
+    "shader_model_query_ceiling": "6.8",
+    "wave_ops": true,
+    "int64_shader_ops": true,
+    "atomic_int64_typed_resource": true,
+    "atomic_int64_group_shared": true,
+    "raytracing_tier": "1.1",
+    "unified_memory": true,
+    "engine_dx12_render_tested": false,
+    "note": "Device capabilities are prerequisites, not proof that UE Nanite/Lumen/VSM were enabled, built or performant."
+  },
+  "renderer_settings": {
+    "r.dynamicglobalilluminationmethod": "0",
+    "r.reflectionmethod": "2",
+    "r.defaultfeature.autoexposure": "False",
+    "r.defaultfeature.motionblur": "False",
+    "r.antialiasingmethod": "2",
+    "r.shadow.virtual.enable": "0",
+    "r.generatemeshdistancefields": "False"
+  },
+  "default_rhi": "DefaultGraphicsRHI_DX11",
+  "features": {
+    "nanite": {
+      "current_use": false,
+      "reason": "Observed DX11 excludes Nanite; pipeline uses runtime fast-build visuals with no Nanite asset build"
+    },
+    "lumen": {
+      "configured_gi": false,
+      "current_use": false,
+      "reason": "Enabling config alone cannot verify offline cards/SDF or Lumen rendering"
+    },
+    "virtual_shadow_maps": {
+      "configured": false,
+      "current_use": false
+    },
+    "pbr_materials": {
+      "current_use": true,
+      "generated_sets": 5,
+      "photographic_sets": 2
+    },
+    "pcg": {
+      "installed": true,
+      "loaded_in_observed_run": true,
+      "authored_graph_in_use": false
+    },
+    "world_partition": {
+      "current_use": false,
+      "observed_runtime_disabled": true
+    },
+    "hlod": {
+      "current_use": false,
+      "custom_render_cache_is_hlod": false,
+      "reason": "No World Partition HLOD layers/actors/build; exact visual copies, no simplification"
+    }
+  },
+  "observed_performance": "paris-street-realism-performance.json",
+  "current_assets": [
+    {
+      "id": "limestone",
+      "status": "generated_in_repo",
+      "material": "/Game/Materials/M_ParisLimestoneProcedural",
+      "textures": [
+        {
+          "file": "Limestone_basecolor.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisLimestoneBasecolor"
+        },
+        {
+          "file": "Limestone_surface.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisLimestoneSurface"
+        }
+      ],
+      "photographic_reference": false,
+      "surface_layout": "ARH"
+    },
+    {
+      "id": "zinc",
+      "status": "generated_in_repo",
+      "material": "/Game/Materials/M_ParisZinc",
+      "textures": [
+        {
+          "file": "Zinc_basecolor.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisZincBasecolor"
+        },
+        {
+          "file": "Zinc_surface.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisZincSurface"
+        }
+      ],
+      "photographic_reference": false,
+      "surface_layout": "ARH"
+    },
+    {
+      "id": "slate",
+      "status": "generated_in_repo",
+      "material": "/Game/Materials/M_ParisSlate",
+      "textures": [
+        {
+          "file": "Slate_basecolor.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisSlateBasecolor"
+        },
+        {
+          "file": "Slate_surface.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisSlateSurface"
+        }
+      ],
+      "photographic_reference": false,
+      "surface_layout": "ARH"
+    },
+    {
+      "id": "paving",
+      "status": "generated_in_repo",
+      "material": "/Game/Materials/M_ParisPavingProcedural",
+      "textures": [
+        {
+          "file": "Paving_basecolor.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisPavingBasecolor"
+        },
+        {
+          "file": "Paving_surface.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisPavingSurface"
+        }
+      ],
+      "photographic_reference": false,
+      "surface_layout": "ARH"
+    },
+    {
+      "id": "asphalt",
+      "status": "generated_in_repo",
+      "material": "/Game/Materials/M_ParisAsphalt",
+      "textures": [
+        {
+          "file": "Asphalt_basecolor.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisAsphaltBasecolor"
+        },
+        {
+          "file": "Asphalt_surface.png",
+          "width": 512,
+          "height": 512,
+          "ue_asset": "/Game/Textures/T_ParisAsphaltSurface"
+        }
+      ],
+      "photographic_reference": false,
+      "surface_layout": "ARH"
+    },
+    {
+      "id": "white_sandstone_blocks_02",
+      "status": "bundled_cc0_photographic_proxy",
+      "material": "/Game/Materials/M_ParisLimestone",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "source_url": "https://polyhaven.com/a/white_sandstone_blocks_02",
+      "paris_site_reference": false
+    },
+    {
+      "id": "cobblestone_pavement",
+      "status": "bundled_cc0_photographic_proxy",
+      "material": "/Game/Materials/M_ParisPaving",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "source_url": "https://polyhaven.com/a/cobblestone_pavement",
+      "paris_site_reference": false
+    }
+  ],
+  "environment": {
+    "id": "kloppenheim_05_puresky",
+    "source_url": "https://polyhaven.com/a/kloppenheim_05_puresky",
+    "authors": [
+      "Greg Zaal",
+      "Jarod Guest"
+    ],
+    "license": "CC0-1.0",
+    "file": "kloppenheim_05_puresky_1k.hdr",
+    "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloppenheim_05_puresky_1k.hdr",
+    "provider_md5": "fe0d85219b08932d0467c3752012b749",
+    "sha256": "9da5a7f9c799fa6e41cac8fbc4fb7aa2d4556e2f00ce9943abe0fd83b6d4caf5",
+    "bytes": 1086297,
+    "use": "Sky lighting and reflection environment; not the surveyed Paris sky"
+  },
+  "required_assets": [
+    {
+      "id": "surveyed_limestone",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 1,
+      "kind": "texture_set",
+      "spec": "2K baseline / 4K focus; unlit albedo sRGB, DirectX normal linear, ORM linear, optional 16-bit height; physical tile size; clean and weathered variants",
+      "evidence_required": "Photo/source reference, license and redistribution terms; no baked lighting"
+    },
+    {
+      "id": "surveyed_zinc_slate",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 1,
+      "kind": "texture_set",
+      "spec": "Separate zinc and slate; 2K baseline / 4K focus; DX normal and ORM; seam/tile dimensions; distinguish exposed metal from oxide or dirt",
+      "evidence_required": "Roof reference photographs and rights; measured dimensions or explicitly labelled estimates"
+    },
+    {
+      "id": "documented_facade_modules",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 1,
+      "kind": "static_mesh_kit",
+      "spec": "Wall, cornice, opening, balcony and dormer modules; centimetres, UV0, closed wall shells >=10cm for Lumen trials, explicit pivots; conventional LODs and separate collision",
+      "evidence_required": "Location/style reference per facade; actual source IDs preserved; procedural placement labelled inferred"
+    },
+    {
+      "id": "notre_dame_exterior",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 1,
+      "kind": "landmark",
+      "spec": "Documented west facade, towers, buttresses and roof; modular static meshes, high-detail source plus fallback LOD and separate collision; preserve source footprint/anchor",
+      "evidence_required": "Survey/photogrammetry or documented photo references and redistribution rights; target L4/L5 requires corresponding evidence"
+    },
+    {
+      "id": "sainte_chapelle_exterior",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 2,
+      "kind": "landmark",
+      "spec": "Documented chapel exterior, roof and spire; split opaque stone and glass; cm scale, source anchor, fallback LOD and collision",
+      "evidence_required": "Documented references and rights; target L4/L5 requires corresponding evidence"
+    },
+    {
+      "id": "quay_bridge_masonry",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 2,
+      "kind": "static_mesh_kit",
+      "spec": "Quay blocks, bridge arch/parapet modules; stone PBR, 2K / 4K focus, UVs and LODs; surveyed dimensions or labelled estimates",
+      "evidence_required": "Actual bridge ID and reference; do not replace measured centreline or water/terrain datum"
+    },
+    {
+      "id": "documented_street_props",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 3,
+      "kind": "instanced_mesh_kit",
+      "spec": "Streetlights, benches, cafe furniture and trees; 3 conventional LODs, instancing-safe materials, simple collision; masked foliage with controlled overdraw",
+      "evidence_required": "Mapped OSM positions take priority; PCG placements carry inferred provenance"
+    },
+    {
+      "id": "realistic_people",
+      "status": "missing",
+      "ue_asset": null,
+      "priority": 1,
+      "kind": "skeletal_mesh_kit",
+      "spec": "Adult pedestrian models in cm; rig, walk/idle/sit/stand animation set, skin/clothing PBR, 3 LODs; <=30k triangles near, <5k medium; compatible foot contact and chair height",
+      "evidence_required": "Redistribution rights for meshes, textures and motions; simulated identities/occupancy remain inferred, no claim to scanned actual Paris pedestrians"
+    }
+  ],
+  "note": "Filesystem/config/log audit. UE load/render verification is recorded separately in native tests and screenshots; DX12 rendering has not been tested."
+}

@@ -1,0 +1,11 @@
+{
+  "asset": "/Game/ParisPhotoreal/Ground/SM_ParisTerrainCut_4b6178b9763f",
+  "generated_triangles": 30896,
+  "render_triangles": 30419,
+  "copied_render_triangles": 30419,
+  "symmetric_difference_m2": 0.07420772138778847,
+  "area_difference_outside_0_5mm_edge_band_m2": 0.0,
+  "max_sampled_z_error_cm": 0.00036092116829422594,
+  "expected_area_m2": 273692.2397117526,
+  "passed": true
+}

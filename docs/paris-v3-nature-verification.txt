@@ -1,0 +1,12 @@
+Verified island_tree_01_2k.gltf
+Verified textures/island_tree_01_nor_gl_2k.jpg
+Verified textures/island_tree_01_diff_2k.jpg
+Verified textures/island_tree_01_arm_2k.jpg
+Verified textures/island_tree_01_leaves_nor_gl_2k.jpg
+Verified textures/island_tree_01_leaves_diff_2k.jpg
+Verified textures/island_tree_01_leaves_arm_2k.jpg
+Verified textures/island_tree_01_branches_nor_gl_2k.jpg
+Verified textures/island_tree_01_branches_diff_2k.jpg
+Verified textures/island_tree_01_branches_arm_2k.jpg
+Verified island_tree_01.bin
+Verified textures/island_tree_01_leaves_alpha_2k.png

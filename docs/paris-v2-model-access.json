@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://api.sketchfab.com/v3/models/b5808186c49a451bbf815fbccdb727a3",
+    "authenticated": false,
+    "http_status": 200,
+    "metadata": {
+      "name": "Notre-Dame de Paris",
+      "description": "20M tris model reduced to 300K tris. 16K textures to 8K",
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/322a749bcfa841b29dff1e8a1bb74b0b",
+        "label": "CC Attribution",
+        "fullName": "Creative Commons Attribution",
+        "requirements": "Author must be credited. Commercial use is allowed.",
+        "url": "http://creativecommons.org/licenses/by/4.0/",
+        "slug": "by"
+      },
+      "faceCount": 303751,
+      "vertexCount": 371457,
+      "isDownloadable": true,
+      "user": {
+        "uid": "70120bd380d4445a962ac15bb6fd7440",
+        "username": "francois.bouille",
+        "displayName": "francois.bouille",
+        "account": "basic",
+        "profileUrl": "https://sketchfab.com/francois.bouille",
+        "avatar": {
+          "uid": "6f921a5c5576495ca2abd8da9f63ad55",
+          "uri": "https://api.sketchfab.com/v3/avatars/6f921a5c5576495ca2abd8da9f63ad55",
+          "images": [
+            {
+              "width": 100,
+              "height": 100,
+              "size": 4291,
+              "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/6e37bfcc73c942e2ab1938d107151b25.jpeg"
+            },
+            {
+              "width": 90,
+              "height": 90,
+              "size": 3646,
+              "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/573bc996ebfc45788f4b6eb438ad06fe.jpeg"
+            },
+            {
+              "width": 48,
+              "height": 48,
+              "size": 1307,
+              "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/609cbb59259b4d6db5997182d63199e9.jpeg"
+            },
+            {
+              "width": 32,
+              "height": 32,
+              "size": 781,
+              "url": "https://media.sketchfab.com/avatars/6f921a5c5576495ca2abd8da9f63ad55/1ed95ea8b045466c85a165e819e5181c.jpeg"
+            }
+          ]
+        },
+        "uri": "https://api.sketchfab.com/v3/users/70120bd380d4445a962ac15bb6fd7440"
+      }
+    }
+  },
+  {
+    "url": "https://api.sketchfab.com/v3/models/b5808186c49a451bbf815fbccdb727a3/download",
+    "authenticated": false,
+    "http_status": 401
+  }
+]

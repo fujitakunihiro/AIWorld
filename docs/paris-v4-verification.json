@@ -1,0 +1,125 @@
+{
+  "engine": "UE 5.8.3 Development Editor -game",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "core_geometry": {
+    "sha256": "7ad69c15c2e697908b321b49e0b456c240cd83f59714330371847107003fd1e8",
+    "buildings": 739,
+    "source_features": 4799,
+    "core_meshes": 191
+  },
+  "native_tests": {
+    "native-photo": {
+      "passed": 17,
+      "tests": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "LocalSocialInteraction",
+        "PhotoBridgeDeckHeight",
+        "PhotoDetailAssetsAndFallback",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ]
+    },
+    "native-legacy": {
+      "passed": 17,
+      "tests": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "LocalSocialInteraction",
+        "PhotoBridgeDeckHeight",
+        "PhotoDetailAssetsAndFallback",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ]
+    },
+    "village": {
+      "passed": 5,
+      "tests": [
+        "AuthoredModels",
+        "SavedVillage",
+        "ArchivedGISMesh",
+        "NativeCommands",
+        "SaveAndTerrain"
+      ]
+    }
+  },
+  "additional_material_binding_test": "passed; docs/paris-v4-final-bindings-test.log",
+  "python_tests": {
+    "architecture": 2,
+    "photographic_sources": 4
+  },
+  "architecture": {
+    "meshes": 5,
+    "source_ids": [
+      "osm/way/201611261",
+      "osm/relation/2449758"
+    ],
+    "triangles": 295743,
+    "inferred_details": {
+      "upper_side_bays": 31,
+      "flying_buttresses": 22,
+      "neighbour_windows": 852
+    },
+    "provenance": "Original inferred architectural study: west facade, open belfry, upper nave and nearby hospital window relief. Not a surveyed cathedral model; sculpture, depths and opening placement are approximate. Existing GIS/collision retained."
+  },
+  "materials_manifest": "unreal/textures/paris-photo/manifest.json",
+  "measurements": {
+    "front": {
+      "fps": 41.556155105595444,
+      "frame_p95_ms": 28.55750173330307,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "screen_percentage": 100,
+      "non_nanite_coarse_pages": 0,
+      "native_binary_sha256": "c54d7f5eadc45227abaf0d67dc372518f40dd44b2241c1be217ee7f065f72ef0",
+      "rhi": "D3D12",
+      "shader_feature_level": "SM6",
+      "gi_method": 1,
+      "reflection_method": 1,
+      "virtual_shadow_maps": 1,
+      "photo_tree_nanite_instances": 201,
+      "baked_visual_components": 17
+    },
+    "riverside": {
+      "fps": 49.83051660134638,
+      "frame_p95_ms": 23.983199149370193,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "screen_percentage": 80,
+      "non_nanite_coarse_pages": 0,
+      "native_binary_sha256": "c54d7f5eadc45227abaf0d67dc372518f40dd44b2241c1be217ee7f065f72ef0",
+      "rhi": "D3D12",
+      "shader_feature_level": "SM6",
+      "gi_method": 1,
+      "reflection_method": 1,
+      "virtual_shadow_maps": 1,
+      "photo_tree_nanite_instances": 201,
+      "baked_visual_components": 17
+    }
+  },
+  "limitations": [
+    "Original inferred cathedral details, not a surveyed full cathedral",
+    "Photo quality and 60fps target remain unmet",
+    "GPU profile is one sampled frame; concurrent queue times are not summed"
+  ]
+}

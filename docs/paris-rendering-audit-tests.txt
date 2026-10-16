@@ -1,0 +1,10 @@
+test_generated_inventory_and_pending_requirements (test_render_asset_registry.RenderAssetRegistryTests.test_generated_inventory_and_pending_requirements) ... ok
+test_missing_material_cannot_pass_inventory (test_render_asset_registry.RenderAssetRegistryTests.test_missing_material_cannot_pass_inventory) ... ok
+test_tampered_texture_and_wrong_surface_packing_fail (test_render_asset_registry.RenderAssetRegistryTests.test_tampered_texture_and_wrong_surface_packing_fail) ... ok
+test_unreal_package_cannot_escape_content_root (test_render_asset_registry.RenderAssetRegistryTests.test_unreal_package_cannot_escape_content_root) ... ok
+test_unverified_asset_cannot_be_bound_or_marked_available (test_render_asset_registry.RenderAssetRegistryTests.test_unverified_asset_cannot_be_bound_or_marked_available) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.918s
+
+OK

@@ -1,0 +1,22 @@
+{
+  "format": "paris_gpu_probe_v1",
+  "run_utc": "2026-10-15T11:21:58.0680053Z",
+  "gpu": [
+    {
+      "Name": "AMD Radeon(TM) Graphics",
+      "DriverVersion": "32.0.21045.5002"
+    }
+  ],
+  "method": "D3D12CreateDevice(default adapter, FL11_0) + ID3D12Device.CheckFeatureSupport",
+  "d3d12_device_created": true,
+  "shader_model": "6.8",
+  "shader_model_query_ceiling": "6.8",
+  "wave_ops": true,
+  "int64_shader_ops": true,
+  "atomic_int64_typed_resource": true,
+  "atomic_int64_group_shared": true,
+  "raytracing_tier": "1.1",
+  "unified_memory": true,
+  "engine_dx12_render_tested": false,
+  "note": "Device capabilities are prerequisites, not proof that UE Nanite/Lumen/VSM were enabled, built or performant."
+}

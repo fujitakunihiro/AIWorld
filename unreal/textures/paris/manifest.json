@@ -1,0 +1,60 @@
+{
+  "accuracy": "Inferred regional materials, not measured surfaces; reproduction levels unchanged",
+  "channels": {
+    "basecolor": "sRGB vertex-tint multiplier",
+    "surface": "linear R=AO G=roughness B=height"
+  },
+  "files": {
+    "Asphalt_basecolor.png": "e065da7f0839da67ae89b5d8670487b704b74401fe7bff8502db4609170a2a7b",
+    "Asphalt_surface.png": "952bcbd7e5f879f210bfe69fa7c0355f9e5ac7ec69acd8d944898cf1b7c51f73",
+    "Limestone_basecolor.png": "95abf7f55a06786f8af1f37f566f7efb8acbef527df34a02476e367cebc4c11d",
+    "Limestone_surface.png": "b1a61b2d4d07f4cb618a28daeb8781aca11bfcd6878ad5f0247c1a9ac193a54b",
+    "Paving_basecolor.png": "1d5a00471c095b0e9bce3706721292d7d597a8d481eb028e875d637e56c57cde",
+    "Paving_surface.png": "242ad363c47766de475932299127533c2c5e881bdd6ac212199ce70245656eac",
+    "Slate_basecolor.png": "b2c24a5bc624a43b56a28e1ec0ce3e65048bc5032947277907bde7fe9c3e235b",
+    "Slate_surface.png": "8d3c79631657ac6dce58b522c1bf3f23f9f06864645018aa879e7ed44306497f",
+    "Zinc_basecolor.png": "b2414e9309cf79dc46ffe21b8864d8e8b03294f76c109baa4c398136d0a9f7da",
+    "Zinc_surface.png": "dc77c5b8e9e077184321a5ae3af7a5f17b1abff46fa665e298dbb51bd004f1ad"
+  },
+  "generator_sha256": "38f756aa5c5448f4938d28d06a25f3bd8983f043a1aeff7e7aedc7ac6b5ab8e5",
+  "license": "Original project asset; distribution follows the repository license",
+  "recipes": {
+    "Asphalt": {
+      "height_cm": 0.06,
+      "metallic": 0,
+      "tile_cm": 100
+    },
+    "Limestone": {
+      "columns": 3,
+      "height_cm": 0.8,
+      "joint_cm": 0.65,
+      "metallic": 0,
+      "rows": 6,
+      "tile_cm": 240
+    },
+    "Paving": {
+      "columns": 8,
+      "height_cm": 0.65,
+      "joint_cm": 0.8,
+      "metallic": 0,
+      "rows": 10,
+      "tile_cm": 200
+    },
+    "Slate": {
+      "columns": 4,
+      "height_cm": 0.45,
+      "joint_cm": 0.3,
+      "metallic": 0,
+      "rows": 6,
+      "tile_cm": 120
+    },
+    "Zinc": {
+      "height_cm": 1.2,
+      "metallic": 0.78,
+      "panels": 4,
+      "tile_cm": 240
+    }
+  },
+  "resolution": 512,
+  "source": "Original procedural project assets; no photographs or external textures"
+}

@@ -1,0 +1,90 @@
+{
+  "meshes": 33,
+  "materials": [
+    {
+      "material": "/Game/Materials/M_ParisCastIron.M_ParisCastIron",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisCathedralStone.M_ParisCathedralStone",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisGlass.M_ParisGlass",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisIron.M_ParisIron",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisLanternGlass.M_ParisLanternGlass",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisLimestone.M_ParisLimestone",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisLimestoneProcedural.M_ParisLimestoneProcedural",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisSlate.M_ParisSlate",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisSlatePhotographic.M_ParisSlatePhotographic",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisWindowGlass.M_ParisWindowGlass",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisWindowPaintedWood.M_ParisWindowPaintedWood",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisWood.M_ParisWood",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_ParisZinc.M_ParisZinc",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/Materials/M_Vertex.M_Vertex",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/ParisPhotoreal/Nature/Materials/M_ParisBroadleaf_0.M_ParisBroadleaf_0",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/ParisPhotoreal/Nature/Materials/M_ParisBroadleaf_1.M_ParisBroadleaf_1",
+      "nanite_usage": true,
+      "changed": false
+    },
+    {
+      "material": "/Game/ParisPhotoreal/Nature/Materials/M_ParisBroadleaf_2.M_ParisBroadleaf_2",
+      "nanite_usage": true,
+      "changed": false
+    }
+  ]
+}

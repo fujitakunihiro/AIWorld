@@ -1,0 +1,213 @@
+{
+  "format": "paris_street_realism_verification_v1",
+  "verified_utc": "2026-10-15T12:20:55.9824485Z",
+  "native_binary_sha256": "8a7e1c8318471f26b62b128faff71aba011bf5675adca9e3ade685f831137ffc",
+  "scene_sha256": "28e18dd640f25af7bbd1fc288e6b11f2587ab4ff87a50b49bd2356d7ec805694",
+  "native_tests": [
+    {
+      "profile": "compact",
+      "passed": 14,
+      "tests": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "LocalSocialInteraction",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ],
+      "log": "docs/paris-street-realism-native-tests.log",
+      "sha256": "cf4ae28779c50c562b0688f6a84c1de9fe324861e90fe4c26a6d300568ff8981"
+    },
+    {
+      "profile": "legacy_json",
+      "passed": 14,
+      "tests": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "LocalSocialInteraction",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ],
+      "log": "docs/paris-street-realism-legacy-tests.log",
+      "sha256": "fd74c73affe909689ef6b65ce3550ce0a59e39101a17ea8141f0989575e4ef50"
+    },
+    {
+      "profile": "village",
+      "passed": 5,
+      "tests": [
+        "AuthoredModels",
+        "SavedVillage",
+        "ArchivedGISMesh",
+        "NativeCommands",
+        "SaveAndTerrain"
+      ],
+      "log": "docs/paris-street-realism-village-tests.log",
+      "sha256": "6c828c73c8bf11d2e5b2d7d1e1ebf9a3c66555300d5d762fb7bbbf9eaf6de8ae"
+    }
+  ],
+  "native_passed": 33,
+  "python_related_passed": 10,
+  "python_log": "docs/paris-street-realism-python-tests.txt",
+  "registry_final_log": "docs/paris-street-realism-registry-final-tests.txt",
+  "gis_validation": {
+    "errors": [],
+    "warnings": [
+      "OSM footprint overlaps require source review; not silently treated as surveyed",
+      "362 buildings lack near-complete official gutter coverage; roof profiles remain inferred",
+      "Road network has disconnected components; inspect clipped paths and source gaps",
+      "2 low bridge fragments (2 boundary-clipped) need full coverage / surveyed deck elevations; estimates retained"
+    ],
+    "buildings": 739,
+    "estimated_heights": 89,
+    "source_declared_heights": 6,
+    "coordinate_roundtrip_max_m": 2.7939677238464355E-09,
+    "scene_sha256": "28e18dd640f25af7bbd1fc288e6b11f2587ab4ff87a50b49bd2356d7ec805694"
+  },
+  "core_geometry_before_after": {
+    "sha256": "7ad69c15c2e697908b321b49e0b456c240cd83f59714330371847107003fd1e8",
+    "buildings": 739,
+    "source_features": 4799,
+    "core_meshes": 191
+  },
+  "generated_road_building_overlap_m2": 0.0,
+  "facade_report": {
+    "balconies": 10684,
+    "cornices": 6965,
+    "decorated_buildings": 632,
+    "detail_bounds_projected_m": [
+      651784.9335317175,
+      6861617.980635887,
+      651884.9335317175,
+      6861717.980635887
+    ],
+    "detail_buildings": 24,
+    "detailed_balconies": 208,
+    "detailed_windows": 524,
+    "dormers": 686,
+    "entrances": 626,
+    "facade_source": "inferred modules; churches/monuments excluded; overall fidelity remains L1",
+    "party_wall_columns_omitted": 6868,
+    "planters": 140,
+    "windows": 33536
+  },
+  "source_manifest_sha256": "ea8ce5a85a41751e02c9560466397a7c638a403857b8b7f4877df615a4202570",
+  "ue_asset_files": [
+    {
+      "file": "T_ParisPhotoPavingAlbedo.uasset",
+      "bytes": 3448710,
+      "sha256": "09a9ca8719ec59710f10bbaef870044289960439f818d5e53b21bc78ff34f8b4"
+    },
+    {
+      "file": "T_ParisPhotoPavingNormal.uasset",
+      "bytes": 21648644,
+      "sha256": "dc43d0dec11663d9bed93242f325ada6038359964a16fb5080a6a5480114579f"
+    },
+    {
+      "file": "T_ParisPhotoPavingOrm.uasset",
+      "bytes": 13364350,
+      "sha256": "4cae0da12280da007eee830f13014ab8e356fd884a3be87b884e893842eea553"
+    },
+    {
+      "file": "T_ParisPhotoStoneAlbedo.uasset",
+      "bytes": 3791672,
+      "sha256": "426c42df11531f2bccaf9b611b4afcbff686854f73a93afe841e8b11c122a833"
+    },
+    {
+      "file": "T_ParisPhotoStoneNormal.uasset",
+      "bytes": 8219389,
+      "sha256": "e6ac6d0e82539fe1e64fbf75685cc4eaaf2df3213ec9950e321f306fccf23f48"
+    },
+    {
+      "file": "T_ParisPhotoStoneOrm.uasset",
+      "bytes": 5305326,
+      "sha256": "08b9885bfd87e69721dd217fe42e6159a7871bd91d2b97110a594c7cd6ec8d93"
+    },
+    {
+      "file": "T_ParisDayEnvironment.uasset",
+      "bytes": 489744,
+      "sha256": "9bbb5cbd500e4301319793f9ce2e71bcfc02ef6fbcfc088fa77ad74a329deb96"
+    },
+    {
+      "file": "M_ParisLimestone.uasset",
+      "bytes": 38944,
+      "sha256": "fd5a0195a29cfd96c5027d7e8954ef7ebd81f73cba175476b43fc300b842c964"
+    },
+    {
+      "file": "M_ParisPaving.uasset",
+      "bytes": 17857,
+      "sha256": "5e507f30114fe27840c166ecee843c8dabd552da4bf01275f7ef87c78f1c21a8"
+    },
+    {
+      "file": "M_ParisCutStone.uasset",
+      "bytes": 6370,
+      "sha256": "be373a562667caef39a1ee10d35e31a882a282a7da2791c5f8bf28ac4c2d3265"
+    },
+    {
+      "file": "M_ParisLimestoneProcedural.uasset",
+      "bytes": 25502,
+      "sha256": "e11e71960a3c1a2f2303c185c91fdbb632501572aa02c3431c6d8084d6ac81e6"
+    },
+    {
+      "file": "M_ParisPavingProcedural.uasset",
+      "bytes": 25387,
+      "sha256": "16f73fe80e09e8cf0e9e8041625ad8b7ca21817df65308c5cd70b4b562f8978b"
+    }
+  ],
+  "performance": [
+    {
+      "file": "docs/paris-street-realism-performance.json",
+      "fps": 100.74503009739034,
+      "p95_ms": 11.52610033750534,
+      "quality": 2,
+      "screen_percentage": 100,
+      "other_unreal_instances_start": 0,
+      "other_unreal_instances_end": 0
+    },
+    {
+      "file": "docs/paris-street-realism-materials-performance.json",
+      "fps": 109.19000929953998,
+      "p95_ms": 10.565202683210373,
+      "quality": 1,
+      "screen_percentage": 80,
+      "other_unreal_instances_start": 0,
+      "other_unreal_instances_end": 0
+    },
+    {
+      "file": "docs/paris-street-realism-overview-performance.json",
+      "fps": 101.64886604239432,
+      "p95_ms": 11.266600340604782,
+      "quality": 1,
+      "screen_percentage": 80,
+      "other_unreal_instances_start": 0,
+      "other_unreal_instances_end": 0
+    },
+    {
+      "file": "docs/paris-street-realism-fallback-performance.json",
+      "fps": 110.93178266943428,
+      "p95_ms": 10.427501052618027,
+      "quality": 1,
+      "screen_percentage": 80,
+      "other_unreal_instances_start": 0,
+      "other_unreal_instances_end": 0
+    }
+  ],
+  "scope": "Actual UE5.8.3 DX11 PBR improvement; no claim to completed photoreal Paris, L3-L5 buildings or active Nanite/Lumen/VSM",
+  "backup": "backups/pre-paris-street-realism-20261015-203902.zip"
+}

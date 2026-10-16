@@ -1,0 +1,29 @@
+Exported 167 native mesh batches to D:\work\develop\21_マインクラフト風AI街\unreal\AIWorld\Content\Data\models.json
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" AIWorldEditor Win64 Development C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\AIWorld.uproject -WaitMutex -NoHotReloadFromIDE -NoUBA -MaxParallelActions=1
+Log file: C:\Users\ku_fu\AppData\Local\UnrealBuildTool\Log.txt
+Executing up to 1 actions based on MaxProcessorCount override
+UbaSessionServer - Disable remote execution (remote sessions will finish current processes)
+Building AIWorldEditor...
+===== Toolchain Information =====
+Using ISPC compiler (D:\Epic Games\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.44.35228 toolchain (C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Tools\MSVC\14.44.35207) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+[Adaptive Build] Excluded from AIWorld unity file: AIWorld.cpp, AIWorldPlayer.cpp, AIWorldResident.cpp, AIWorldScene.cpp, ParisBusinessTests.cpp, ParisCollisionMesh.cpp, ParisDigitalTwin.cpp, ParisDigitalTwinTests.cpp, ParisFrontageTests.cpp, ParisGeoReference.cpp, ParisGroundDisplay.cpp, ParisGroundTests.cpp, ParisNavigation.cpp, ParisNavigationTests.cpp, ParisPedestrians.cpp, ParisPhotoArchitecture.cpp, ParisPhotoDetailTests.cpp, ParisPhotoEnvironment.cpp, ParisPhotoFrontages.cpp, ParisPhotoTests.cpp, ParisRenderCache.cpp, ParisRenderTests.cpp, ParisRuntimeMesh.cpp, ParisSeatingTests.cpp, ParisSocial.cpp, ParisStreetMeshes.cpp, ParisSurfaceMaterials.cpp, ParisSurfaceTests.cpp, ParisTraffic.cpp, ParisTrafficTests.cpp, ParisVisitTests.cpp, ParisWalker.cpp, ParisWalkingTests.cpp, SAIWorldHUD.cpp, WorldProtocol.cpp, WorldTests.cpp
+=================================
+Using Unreal Build Accelerator local executor to run 5 action(s)
+  CPU 8 physical cores, 16 logical cores
+  Memory 28.8 GB physical, 42.46 GB/48.09 GB committed
+  UBA Storage capacity 40 GB
+[1/5] Compile [x64] ParisFrontageTests.cpp [NoUba]
+[2/5] Compile [x64] ParisPhotoFrontages.cpp [NoUba]
+[3/5] Link [x64] UnrealEditor-AIWorld.dll [NoUba]
+[4/5] Link [x64] UnrealEditor-AIWorld.lib [NoUba]
+[5/5] WriteMetadata AIWorldEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 42.87 seconds
+Output binary: D:\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 45.13 seconds
+Trace written to file C:\Users\ku_fu\AppData\Local\UnrealBuildTool\Trace.uba with size 7.6kb

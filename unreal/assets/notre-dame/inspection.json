@@ -1,0 +1,164 @@
+{
+  "parts": 16,
+  "triangles": 302855,
+  "bounds_min": [
+    -36.06589996479865,
+    -1.5040213793068589,
+    -50.6188239711566
+  ],
+  "bounds_max": [
+    14.78319694940522,
+    31.110862824283107,
+    64.55914573684431
+  ],
+  "images": [
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1233981
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1196612
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1224975
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1185503
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1110113
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1126315
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1254214
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1286208
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1345936
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1404355
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 1147361
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 671436
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 684255
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 786891
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 266590
+    },
+    {
+      "name": null,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "mime": "image/jpeg",
+      "bytes": 355289
+    }
+  ],
+  "unlit_source_materials": 16,
+  "has_normal_maps": false,
+  "has_roughness_maps": false,
+  "removed_non_architecture": "pPlane1 reference ground plane excluded"
+}

@@ -1,0 +1,839 @@
+{"sets": 4, "files": 12, "bytes": 142410070}
+{"meshes": 5, "triangles": 291335, "anchor": [2.349068261910986, 48.853249922128704]}
+{"meshes": 2, "triangles": 5220}
+{"triangles": 30896, "original_area_m2": 512158.96384987095, "visible_area_m2": 273692.23971175315, "geometry_sha256": "4b6178b9763fbfb415b3efcfdee91b12dc14a3e3aafa416c27591fcc44cd22d5"}
+LogInit: Display: Running engine for game: AIWorld
+LogCore: Display: Requested channels: 'cpu,gpu,frame,log,bookmark,screenshot,region'
+LogTrace: Display: Control listening on port 1985
+LogCsvProfiler: Display: Metadata set : platform="Windows"
+LogCsvProfiler: Display: Metadata set : config="Development"
+LogCsvProfiler: Display: Metadata set : buildversion="++UE5+Release-5.8-CL-58210709"
+LogCsvProfiler: Display: Metadata set : engineversion="5.8.3-58210709+++UE5+Release-5.8"
+LogCsvProfiler: Display: Metadata set : enginereleaseversion="5.8.3"
+LogCsvProfiler: Display: Metadata set : os="Windows 11 (25H2) [10.0.26200.9457] "
+LogCsvProfiler: Display: Metadata set : cpu="AuthenticAMD|AMD Ryzen 7 7735HS with Radeon Graphics"
+LogCsvProfiler: Display: Metadata set : pgoenabled="0"
+LogCsvProfiler: Display: Metadata set : pgoprofilingenabled="0"
+LogCsvProfiler: Display: Metadata set : ltoenabled="0"
+LogCsvProfiler: Display: Metadata set : asan="0"
+LogCsvProfiler: Display: Metadata set : mergedmodules="0"
+LogCsvProfiler: Display: Metadata set : compacttset="0"
+LogCsvProfiler: Display: Metadata set : commandline="" C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\AIWorld.uproject -run=pythonscript -script=D:\work\develop\21_マインクラフト風AI街\unreal\scripts\create-paris-assets.py -CustomConfig=ParisPhotoreal -nullrhi -unattended -nosplash -stdout""
+LogCsvProfiler: Display: Metadata set : loginid="38f5fa144e7963713804f5bfca011ff8"
+LogCsvProfiler: Display: Metadata set : llm="0"
+LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+LogAudio: Display: Audio Device Manager not initializing due to all audio being disabled. If this is not intentional, please check command line arguments for "-nosound".
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/AIWorld.uproject" -log="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+LogConfig: Display: Loading VulkanPC ini files took 0.17 seconds
+LogConfig: Display: Loading Android ini files took 0.17 seconds
+LogConfig: Display: Loading IOS ini files took 0.18 seconds
+LogConfig: Display: Loading Mac ini files took 0.19 seconds
+LogConfig: Display: Loading TVOS ini files took 0.24 seconds
+LogConfig: Display: Loading Unix ini files took 0.25 seconds
+LogConfig: Display: Loading VisionOS ini files took 0.25 seconds
+LogConfig: Display: Loading Windows ini files took 0.25 seconds
+LogConfig: Display: Loading Linux ini files took 0.29 seconds
+Log file: C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\Saved\Logs\AutoSDKInfo.txt
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogAsyncCompilation: Display: MemorySharingInfo: UsedMemory=294MiB, MaxMemoryAvailable=48351MiB
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+##PlatformValidate: Win64 VALID 10.0.22621.0
+##PlatformValidate: Mac INVALID 26.1.1
+##PlatformValidate: IOS INVALID 26.1.1
+##PlatformValidate: Android INVALID r27c
+##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+##PlatformValidate: TVOS INVALID 26.1.1
+##PlatformValidate: VisionOS INVALID <UNKNOWN>
+Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+Trace written to file C:\Users\ku_fu\AppData\Local\UnrealBuildTool\Trace.uba with size 317b
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+[2026.10.15-23.56.37:885][  0]LogHAL: Display: Platform has ~ 29 GB [30928355328 / 34359738368 / 29], which maps to Larger [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+[2026.10.15-23.56.37:915][  0]LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+[2026.10.15-23.56.37:917][  0]LogObj: Display: Attempting to load config data for Default__DownlinkBandwidthManagerConfig before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.56.38:495][  0]LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.56.38:754][  0]LogCsvProfiler: Display: Metadata set : verbatimrhiname="Null"
+[2026.10.15-23.56.38:754][  0]LogCsvProfiler: Display: Metadata set : rhiname="Null"
+[2026.10.15-23.56.38:754][  0]LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM6"
+[2026.10.15-23.56.38:754][  0]LogCsvProfiler: Display: Metadata set : shaderplatform="PCD3D_SM6"
+[2026.10.15-23.56.38:754][  0]LogCsvProfiler: Display: Metadata set : gpu=""
+[2026.10.15-23.56.38:754][  0]LogCsvProfiler: Display: Metadata set : gpudriver=""
+[2026.10.15-23.56.38:765][  0]LogTextureFormatASTC: Display: ASTCEnc version 5.0.1 library loaded
+[2026.10.15-23.56.38:765][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatASTC
+[2026.10.15-23.56.38:765][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatDXT
+[2026.10.15-23.56.38:765][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatETC2
+[2026.10.15-23.56.38:765][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatIntelISPCTexComp
+[2026.10.15-23.56.38:765][  0]LogTextureFormatOodle: Display: Oodle Texture TFO init; latest sdk version = 2.9.16
+[2026.10.15-23.56.38:765][  0]LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.16.dll
+[2026.10.15-23.56.38:766][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatOodle
+[2026.10.15-23.56.38:766][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatUncompressed
+[2026.10.15-23.56.38:808][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Android'
+[2026.10.15-23.56.38:836][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'IOS'
+[2026.10.15-23.56.38:860][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Linux'
+[2026.10.15-23.56.38:885][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Mac'
+[2026.10.15-23.56.38:886][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'TVOS'
+[2026.10.15-23.56.38:911][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'Windows'
+[2026.10.15-23.56.38:911][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsEditor'
+[2026.10.15-23.56.38:911][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsServer'
+[2026.10.15-23.56.38:911][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsClient'
+[2026.10.15-23.56.38:911][  0]LogTargetPlatformManager: Display: Building Assets For WindowsEditor
+[2026.10.15-23.56.38:917][  0]LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+[2026.10.15-23.56.39:386][  0]LogDerivedDataCache: Display: ../../../Engine/DerivedDataCache/Compressed.ddp: Opened pak cache for reading. (1670 MiB)
+[2026.10.15-23.56.39:388][  0]LogZenServiceInstance: Display: Launching zen utility 'D:/Epic Games/UE_5.8/Engine/Binaries/Win64/zen.exe service status'.
+[2026.10.15-23.56.39:701][  0]LogZenServiceInstance: Display: Writing plugin version info to 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+[2026.10.15-23.56.39:702][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.56.39:703][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.56.39:703][  0]LogZenServiceInstance: Display: Installed service at 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe' is up to date
+[2026.10.15-23.56.39:705][  0]LogZenServiceInstance: Display: Launching executable 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe', working dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install', data dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Data', args '--port 8558 --data-dir C:\Users\ku_fu\AppData\Local\UnrealEngine\Common\Zen\Data --http asio --gc-cache-duration-seconds 1209600 --gc-interval-seconds 21600 --gc-low-diskspace-threshold 2147483648 --cache-bucket-limit-overwrites --quiet --restrict-content-types --allow-external-oidctoken-exe=false --plugins-config "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugins_v1.json" --security-config-path "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/security-config.json" --owner-pid 27316  --child-id Zen_27316_Startup'
+[2026.10.15-23.56.42:473][  0]LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+[2026.10.15-23.56.42:477][  0]LogDerivedDataCache: Display: ZenLocal: Using ZenServer HTTP service at [::1] with namespace ue.ddc. Status: OK!.
+[2026.10.15-23.56.42:505][  0]LogDerivedDataCache: Display: C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/DerivedDataCache: Performance: Latency=0.12ms. RandomReadSpeed=228.00MBs, RandomWriteSpeed=42.27MBs. Assigned SpeedClass 'Local'
+[2026.10.15-23.56.42:519][  0]LogUbaHorde: Display: UBA/Horde Configuration [Uba.Provider.Horde]: Not Enabled
+[2026.10.15-23.56.42:519][  0]LogShaderCompilers: Display: No distributed shader compiler controller found
+[2026.10.15-23.56.42:519][  0]LogShaderCompilers: Display: Using 13 local workers for shader compilation
+[2026.10.15-23.56.42:532][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM6/AutogenShaderHeaders.ush
+[2026.10.15-23.56.42:532][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.56.43:397][  0]LogEditorDomain: Display: EditorDomain is Disabled
+[2026.10.15-23.56.43:829][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+[2026.10.15-23.56.43:829][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+[2026.10.15-23.56.43:900][  0]LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsEditor"
+[2026.10.15-23.56.43:906][  0]LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+[2026.10.15-23.56.43:928][  0]LogTextureEncodingSettings: Display: Texture Encode Speed: Final (cook).
+[2026.10.15-23.56.43:928][  0]LogTextureEncodingSettings: Display: Oodle Texture Encode Speed settings: Fast: RDO Off Lambda=0, Effort=Normal Final: RDO Off Lambda=0, Effort=Normal
+[2026.10.15-23.56.43:928][  0]LogTextureEncodingSettings: Display: Shared linear texture encoding: Disabled
+[2026.10.15-23.56.43:964][  0]LogMeshReduction: Display: Using QuadricMeshReduction for automatic static mesh reduction
+[2026.10.15-23.56.43:964][  0]LogMeshReduction: Display: Using SkeletalMeshReduction for automatic skeletal mesh reduction
+[2026.10.15-23.56.43:964][  0]LogMeshReduction: Display: Using ProxyLODMeshReduction for automatic mesh merging
+[2026.10.15-23.56.43:964][  0]LogMeshReduction: Display: No distributed automatic mesh merging module available
+[2026.10.15-23.56.44:198][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM5/AutogenShaderHeaders.ush
+[2026.10.15-23.56.44:199][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.56.44:199][  0]LogVirtualization: Display: VirtualizationSystem name found in ini file: None
+[2026.10.15-23.56.44:199][  0]LogVirtualization: Display: FNullVirtualizationSystem mounted, virtualization will be disabled
+[2026.10.15-23.56.44:347][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize started...
+[2026.10.15-23.56.44:352][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize took 4.562 ms
+[2026.10.15-23.56.44:800][  0]LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+[2026.10.15-23.56.44:806][  0]LogAudio: Display: Registering Engine Module Parameter Interfaces...
+[2026.10.15-23.56.45:836][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.56.45:836][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.56.46:242][  0]LogAssetRegistry: Display: No AssetDiscovery cache present at C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistryDiscovery.bin. AssetRegistry discovery of files will be uncached.
+[2026.10.15-23.56.46:244][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PreLoad): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.56.46:244][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.56.46:245][  0]LogAssetRegistry: Display: FindShardedCacheFiles: 1 via .ref, 0 via migration fallback, 1 total
+[2026.10.15-23.56.46:245][  0]LogAssetRegistry: Display: LoadCacheFiles: loading 1 cache files, memory-mapping=enabled
+[2026.10.15-23.56.46:376][  0]LogAssetRegistry: Display: Asset registry cache read as 118.5 MiB from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry/CachedAssetRegistry_0_F655325840716F9B60E5B7BE472531AD.bin (memory-mapped=yes)
+[2026.10.15-23.56.46:377][  0]LogAssetRegistry: Display: AssetDataGatherer spent 0.134s loading caches from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry.
+[2026.10.15-23.56.46:587][  0]LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+[2026.10.15-23.56.46:666][  0]LogPython: Display: No pip-enabled plugins with python dependencies found, skipping
+[2026.10.15-23.56.47:160][  0]LogCsvProfiler: Display: Metadata set : raytracing="0"
+[2026.10.15-23.56.47:440][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.56.47:457][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... took 17.782 ms
+[2026.10.15-23.56.47:457][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.56.47:485][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... took 27.248 ms (total: 45.031 ms)
+[2026.10.15-23.56.47:486][  0]LogPythonScriptCommandlet: Display: Running Python script: D:\work\develop\21_マインクラフト風AI街\unreal\scripts\create-paris-assets.py
+[2026.10.15-23.56.49:500][  0]LogSourceControl: Display: Uncontrolled Changelist persistency file loaded C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SourceControl/UncontrolledChangelists.json
+[2026.10.15-23.56.49:791][  0]LogPython: Warning: D:/work/develop/21_マインクラフト風AI街/unreal/scripts\create-paris-photo-assets.py:94: DeprecationWarning: MaterialEditingLibrary: Function 'set_material_usage' on 'MaterialEditingLibrary' is deprecated: Use SetBaseMaterialUsage instead
+  lib.set_material_usage(mat, unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
+
+[2026.10.15-23.56.51:798][  0]LogInterchangeEngine: Display: Interchange start importing source [D:/work/develop/21_マインクラフト風AI街/unreal/textures/paris-photo/grass_albedo_2k.jpg]
+[2026.10.15-23.56.51:862][  0]LogInterchangeEngine: Display: Interchange import completed [D:/work/develop/21_マ...textures/paris-photo/grass_albedo_2k.jpg]
+[2026.10.15-23.56.51:919][  0]LogInterchangeEngine: Display: Interchange start importing source [D:/work/develop/21_マインクラフト風AI街/unreal/textures/paris-photo/grass_normal_2k.png]
+[2026.10.15-23.56.52:155][  0]LogInterchangePipeline: Display: Auto-detected normal map
+[2026.10.15-23.56.52:156][  0]LogInterchangeEngine: Display: Interchange import completed [D:/work/develop/21_マ...textures/paris-photo/grass_normal_2k.png]
+[2026.10.15-23.56.52:576][  0]LogInterchangeEngine: Display: Interchange start importing source [D:/work/develop/21_マインクラフト風AI街/unreal/textures/paris-photo/grass_orm_2k.png]
+[2026.10.15-23.56.52:852][  0]LogInterchangeEngine: Display: Interchange import completed [D:/work/develop/21_マ...textures/paris-photo/grass_orm_2k.png]
+[2026.10.15-23.56.53:236][  0]LogMaterial: Display: Material /Game/Materials/M_ParisGrassPhotographic.M_ParisGrassPhotographic needed to set usage flag InstancedStaticMeshes
+[2026.10.15-23.56.54:458][  0]LogPython: Warning: D:/work/develop/21_マインクラフト風AI街/unreal/scripts\create-paris-photo-assets.py:202: DeprecationWarning: MaterialEditingLibrary: Function 'set_material_usage' on 'MaterialEditingLibrary' is deprecated: Use SetBaseMaterialUsage instead
+  lib.set_material_usage(mat,unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
+
+[2026.10.15-23.56.54:458][  0]LogMaterial: Display: Material /Game/Materials/M_ParisCastIron.M_ParisCastIron needed to set usage flag InstancedStaticMeshes
+[2026.10.15-23.56.54:731][  0]LogMaterial: Display: Material /Game/Materials/M_ParisLanternGlass.M_ParisLanternGlass needed to set usage flag InstancedStaticMeshes
+[2026.10.15-23.56.55:082][  0]LogPythonScriptCommandlet: Display: Python script executed successfully
+[2026.10.15-23.56.55:082][  0]LogInit: Display: 
+[2026.10.15-23.56.55:082][  0]LogInit: Display: Warning/Error Summary (Unique only)
+[2026.10.15-23.56.55:082][  0]LogInit: Display: -----------------------------------
+[2026.10.15-23.56.55:082][  0]LogInit: Display: LogPython: Warning: D:/work/develop/21_マインクラフト風AI街/unreal/scripts\create-paris-photo-assets.py:94: DeprecationWarning: MaterialEditingLibrary: Function 'set_material_usage' on 'MaterialEditingLibrary' is deprecated: Use SetBaseMaterialUsage instead
+  lib.set_material_usage(mat, unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
+
+[2026.10.15-23.56.55:082][  0]LogInit: Display: LogPython: Warning: D:/work/develop/21_マインクラフト風AI街/unreal/scripts\create-paris-photo-assets.py:202: DeprecationWarning: MaterialEditingLibrary: Function 'set_material_usage' on 'MaterialEditingLibrary' is deprecated: Use SetBaseMaterialUsage instead
+  lib.set_material_usage(mat,unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
+
+[2026.10.15-23.56.55:083][  0]LogInit: Display: 
+[2026.10.15-23.56.55:083][  0]LogInit: Display: Success - 0 error(s), 2 warning(s)
+[2026.10.15-23.56.55:083][  0]LogInit: Display: 
+
+Execution of commandlet took:  7.64 seconds, PeakPhysMemoryMB=2226 MB, PeakVirtMemoryMB=2105 MB
+[2026.10.15-23.56.55:473][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.56.55:474][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.56.55:688][  0]LogShaderCompilers: Display: Exiting ShaderCompilingThread
+[2026.10.15-23.56.55:731][  0]LogSourceControl: Display: Uncontrolled Changelist persistency file saved C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SourceControl/UncontrolledChangelists.json
+LogInit: Display: Running engine for game: AIWorld
+LogCore: Display: Requested channels: 'cpu,gpu,frame,log,bookmark,screenshot,region'
+LogTrace: Display: Control listening on port 1985
+LogCsvProfiler: Display: Metadata set : platform="Windows"
+LogCsvProfiler: Display: Metadata set : config="Development"
+LogCsvProfiler: Display: Metadata set : buildversion="++UE5+Release-5.8-CL-58210709"
+LogCsvProfiler: Display: Metadata set : engineversion="5.8.3-58210709+++UE5+Release-5.8"
+LogCsvProfiler: Display: Metadata set : enginereleaseversion="5.8.3"
+LogCsvProfiler: Display: Metadata set : os="Windows 11 (25H2) [10.0.26200.9457] "
+LogCsvProfiler: Display: Metadata set : cpu="AuthenticAMD|AMD Ryzen 7 7735HS with Radeon Graphics"
+LogCsvProfiler: Display: Metadata set : pgoenabled="0"
+LogCsvProfiler: Display: Metadata set : pgoprofilingenabled="0"
+LogCsvProfiler: Display: Metadata set : ltoenabled="0"
+LogCsvProfiler: Display: Metadata set : asan="0"
+LogCsvProfiler: Display: Metadata set : mergedmodules="0"
+LogCsvProfiler: Display: Metadata set : compacttset="0"
+LogCsvProfiler: Display: Metadata set : commandline="" C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\AIWorld.uproject -run=pythonscript -script=D:\work\develop\21_マインクラフト風AI街\unreal\scripts\bake-paris-photoreal.py -CustomConfig=ParisPhotoreal -nullrhi -unattended -nosplash -stdout""
+LogCsvProfiler: Display: Metadata set : loginid="38f5fa144e7963713804f5bfca011ff8"
+LogCsvProfiler: Display: Metadata set : llm="0"
+LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+LogAudio: Display: Audio Device Manager not initializing due to all audio being disabled. If this is not intentional, please check command line arguments for "-nosound".
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/AIWorld.uproject" -log="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+LogConfig: Display: Loading Android ini files took 0.20 seconds
+LogConfig: Display: Loading IOS ini files took 0.20 seconds
+LogConfig: Display: Loading Mac ini files took 0.20 seconds
+LogConfig: Display: Loading VulkanPC ini files took 0.21 seconds
+LogConfig: Display: Loading Unix ini files took 0.27 seconds
+LogConfig: Display: Loading VisionOS ini files took 0.27 seconds
+LogConfig: Display: Loading Windows ini files took 0.27 seconds
+LogConfig: Display: Loading TVOS ini files took 0.27 seconds
+LogConfig: Display: Loading Linux ini files took 0.32 seconds
+Log file: C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\Saved\Logs\AutoSDKInfo.txt
+LogAsyncCompilation: Display: MemorySharingInfo: UsedMemory=294MiB, MaxMemoryAvailable=48351MiB
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+##PlatformValidate: Win64 VALID 10.0.22621.0
+##PlatformValidate: Mac INVALID 26.1.1
+##PlatformValidate: IOS INVALID 26.1.1
+##PlatformValidate: Android INVALID r27c
+##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+##PlatformValidate: TVOS INVALID 26.1.1
+##PlatformValidate: VisionOS INVALID <UNKNOWN>
+Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+Trace written to file C:\Users\ku_fu\AppData\Local\UnrealBuildTool\Trace.uba with size 318b
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+[2026.10.15-23.57.00:082][  0]LogHAL: Display: Platform has ~ 29 GB [30928355328 / 34359738368 / 29], which maps to Larger [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+[2026.10.15-23.57.00:109][  0]LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+[2026.10.15-23.57.00:111][  0]LogObj: Display: Attempting to load config data for Default__DownlinkBandwidthManagerConfig before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.57.00:640][  0]LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.57.00:855][  0]LogCsvProfiler: Display: Metadata set : verbatimrhiname="Null"
+[2026.10.15-23.57.00:855][  0]LogCsvProfiler: Display: Metadata set : rhiname="Null"
+[2026.10.15-23.57.00:855][  0]LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM6"
+[2026.10.15-23.57.00:855][  0]LogCsvProfiler: Display: Metadata set : shaderplatform="PCD3D_SM6"
+[2026.10.15-23.57.00:855][  0]LogCsvProfiler: Display: Metadata set : gpu=""
+[2026.10.15-23.57.00:855][  0]LogCsvProfiler: Display: Metadata set : gpudriver=""
+[2026.10.15-23.57.00:864][  0]LogTextureFormatASTC: Display: ASTCEnc version 5.0.1 library loaded
+[2026.10.15-23.57.00:864][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatASTC
+[2026.10.15-23.57.00:864][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatDXT
+[2026.10.15-23.57.00:864][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatETC2
+[2026.10.15-23.57.00:864][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatIntelISPCTexComp
+[2026.10.15-23.57.00:864][  0]LogTextureFormatOodle: Display: Oodle Texture TFO init; latest sdk version = 2.9.16
+[2026.10.15-23.57.00:864][  0]LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.16.dll
+[2026.10.15-23.57.00:864][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatOodle
+[2026.10.15-23.57.00:864][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatUncompressed
+[2026.10.15-23.57.00:903][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Android'
+[2026.10.15-23.57.00:925][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'IOS'
+[2026.10.15-23.57.00:949][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Linux'
+[2026.10.15-23.57.00:971][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Mac'
+[2026.10.15-23.57.00:973][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'TVOS'
+[2026.10.15-23.57.00:998][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'Windows'
+[2026.10.15-23.57.00:998][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsEditor'
+[2026.10.15-23.57.00:998][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsServer'
+[2026.10.15-23.57.00:998][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsClient'
+[2026.10.15-23.57.00:998][  0]LogTargetPlatformManager: Display: Building Assets For WindowsEditor
+[2026.10.15-23.57.01:003][  0]LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+[2026.10.15-23.57.01:508][  0]LogDerivedDataCache: Display: ../../../Engine/DerivedDataCache/Compressed.ddp: Opened pak cache for reading. (1670 MiB)
+[2026.10.15-23.57.01:510][  0]LogZenServiceInstance: Display: Launching zen utility 'D:/Epic Games/UE_5.8/Engine/Binaries/Win64/zen.exe service status'.
+[2026.10.15-23.57.01:824][  0]LogZenServiceInstance: Display: Writing plugin version info to 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+[2026.10.15-23.57.01:827][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.57.01:827][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.57.01:827][  0]LogZenServiceInstance: Display: Installed service at 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe' is up to date
+[2026.10.15-23.57.01:828][  0]LogZenServiceInstance: Display: Launching executable 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe', working dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install', data dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Data', args '--port 8558 --data-dir C:\Users\ku_fu\AppData\Local\UnrealEngine\Common\Zen\Data --http asio --gc-cache-duration-seconds 1209600 --gc-interval-seconds 21600 --gc-low-diskspace-threshold 2147483648 --cache-bucket-limit-overwrites --quiet --restrict-content-types --allow-external-oidctoken-exe=false --plugins-config "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugins_v1.json" --security-config-path "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/security-config.json" --owner-pid 33496  --child-id Zen_33496_Startup'
+[2026.10.15-23.57.04:523][  0]LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+[2026.10.15-23.57.04:526][  0]LogDerivedDataCache: Display: ZenLocal: Using ZenServer HTTP service at [::1] with namespace ue.ddc. Status: OK!.
+[2026.10.15-23.57.04:548][  0]LogDerivedDataCache: Display: C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/DerivedDataCache: Performance: Latency=0.11ms. RandomReadSpeed=333.69MBs, RandomWriteSpeed=58.24MBs. Assigned SpeedClass 'Local'
+[2026.10.15-23.57.04:555][  0]LogUbaHorde: Display: UBA/Horde Configuration [Uba.Provider.Horde]: Not Enabled
+[2026.10.15-23.57.04:555][  0]LogShaderCompilers: Display: No distributed shader compiler controller found
+[2026.10.15-23.57.04:555][  0]LogShaderCompilers: Display: Using 13 local workers for shader compilation
+[2026.10.15-23.57.04:570][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM6/AutogenShaderHeaders.ush
+[2026.10.15-23.57.04:570][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.57.05:403][  0]LogEditorDomain: Display: EditorDomain is Disabled
+[2026.10.15-23.57.05:800][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+[2026.10.15-23.57.05:800][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+[2026.10.15-23.57.05:866][  0]LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsEditor"
+[2026.10.15-23.57.05:871][  0]LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+[2026.10.15-23.57.05:891][  0]LogTextureEncodingSettings: Display: Texture Encode Speed: Final (cook).
+[2026.10.15-23.57.05:891][  0]LogTextureEncodingSettings: Display: Oodle Texture Encode Speed settings: Fast: RDO Off Lambda=0, Effort=Normal Final: RDO Off Lambda=0, Effort=Normal
+[2026.10.15-23.57.05:891][  0]LogTextureEncodingSettings: Display: Shared linear texture encoding: Disabled
+[2026.10.15-23.57.05:928][  0]LogMeshReduction: Display: Using QuadricMeshReduction for automatic static mesh reduction
+[2026.10.15-23.57.05:928][  0]LogMeshReduction: Display: Using SkeletalMeshReduction for automatic skeletal mesh reduction
+[2026.10.15-23.57.05:928][  0]LogMeshReduction: Display: Using ProxyLODMeshReduction for automatic mesh merging
+[2026.10.15-23.57.05:928][  0]LogMeshReduction: Display: No distributed automatic mesh merging module available
+[2026.10.15-23.57.06:158][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM5/AutogenShaderHeaders.ush
+[2026.10.15-23.57.06:159][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.57.06:159][  0]LogVirtualization: Display: VirtualizationSystem name found in ini file: None
+[2026.10.15-23.57.06:159][  0]LogVirtualization: Display: FNullVirtualizationSystem mounted, virtualization will be disabled
+[2026.10.15-23.57.06:286][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize started...
+[2026.10.15-23.57.06:290][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize took 3.634 ms
+[2026.10.15-23.57.06:656][  0]LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+[2026.10.15-23.57.06:660][  0]LogAudio: Display: Registering Engine Module Parameter Interfaces...
+[2026.10.15-23.57.07:506][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.57.07:507][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.57.08:134][  0]LogAssetRegistry: Display: No AssetDiscovery cache present at C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistryDiscovery.bin. AssetRegistry discovery of files will be uncached.
+[2026.10.15-23.57.08:137][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PreLoad): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.57.08:137][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.57.08:138][  0]LogAssetRegistry: Display: FindShardedCacheFiles: 1 via .ref, 0 via migration fallback, 1 total
+[2026.10.15-23.57.08:138][  0]LogAssetRegistry: Display: LoadCacheFiles: loading 1 cache files, memory-mapping=enabled
+[2026.10.15-23.57.08:271][  0]LogAssetRegistry: Display: Asset registry cache read as 118.5 MiB from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry/CachedAssetRegistry_0_F655325840716F9B60E5B7BE472531AD.bin (memory-mapped=yes)
+[2026.10.15-23.57.08:273][  0]LogAssetRegistry: Display: AssetDataGatherer spent 0.137s loading caches from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry.
+[2026.10.15-23.57.08:488][  0]LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+[2026.10.15-23.57.08:555][  0]LogPython: Display: No pip-enabled plugins with python dependencies found, skipping
+[2026.10.15-23.57.09:055][  0]LogCsvProfiler: Display: Metadata set : raytracing="0"
+[2026.10.15-23.57.09:297][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.57.09:330][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... took 32.083 ms
+[2026.10.15-23.57.09:330][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.57.09:333][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... took 2.379 ms (total: 34.462 ms)
+[2026.10.15-23.57.09:333][  0]LogPythonScriptCommandlet: Display: Running Python script: D:\work\develop\21_マインクラフト風AI街\unreal\scripts\bake-paris-photoreal.py
+[2026.10.15-23.57.09:696][  0]LogPython: Warning: PARIS_PHOTOREAL_BAKE_READY 21
+[2026.10.15-23.57.09:696][  0]LogPythonScriptCommandlet: Display: Python script executed successfully
+[2026.10.15-23.57.09:696][  0]LogInit: Display: 
+[2026.10.15-23.57.09:696][  0]LogInit: Display: Warning/Error Summary (Unique only)
+[2026.10.15-23.57.09:696][  0]LogInit: Display: -----------------------------------
+[2026.10.15-23.57.09:696][  0]LogInit: Display: LogPython: Warning: PARIS_PHOTOREAL_BAKE_READY 21
+[2026.10.15-23.57.09:696][  0]LogInit: Display: 
+[2026.10.15-23.57.09:696][  0]LogInit: Display: Success - 0 error(s), 1 warning(s)
+[2026.10.15-23.57.09:696][  0]LogInit: Display: 
+
+Execution of commandlet took:  0.40 seconds, PeakPhysMemoryMB=1791 MB, PeakVirtMemoryMB=1617 MB
+[2026.10.15-23.57.09:953][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.57.09:954][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.57.10:160][  0]LogShaderCompilers: Display: Exiting ShaderCompilingThread
+LogInit: Display: Running engine for game: AIWorld
+LogCore: Display: Requested channels: 'cpu,gpu,frame,log,bookmark,screenshot,region'
+LogTrace: Display: Control listening on port 1985
+LogCsvProfiler: Display: Metadata set : platform="Windows"
+LogCsvProfiler: Display: Metadata set : config="Development"
+LogCsvProfiler: Display: Metadata set : buildversion="++UE5+Release-5.8-CL-58210709"
+LogCsvProfiler: Display: Metadata set : engineversion="5.8.3-58210709+++UE5+Release-5.8"
+LogCsvProfiler: Display: Metadata set : enginereleaseversion="5.8.3"
+LogCsvProfiler: Display: Metadata set : os="Windows 11 (25H2) [10.0.26200.9457] "
+LogCsvProfiler: Display: Metadata set : cpu="AuthenticAMD|AMD Ryzen 7 7735HS with Radeon Graphics"
+LogCsvProfiler: Display: Metadata set : pgoenabled="0"
+LogCsvProfiler: Display: Metadata set : pgoprofilingenabled="0"
+LogCsvProfiler: Display: Metadata set : ltoenabled="0"
+LogCsvProfiler: Display: Metadata set : asan="0"
+LogCsvProfiler: Display: Metadata set : mergedmodules="0"
+LogCsvProfiler: Display: Metadata set : compacttset="0"
+LogCsvProfiler: Display: Metadata set : commandline="" C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\AIWorld.uproject -run=pythonscript -script=D:\work\develop\21_マインクラフト風AI街\unreal\scripts\create-paris-nature.py -CustomConfig=ParisPhotoreal -nullrhi -unattended -nosplash -stdout""
+LogCsvProfiler: Display: Metadata set : loginid="38f5fa144e7963713804f5bfca011ff8"
+LogCsvProfiler: Display: Metadata set : llm="0"
+LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+LogAudio: Display: Audio Device Manager not initializing due to all audio being disabled. If this is not intentional, please check command line arguments for "-nosound".
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/AIWorld.uproject" -log="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+LogConfig: Display: Loading IOS ini files took 0.24 seconds
+LogConfig: Display: Loading VulkanPC ini files took 0.23 seconds
+LogConfig: Display: Loading Mac ini files took 0.24 seconds
+LogConfig: Display: Loading Android ini files took 0.24 seconds
+LogConfig: Display: Loading TVOS ini files took 0.30 seconds
+LogConfig: Display: Loading VisionOS ini files took 0.30 seconds
+LogConfig: Display: Loading Unix ini files took 0.31 seconds
+LogConfig: Display: Loading Windows ini files took 0.31 seconds
+LogConfig: Display: Loading Linux ini files took 0.35 seconds
+Log file: C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\Saved\Logs\AutoSDKInfo.txt
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+##PlatformValidate: Win64 VALID 10.0.22621.0
+##PlatformValidate: Mac INVALID 26.1.1
+##PlatformValidate: IOS INVALID 26.1.1
+##PlatformValidate: Android INVALID r27c
+##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+##PlatformValidate: TVOS INVALID 26.1.1
+##PlatformValidate: VisionOS INVALID <UNKNOWN>
+Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+Trace written to file C:\Users\ku_fu\AppData\Local\UnrealBuildTool\Trace.uba with size 317b
+LogAsyncCompilation: Display: MemorySharingInfo: UsedMemory=316MiB, MaxMemoryAvailable=48351MiB
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+[2026.10.15-23.57.14:262][  0]LogHAL: Display: Platform has ~ 29 GB [30928355328 / 34359738368 / 29], which maps to Larger [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+[2026.10.15-23.57.14:291][  0]LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+[2026.10.15-23.57.14:293][  0]LogObj: Display: Attempting to load config data for Default__DownlinkBandwidthManagerConfig before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.57.14:817][  0]LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.57.15:030][  0]LogCsvProfiler: Display: Metadata set : verbatimrhiname="Null"
+[2026.10.15-23.57.15:030][  0]LogCsvProfiler: Display: Metadata set : rhiname="Null"
+[2026.10.15-23.57.15:030][  0]LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM6"
+[2026.10.15-23.57.15:030][  0]LogCsvProfiler: Display: Metadata set : shaderplatform="PCD3D_SM6"
+[2026.10.15-23.57.15:030][  0]LogCsvProfiler: Display: Metadata set : gpu=""
+[2026.10.15-23.57.15:030][  0]LogCsvProfiler: Display: Metadata set : gpudriver=""
+[2026.10.15-23.57.15:041][  0]LogTextureFormatASTC: Display: ASTCEnc version 5.0.1 library loaded
+[2026.10.15-23.57.15:041][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatASTC
+[2026.10.15-23.57.15:041][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatDXT
+[2026.10.15-23.57.15:041][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatETC2
+[2026.10.15-23.57.15:041][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatIntelISPCTexComp
+[2026.10.15-23.57.15:041][  0]LogTextureFormatOodle: Display: Oodle Texture TFO init; latest sdk version = 2.9.16
+[2026.10.15-23.57.15:041][  0]LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.16.dll
+[2026.10.15-23.57.15:042][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatOodle
+[2026.10.15-23.57.15:042][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatUncompressed
+[2026.10.15-23.57.15:084][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Android'
+[2026.10.15-23.57.15:105][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'IOS'
+[2026.10.15-23.57.15:128][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Linux'
+[2026.10.15-23.57.15:150][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Mac'
+[2026.10.15-23.57.15:151][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'TVOS'
+[2026.10.15-23.57.15:174][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'Windows'
+[2026.10.15-23.57.15:174][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsEditor'
+[2026.10.15-23.57.15:174][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsServer'
+[2026.10.15-23.57.15:174][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsClient'
+[2026.10.15-23.57.15:174][  0]LogTargetPlatformManager: Display: Building Assets For WindowsEditor
+[2026.10.15-23.57.15:179][  0]LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+[2026.10.15-23.57.15:649][  0]LogDerivedDataCache: Display: ../../../Engine/DerivedDataCache/Compressed.ddp: Opened pak cache for reading. (1670 MiB)
+[2026.10.15-23.57.15:651][  0]LogZenServiceInstance: Display: Launching zen utility 'D:/Epic Games/UE_5.8/Engine/Binaries/Win64/zen.exe service status'.
+[2026.10.15-23.57.15:965][  0]LogZenServiceInstance: Display: Writing plugin version info to 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+[2026.10.15-23.57.15:966][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.57.15:968][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.57.15:968][  0]LogZenServiceInstance: Display: Installed service at 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe' is up to date
+[2026.10.15-23.57.15:969][  0]LogZenServiceInstance: Display: Launching executable 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe', working dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install', data dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Data', args '--port 8558 --data-dir C:\Users\ku_fu\AppData\Local\UnrealEngine\Common\Zen\Data --http asio --gc-cache-duration-seconds 1209600 --gc-interval-seconds 21600 --gc-low-diskspace-threshold 2147483648 --cache-bucket-limit-overwrites --quiet --restrict-content-types --allow-external-oidctoken-exe=false --plugins-config "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugins_v1.json" --security-config-path "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/security-config.json" --owner-pid 34276  --child-id Zen_34276_Startup'
+[2026.10.15-23.57.18:695][  0]LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+[2026.10.15-23.57.18:699][  0]LogDerivedDataCache: Display: ZenLocal: Using ZenServer HTTP service at [::1] with namespace ue.ddc. Status: OK!.
+[2026.10.15-23.57.18:724][  0]LogDerivedDataCache: Display: C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/DerivedDataCache: Performance: Latency=0.14ms. RandomReadSpeed=247.63MBs, RandomWriteSpeed=47.80MBs. Assigned SpeedClass 'Local'
+[2026.10.15-23.57.18:730][  0]LogUbaHorde: Display: UBA/Horde Configuration [Uba.Provider.Horde]: Not Enabled
+[2026.10.15-23.57.18:730][  0]LogShaderCompilers: Display: No distributed shader compiler controller found
+[2026.10.15-23.57.18:730][  0]LogShaderCompilers: Display: Using 13 local workers for shader compilation
+[2026.10.15-23.57.18:746][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM6/AutogenShaderHeaders.ush
+[2026.10.15-23.57.18:746][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.57.19:598][  0]LogEditorDomain: Display: EditorDomain is Disabled
+[2026.10.15-23.57.20:102][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+[2026.10.15-23.57.20:102][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+[2026.10.15-23.57.20:204][  0]LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsEditor"
+[2026.10.15-23.57.20:210][  0]LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+[2026.10.15-23.57.20:237][  0]LogTextureEncodingSettings: Display: Texture Encode Speed: Final (cook).
+[2026.10.15-23.57.20:237][  0]LogTextureEncodingSettings: Display: Oodle Texture Encode Speed settings: Fast: RDO Off Lambda=0, Effort=Normal Final: RDO Off Lambda=0, Effort=Normal
+[2026.10.15-23.57.20:237][  0]LogTextureEncodingSettings: Display: Shared linear texture encoding: Disabled
+[2026.10.15-23.57.20:284][  0]LogMeshReduction: Display: Using QuadricMeshReduction for automatic static mesh reduction
+[2026.10.15-23.57.20:284][  0]LogMeshReduction: Display: Using SkeletalMeshReduction for automatic skeletal mesh reduction
+[2026.10.15-23.57.20:284][  0]LogMeshReduction: Display: Using ProxyLODMeshReduction for automatic mesh merging
+[2026.10.15-23.57.20:284][  0]LogMeshReduction: Display: No distributed automatic mesh merging module available
+[2026.10.15-23.57.20:549][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM5/AutogenShaderHeaders.ush
+[2026.10.15-23.57.20:550][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.57.20:550][  0]LogVirtualization: Display: VirtualizationSystem name found in ini file: None
+[2026.10.15-23.57.20:550][  0]LogVirtualization: Display: FNullVirtualizationSystem mounted, virtualization will be disabled
+[2026.10.15-23.57.20:689][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize started...
+[2026.10.15-23.57.20:693][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize took 4.168 ms
+[2026.10.15-23.57.21:330][  0]LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+[2026.10.15-23.57.21:334][  0]LogAudio: Display: Registering Engine Module Parameter Interfaces...
+[2026.10.15-23.57.22:128][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.57.22:128][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.57.22:660][  0]LogAssetRegistry: Display: No AssetDiscovery cache present at C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistryDiscovery.bin. AssetRegistry discovery of files will be uncached.
+[2026.10.15-23.57.22:661][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PreLoad): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.57.22:662][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.57.22:664][  0]LogAssetRegistry: Display: FindShardedCacheFiles: 1 via .ref, 0 via migration fallback, 1 total
+[2026.10.15-23.57.22:664][  0]LogAssetRegistry: Display: LoadCacheFiles: loading 1 cache files, memory-mapping=enabled
+[2026.10.15-23.57.22:794][  0]LogAssetRegistry: Display: Asset registry cache read as 118.5 MiB from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry/CachedAssetRegistry_0_F655325840716F9B60E5B7BE472531AD.bin (memory-mapped=yes)
+[2026.10.15-23.57.22:795][  0]LogAssetRegistry: Display: AssetDataGatherer spent 0.134s loading caches from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry.
+[2026.10.15-23.57.23:006][  0]LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+[2026.10.15-23.57.23:078][  0]LogPython: Display: No pip-enabled plugins with python dependencies found, skipping
+[2026.10.15-23.57.23:585][  0]LogCsvProfiler: Display: Metadata set : raytracing="0"
+[2026.10.15-23.57.23:822][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.57.23:836][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... took 15.054 ms
+[2026.10.15-23.57.23:836][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.57.23:864][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... took 27.702 ms (total: 42.756 ms)
+[2026.10.15-23.57.23:865][  0]LogPythonScriptCommandlet: Display: Running Python script: D:\work\develop\21_マインクラフト風AI街\unreal\scripts\create-paris-nature.py
+[2026.10.15-23.57.23:996][  0]LogPython: Warning: PARIS_PHOTO_NATURE_CACHED
+[2026.10.15-23.57.23:996][  0]LogPythonScriptCommandlet: Display: Python script executed successfully
+[2026.10.15-23.57.23:996][  0]LogInit: Display: 
+[2026.10.15-23.57.23:996][  0]LogInit: Display: Warning/Error Summary (Unique only)
+[2026.10.15-23.57.23:996][  0]LogInit: Display: -----------------------------------
+[2026.10.15-23.57.23:996][  0]LogInit: Display: LogPython: Warning: PARIS_PHOTO_NATURE_CACHED
+[2026.10.15-23.57.23:996][  0]LogInit: Display: 
+[2026.10.15-23.57.23:996][  0]LogInit: Display: Success - 0 error(s), 1 warning(s)
+[2026.10.15-23.57.23:996][  0]LogInit: Display: 
+
+Execution of commandlet took:  0.17 seconds, PeakPhysMemoryMB=1605 MB, PeakVirtMemoryMB=1414 MB
+[2026.10.15-23.57.24:184][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.57.24:184][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.57.24:378][  0]LogShaderCompilers: Display: Exiting ShaderCompilingThread
+LogInit: Display: Running engine for game: AIWorld
+LogCore: Display: Requested channels: 'cpu,gpu,frame,log,bookmark,screenshot,region'
+LogTrace: Display: Control listening on port 1985
+LogCsvProfiler: Display: Metadata set : platform="Windows"
+LogCsvProfiler: Display: Metadata set : config="Development"
+LogCsvProfiler: Display: Metadata set : buildversion="++UE5+Release-5.8-CL-58210709"
+LogCsvProfiler: Display: Metadata set : engineversion="5.8.3-58210709+++UE5+Release-5.8"
+LogCsvProfiler: Display: Metadata set : enginereleaseversion="5.8.3"
+LogCsvProfiler: Display: Metadata set : os="Windows 11 (25H2) [10.0.26200.9457] "
+LogCsvProfiler: Display: Metadata set : cpu="AuthenticAMD|AMD Ryzen 7 7735HS with Radeon Graphics"
+LogCsvProfiler: Display: Metadata set : pgoenabled="0"
+LogCsvProfiler: Display: Metadata set : pgoprofilingenabled="0"
+LogCsvProfiler: Display: Metadata set : ltoenabled="0"
+LogCsvProfiler: Display: Metadata set : asan="0"
+LogCsvProfiler: Display: Metadata set : mergedmodules="0"
+LogCsvProfiler: Display: Metadata set : compacttset="0"
+LogCsvProfiler: Display: Metadata set : commandline="" C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\AIWorld.uproject -run=pythonscript -script=D:\work\develop\21_マインクラフト風AI街\unreal\scripts\bake-paris-architecture.py -CustomConfig=ParisPhotoreal -nullrhi -unattended -nosplash -stdout""
+LogCsvProfiler: Display: Metadata set : loginid="38f5fa144e7963713804f5bfca011ff8"
+LogCsvProfiler: Display: Metadata set : llm="0"
+LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+LogAudio: Display: Audio Device Manager not initializing due to all audio being disabled. If this is not intentional, please check command line arguments for "-nosound".
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/AIWorld.uproject" -log="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+LogConfig: Display: Loading Android ini files took 0.18 seconds
+LogConfig: Display: Loading VulkanPC ini files took 0.18 seconds
+LogConfig: Display: Loading IOS ini files took 0.18 seconds
+LogConfig: Display: Loading Mac ini files took 0.18 seconds
+LogConfig: Display: Loading Unix ini files took 0.26 seconds
+LogConfig: Display: Loading VisionOS ini files took 0.26 seconds
+LogConfig: Display: Loading TVOS ini files took 0.26 seconds
+LogConfig: Display: Loading Windows ini files took 0.26 seconds
+LogConfig: Display: Loading Linux ini files took 0.30 seconds
+Log file: C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\Saved\Logs\AutoSDKInfo.txt
+LogAsyncCompilation: Display: MemorySharingInfo: UsedMemory=307MiB, MaxMemoryAvailable=48351MiB
+##PlatformValidate: Win64 VALID 10.0.22621.0
+##PlatformValidate: Mac INVALID 26.1.1
+##PlatformValidate: IOS INVALID 26.1.1
+##PlatformValidate: Android INVALID r27c
+##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+##PlatformValidate: TVOS INVALID 26.1.1
+##PlatformValidate: VisionOS INVALID <UNKNOWN>
+Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+Trace written to file C:\Users\ku_fu\AppData\Local\UnrealBuildTool\Trace.uba with size 317b
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+[2026.10.15-23.57.28:906][  0]LogHAL: Display: Platform has ~ 29 GB [30928355328 / 34359738368 / 29], which maps to Larger [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+[2026.10.15-23.57.28:932][  0]LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+[2026.10.15-23.57.28:934][  0]LogObj: Display: Attempting to load config data for Default__DownlinkBandwidthManagerConfig before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.57.29:476][  0]LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.57.29:696][  0]LogCsvProfiler: Display: Metadata set : verbatimrhiname="Null"
+[2026.10.15-23.57.29:696][  0]LogCsvProfiler: Display: Metadata set : rhiname="Null"
+[2026.10.15-23.57.29:696][  0]LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM6"
+[2026.10.15-23.57.29:696][  0]LogCsvProfiler: Display: Metadata set : shaderplatform="PCD3D_SM6"
+[2026.10.15-23.57.29:696][  0]LogCsvProfiler: Display: Metadata set : gpu=""
+[2026.10.15-23.57.29:696][  0]LogCsvProfiler: Display: Metadata set : gpudriver=""
+[2026.10.15-23.57.29:706][  0]LogTextureFormatASTC: Display: ASTCEnc version 5.0.1 library loaded
+[2026.10.15-23.57.29:706][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatASTC
+[2026.10.15-23.57.29:706][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatDXT
+[2026.10.15-23.57.29:706][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatETC2
+[2026.10.15-23.57.29:706][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatIntelISPCTexComp
+[2026.10.15-23.57.29:706][  0]LogTextureFormatOodle: Display: Oodle Texture TFO init; latest sdk version = 2.9.16
+[2026.10.15-23.57.29:706][  0]LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.16.dll
+[2026.10.15-23.57.29:707][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatOodle
+[2026.10.15-23.57.29:707][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatUncompressed
+[2026.10.15-23.57.29:750][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Android'
+[2026.10.15-23.57.29:778][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'IOS'
+[2026.10.15-23.57.29:805][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Linux'
+[2026.10.15-23.57.29:832][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Mac'
+[2026.10.15-23.57.29:834][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'TVOS'
+[2026.10.15-23.57.29:861][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'Windows'
+[2026.10.15-23.57.29:861][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsEditor'
+[2026.10.15-23.57.29:861][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsServer'
+[2026.10.15-23.57.29:861][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsClient'
+[2026.10.15-23.57.29:861][  0]LogTargetPlatformManager: Display: Building Assets For WindowsEditor
+[2026.10.15-23.57.29:865][  0]LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+[2026.10.15-23.57.30:348][  0]LogDerivedDataCache: Display: ../../../Engine/DerivedDataCache/Compressed.ddp: Opened pak cache for reading. (1670 MiB)
+[2026.10.15-23.57.30:350][  0]LogZenServiceInstance: Display: Launching zen utility 'D:/Epic Games/UE_5.8/Engine/Binaries/Win64/zen.exe service status'.
+[2026.10.15-23.57.30:664][  0]LogZenServiceInstance: Display: Writing plugin version info to 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+[2026.10.15-23.57.30:665][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.57.30:666][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.57.30:666][  0]LogZenServiceInstance: Display: Installed service at 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe' is up to date
+[2026.10.15-23.57.30:667][  0]LogZenServiceInstance: Display: Launching executable 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe', working dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install', data dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Data', args '--port 8558 --data-dir C:\Users\ku_fu\AppData\Local\UnrealEngine\Common\Zen\Data --http asio --gc-cache-duration-seconds 1209600 --gc-interval-seconds 21600 --gc-low-diskspace-threshold 2147483648 --cache-bucket-limit-overwrites --quiet --restrict-content-types --allow-external-oidctoken-exe=false --plugins-config "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugins_v1.json" --security-config-path "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/security-config.json" --owner-pid 42244  --child-id Zen_42244_Startup'
+[2026.10.15-23.57.33:391][  0]LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+[2026.10.15-23.57.33:394][  0]LogDerivedDataCache: Display: ZenLocal: Using ZenServer HTTP service at [::1] with namespace ue.ddc. Status: OK!.
+[2026.10.15-23.57.33:420][  0]LogDerivedDataCache: Display: C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/DerivedDataCache: Performance: Latency=0.09ms. RandomReadSpeed=344.14MBs, RandomWriteSpeed=44.82MBs. Assigned SpeedClass 'Local'
+[2026.10.15-23.57.33:426][  0]LogUbaHorde: Display: UBA/Horde Configuration [Uba.Provider.Horde]: Not Enabled
+[2026.10.15-23.57.33:426][  0]LogShaderCompilers: Display: No distributed shader compiler controller found
+[2026.10.15-23.57.33:426][  0]LogShaderCompilers: Display: Using 13 local workers for shader compilation
+[2026.10.15-23.57.33:440][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM6/AutogenShaderHeaders.ush
+[2026.10.15-23.57.33:440][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.57.34:286][  0]LogEditorDomain: Display: EditorDomain is Disabled
+[2026.10.15-23.57.34:761][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+[2026.10.15-23.57.34:761][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+[2026.10.15-23.57.34:833][  0]LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsEditor"
+[2026.10.15-23.57.34:838][  0]LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+[2026.10.15-23.57.34:863][  0]LogTextureEncodingSettings: Display: Texture Encode Speed: Final (cook).
+[2026.10.15-23.57.34:863][  0]LogTextureEncodingSettings: Display: Oodle Texture Encode Speed settings: Fast: RDO Off Lambda=0, Effort=Normal Final: RDO Off Lambda=0, Effort=Normal
+[2026.10.15-23.57.34:863][  0]LogTextureEncodingSettings: Display: Shared linear texture encoding: Disabled
+[2026.10.15-23.57.34:899][  0]LogMeshReduction: Display: Using QuadricMeshReduction for automatic static mesh reduction
+[2026.10.15-23.57.34:899][  0]LogMeshReduction: Display: Using SkeletalMeshReduction for automatic skeletal mesh reduction
+[2026.10.15-23.57.34:899][  0]LogMeshReduction: Display: Using ProxyLODMeshReduction for automatic mesh merging
+[2026.10.15-23.57.34:900][  0]LogMeshReduction: Display: No distributed automatic mesh merging module available
+[2026.10.15-23.57.35:122][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM5/AutogenShaderHeaders.ush
+[2026.10.15-23.57.35:122][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.57.35:123][  0]LogVirtualization: Display: VirtualizationSystem name found in ini file: None
+[2026.10.15-23.57.35:123][  0]LogVirtualization: Display: FNullVirtualizationSystem mounted, virtualization will be disabled
+[2026.10.15-23.57.35:246][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize started...
+[2026.10.15-23.57.35:250][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize took 3.860 ms
+[2026.10.15-23.57.35:720][  0]LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+[2026.10.15-23.57.35:726][  0]LogAudio: Display: Registering Engine Module Parameter Interfaces...
+[2026.10.15-23.57.36:356][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.57.36:356][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.57.37:094][  0]LogAssetRegistry: Display: No AssetDiscovery cache present at C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistryDiscovery.bin. AssetRegistry discovery of files will be uncached.
+[2026.10.15-23.57.37:095][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PreLoad): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.57.37:095][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.57.37:097][  0]LogAssetRegistry: Display: FindShardedCacheFiles: 1 via .ref, 0 via migration fallback, 1 total
+[2026.10.15-23.57.37:097][  0]LogAssetRegistry: Display: LoadCacheFiles: loading 1 cache files, memory-mapping=enabled
+[2026.10.15-23.57.37:208][  0]LogAssetRegistry: Display: Asset registry cache read as 118.5 MiB from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry/CachedAssetRegistry_0_F655325840716F9B60E5B7BE472531AD.bin (memory-mapped=yes)
+[2026.10.15-23.57.37:209][  0]LogAssetRegistry: Display: AssetDataGatherer spent 0.113s loading caches from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry.
+[2026.10.15-23.57.37:425][  0]LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+[2026.10.15-23.57.37:495][  0]LogPython: Display: No pip-enabled plugins with python dependencies found, skipping
+[2026.10.15-23.57.38:043][  0]LogCsvProfiler: Display: Metadata set : raytracing="0"
+[2026.10.15-23.57.38:280][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.57.38:293][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... took 14.035 ms
+[2026.10.15-23.57.38:293][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.57.38:316][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... took 22.987 ms (total: 37.023 ms)
+[2026.10.15-23.57.38:317][  0]LogPythonScriptCommandlet: Display: Running Python script: D:\work\develop\21_マインクラフト風AI街\unreal\scripts\bake-paris-architecture.py
+[2026.10.15-23.57.46:169][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_NotreDameWest_stone_df8d56f4fe0a (推定必須メモリ：443.50947 MB)...
+[2026.10.15-23.57.46:182][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.57.47:915][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.57.49:673][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.57.51:488][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.57.53:277][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_NotreDameWest_stone_df8d56f4fe0a (推定必須メモリ：443.50947 MB)...
+[2026.10.15-23.57.53:291][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.57.58:416][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.57.58:998][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_NotreDameWest_stone_df8d56f4fe0a (推定必須メモリ：443.50947 MB)...
+[2026.10.15-23.57.59:012][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.58.05:842][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_NotreDameWest_stone_df8d56f4fe0a (推定必須メモリ：443.50947 MB)...
+[2026.10.15-23.58.05:859][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a)…
+[2026.10.15-23.58.12:737][  0]LogSourceControl: Display: Uncontrolled Changelist persistency file loaded C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SourceControl/UncontrolledChangelists.json
+[2026.10.15-23.58.12:811][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_9490fd94902c)…
+[2026.10.15-23.58.12:915][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_9490fd94902c)…
+[2026.10.15-23.58.13:273][  0]LogPython: Warning: PARIS_PHOTO_ARCHITECTURE_READY 291335
+[2026.10.15-23.58.13:273][  0]LogPythonScriptCommandlet: Display: Python script executed successfully
+[2026.10.15-23.58.13:273][  0]LogInit: Display: 
+[2026.10.15-23.58.13:273][  0]LogInit: Display: Warning/Error Summary (Unique only)
+[2026.10.15-23.58.13:273][  0]LogInit: Display: -----------------------------------
+[2026.10.15-23.58.13:273][  0]LogInit: Display: LogPython: Warning: PARIS_PHOTO_ARCHITECTURE_READY 291335
+[2026.10.15-23.58.13:273][  0]LogInit: Display: 
+[2026.10.15-23.58.13:273][  0]LogInit: Display: Success - 0 error(s), 1 warning(s)
+[2026.10.15-23.58.13:273][  0]LogInit: Display: 
+
+Execution of commandlet took:  34.99 seconds, PeakPhysMemoryMB=2814 MB, PeakVirtMemoryMB=2763 MB
+[2026.10.15-23.58.13:961][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.58.13:961][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.58.14:093][  0]LogShaderCompilers: Display: Exiting ShaderCompilingThread
+[2026.10.15-23.58.14:129][  0]LogSourceControl: Display: Uncontrolled Changelist persistency file saved C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SourceControl/UncontrolledChangelists.json
+LogInit: Display: Running engine for game: AIWorld
+LogCore: Display: Requested channels: 'cpu,gpu,frame,log,bookmark,screenshot,region'
+LogTrace: Display: Control listening on port 1985
+LogCsvProfiler: Display: Metadata set : platform="Windows"
+LogCsvProfiler: Display: Metadata set : config="Development"
+LogCsvProfiler: Display: Metadata set : buildversion="++UE5+Release-5.8-CL-58210709"
+LogCsvProfiler: Display: Metadata set : engineversion="5.8.3-58210709+++UE5+Release-5.8"
+LogCsvProfiler: Display: Metadata set : enginereleaseversion="5.8.3"
+LogCsvProfiler: Display: Metadata set : os="Windows 11 (25H2) [10.0.26200.9457] "
+LogCsvProfiler: Display: Metadata set : cpu="AuthenticAMD|AMD Ryzen 7 7735HS with Radeon Graphics"
+LogCsvProfiler: Display: Metadata set : pgoenabled="0"
+LogCsvProfiler: Display: Metadata set : pgoprofilingenabled="0"
+LogCsvProfiler: Display: Metadata set : ltoenabled="0"
+LogCsvProfiler: Display: Metadata set : asan="0"
+LogCsvProfiler: Display: Metadata set : mergedmodules="0"
+LogCsvProfiler: Display: Metadata set : compacttset="0"
+LogCsvProfiler: Display: Metadata set : commandline="" C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\AIWorld.uproject -run=pythonscript -script=D:\work\develop\21_マインクラフト風AI街\unreal\scripts\bake-paris-street-detail.py -CustomConfig=ParisPhotoreal -nullrhi -unattended -nosplash -stdout""
+LogCsvProfiler: Display: Metadata set : loginid="38f5fa144e7963713804f5bfca011ff8"
+LogCsvProfiler: Display: Metadata set : llm="0"
+LogCsvProfiler: Display: Metadata set : zenstreaming="0"
+LogCsvProfiler: Display: Metadata set : systemresolution.resx="1280"
+LogCsvProfiler: Display: Metadata set : systemresolution.resy="720"
+LogAudio: Display: Audio Device Manager not initializing due to all audio being disabled. If this is not intentional, please check command line arguments for "-nosound".
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/AIWorld.uproject" -log="C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+LogConfig: Display: Loading Android ini files took 0.16 seconds
+LogConfig: Display: Loading VulkanPC ini files took 0.16 seconds
+LogConfig: Display: Loading IOS ini files took 0.16 seconds
+LogConfig: Display: Loading Mac ini files took 0.17 seconds
+LogConfig: Display: Loading VisionOS ini files took 0.22 seconds
+LogConfig: Display: Loading TVOS ini files took 0.22 seconds
+LogConfig: Display: Loading Windows ini files took 0.23 seconds
+LogConfig: Display: Loading Unix ini files took 0.23 seconds
+LogConfig: Display: Loading Linux ini files took 0.27 seconds
+Log file: C:\Users\ku_fu\AppData\Local\AIWorldUE\0dc607e3641b\Saved\Logs\AutoSDKInfo.txt
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Log is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.CSV is disabled for this application
+LogAnalytics: Display: Provider StudioTelemetry.Provider.Horde is disabled for this application
+##PlatformValidate: Win64 VALID 10.0.22621.0
+##PlatformValidate: Mac INVALID 26.1.1
+##PlatformValidate: IOS INVALID 26.1.1
+##PlatformValidate: Android INVALID r27c
+##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+##PlatformValidate: TVOS INVALID 26.1.1
+##PlatformValidate: VisionOS INVALID <UNKNOWN>
+Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+Trace written to file C:\Users\ku_fu\AppData\Local\UnrealBuildTool\Trace.uba with size 317b
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+LogAsyncCompilation: Display: MemorySharingInfo: UsedMemory=309MiB, MaxMemoryAvailable=48351MiB
+LogStreaming: Display: AsyncLoading2 - Created: Async Loading Thread: false, Async Post Load: false, Multithreaded: false
+[2026.10.15-23.58.18:694][  0]LogHAL: Display: Platform has ~ 29 GB [30928355328 / 34359738368 / 29], which maps to Larger [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+[2026.10.15-23.58.18:722][  0]LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+[2026.10.15-23.58.18:725][  0]LogObj: Display: Attempting to load config data for Default__DownlinkBandwidthManagerConfig before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.58.19:312][  0]LogObj: Display: Attempting to load config data for Default__SlateThemeManager before the Class has been constructed/registered/linked (likely during module loading or early startup). This will result in the load silently failing and should be fixed.
+[2026.10.15-23.58.19:521][  0]LogCsvProfiler: Display: Metadata set : verbatimrhiname="Null"
+[2026.10.15-23.58.19:521][  0]LogCsvProfiler: Display: Metadata set : rhiname="Null"
+[2026.10.15-23.58.19:521][  0]LogCsvProfiler: Display: Metadata set : rhifeaturelevel="SM6"
+[2026.10.15-23.58.19:521][  0]LogCsvProfiler: Display: Metadata set : shaderplatform="PCD3D_SM6"
+[2026.10.15-23.58.19:521][  0]LogCsvProfiler: Display: Metadata set : gpu=""
+[2026.10.15-23.58.19:521][  0]LogCsvProfiler: Display: Metadata set : gpudriver=""
+[2026.10.15-23.58.19:529][  0]LogTextureFormatASTC: Display: ASTCEnc version 5.0.1 library loaded
+[2026.10.15-23.58.19:529][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatASTC
+[2026.10.15-23.58.19:529][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatDXT
+[2026.10.15-23.58.19:529][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatETC2
+[2026.10.15-23.58.19:529][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatIntelISPCTexComp
+[2026.10.15-23.58.19:529][  0]LogTextureFormatOodle: Display: Oodle Texture TFO init; latest sdk version = 2.9.16
+[2026.10.15-23.58.19:529][  0]LogTextureFormatOodle: Display: Oodle Texture loading DLL: oo2tex_win64_2.9.16.dll
+[2026.10.15-23.58.19:530][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatOodle
+[2026.10.15-23.58.19:530][  0]LogTextureFormatManager: Display: Loaded Base TextureFormat: TextureFormatUncompressed
+[2026.10.15-23.58.19:574][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Android'
+[2026.10.15-23.58.19:599][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'IOS'
+[2026.10.15-23.58.19:621][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Linux'
+[2026.10.15-23.58.19:643][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'Mac'
+[2026.10.15-23.58.19:645][  0]LogTargetPlatformManager: Display: Failed to SetupSDK for platform 'TVOS'
+[2026.10.15-23.58.19:670][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'Windows'
+[2026.10.15-23.58.19:670][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsEditor'
+[2026.10.15-23.58.19:670][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsServer'
+[2026.10.15-23.58.19:670][  0]LogTargetPlatformManager: Display: Loaded TargetPlatform 'WindowsClient'
+[2026.10.15-23.58.19:671][  0]LogTargetPlatformManager: Display: Building Assets For WindowsEditor
+[2026.10.15-23.58.19:675][  0]LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+[2026.10.15-23.58.20:158][  0]LogDerivedDataCache: Display: ../../../Engine/DerivedDataCache/Compressed.ddp: Opened pak cache for reading. (1670 MiB)
+[2026.10.15-23.58.20:159][  0]LogZenServiceInstance: Display: Launching zen utility 'D:/Epic Games/UE_5.8/Engine/Binaries/Win64/zen.exe service status'.
+[2026.10.15-23.58.20:473][  0]LogZenServiceInstance: Display: Writing plugin version info to 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugin_versions.json'
+[2026.10.15-23.58.20:474][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/5.8/Saved/Zen/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.58.20:476][  0]LogZenServiceInstance: Display: Read zen version cache file from 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen.version', version: '5.8.13-202605190912-windows-x64-release-094f62c2'
+[2026.10.15-23.58.20:476][  0]LogZenServiceInstance: Display: Installed service at 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe' is up to date
+[2026.10.15-23.58.20:478][  0]LogZenServiceInstance: Display: Launching executable 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zenserver.exe', working dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install', data dir 'C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Data', args '--port 8558 --data-dir C:\Users\ku_fu\AppData\Local\UnrealEngine\Common\Zen\Data --http asio --gc-cache-duration-seconds 1209600 --gc-interval-seconds 21600 --gc-low-diskspace-threshold 2147483648 --cache-bucket-limit-overwrites --quiet --restrict-content-types --allow-external-oidctoken-exe=false --plugins-config "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/zen_plugins_v1.json" --security-config-path "C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/Zen/Install/security-config.json" --owner-pid 35812  --child-id Zen_35812_Startup'
+[2026.10.15-23.58.23:180][  0]LogZenServiceInstance: Display: Unreal Zen Storage Server HTTP service at http://[::1]:8558 status: OK!.
+[2026.10.15-23.58.23:183][  0]LogDerivedDataCache: Display: ZenLocal: Using ZenServer HTTP service at [::1] with namespace ue.ddc. Status: OK!.
+[2026.10.15-23.58.23:205][  0]LogDerivedDataCache: Display: C:/Users/ku_fu/AppData/Local/UnrealEngine/Common/DerivedDataCache: Performance: Latency=0.12ms. RandomReadSpeed=346.87MBs, RandomWriteSpeed=60.61MBs. Assigned SpeedClass 'Local'
+[2026.10.15-23.58.23:212][  0]LogUbaHorde: Display: UBA/Horde Configuration [Uba.Provider.Horde]: Not Enabled
+[2026.10.15-23.58.23:212][  0]LogShaderCompilers: Display: No distributed shader compiler controller found
+[2026.10.15-23.58.23:212][  0]LogShaderCompilers: Display: Using 13 local workers for shader compilation
+[2026.10.15-23.58.23:226][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM6/AutogenShaderHeaders.ush
+[2026.10.15-23.58.23:226][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.58.23:987][  0]LogEditorDomain: Display: EditorDomain is Disabled
+[2026.10.15-23.58.24:403][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+[2026.10.15-23.58.24:403][  0]LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+[2026.10.15-23.58.24:477][  0]LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsEditor"
+[2026.10.15-23.58.24:482][  0]LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+[2026.10.15-23.58.24:504][  0]LogTextureEncodingSettings: Display: Texture Encode Speed: Final (cook).
+[2026.10.15-23.58.24:504][  0]LogTextureEncodingSettings: Display: Oodle Texture Encode Speed settings: Fast: RDO Off Lambda=0, Effort=Normal Final: RDO Off Lambda=0, Effort=Normal
+[2026.10.15-23.58.24:504][  0]LogTextureEncodingSettings: Display: Shared linear texture encoding: Disabled
+[2026.10.15-23.58.24:542][  0]LogMeshReduction: Display: Using QuadricMeshReduction for automatic static mesh reduction
+[2026.10.15-23.58.24:542][  0]LogMeshReduction: Display: Using SkeletalMeshReduction for automatic skeletal mesh reduction
+[2026.10.15-23.58.24:542][  0]LogMeshReduction: Display: Using ProxyLODMeshReduction for automatic mesh merging
+[2026.10.15-23.58.24:542][  0]LogMeshReduction: Display: No distributed automatic mesh merging module available
+[2026.10.15-23.58.24:762][  0]LogShaderCompilers: Display: Compiling shader autogen file: C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/ShaderAutogen/PCD3D_SM5/AutogenShaderHeaders.ush
+[2026.10.15-23.58.24:762][  0]LogShaderCompilers: Display: Autogen file is unchanged, skipping write.
+[2026.10.15-23.58.24:762][  0]LogVirtualization: Display: VirtualizationSystem name found in ini file: None
+[2026.10.15-23.58.24:762][  0]LogVirtualization: Display: FNullVirtualizationSystem mounted, virtualization will be disabled
+[2026.10.15-23.58.24:890][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize started...
+[2026.10.15-23.58.24:893][  0]LogWorldPartition: Display: FWorldPartitionClassDescRegistry::Initialize took 3.661 ms
+[2026.10.15-23.58.25:639][  0]LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+[2026.10.15-23.58.25:643][  0]LogAudio: Display: Registering Engine Module Parameter Interfaces...
+[2026.10.15-23.58.26:412][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.58.26:412][  0]LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+[2026.10.15-23.58.26:715][  0]LogAssetRegistry: Display: No AssetDiscovery cache present at C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistryDiscovery.bin. AssetRegistry discovery of files will be uncached.
+[2026.10.15-23.58.26:718][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PreLoad): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.58.26:718][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.58.26:720][  0]LogAssetRegistry: Display: FindShardedCacheFiles: 1 via .ref, 0 via migration fallback, 1 total
+[2026.10.15-23.58.26:720][  0]LogAssetRegistry: Display: LoadCacheFiles: loading 1 cache files, memory-mapping=enabled
+[2026.10.15-23.58.26:843][  0]LogAssetRegistry: Display: Asset registry cache read as 118.5 MiB from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry/CachedAssetRegistry_0_F655325840716F9B60E5B7BE472531AD.bin (memory-mapped=yes)
+[2026.10.15-23.58.26:844][  0]LogAssetRegistry: Display: AssetDataGatherer spent 0.127s loading caches from C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Intermediate/CachedAssetRegistry.
+[2026.10.15-23.58.27:048][  0]LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+[2026.10.15-23.58.27:118][  0]LogPython: Display: No pip-enabled plugins with python dependencies found, skipping
+[2026.10.15-23.58.27:623][  0]LogCsvProfiler: Display: Metadata set : raytracing="0"
+[2026.10.15-23.58.27:858][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.58.27:875][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/IKRig/Content/Python/init_unreal.py を実行中... took 16.117 ms
+[2026.10.15-23.58.27:875][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... started...
+[2026.10.15-23.58.27:896][  0]LogPython: Display: 起動スクリプト D:/Epic Games/UE_5.8/Engine/Plugins/Animation/ControlRig/Content/Python/init_unreal.py を実行中... took 21.239 ms (total: 37.356 ms)
+[2026.10.15-23.58.27:896][  0]LogPythonScriptCommandlet: Display: Running Python script: D:\work\develop\21_マインクラフト風AI街\unreal\scripts\bake-paris-street-detail.py
+[2026.10.15-23.58.28:080][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_ParisLantern_lamp_metal_2e9ccc7d25e7 (推定必須メモリ：9.462593 MB)...
+[2026.10.15-23.58.28:092][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7)…
+[2026.10.15-23.58.28:299][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7)…
+[2026.10.15-23.58.28:374][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7)…
+[2026.10.15-23.58.28:377][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_ParisLantern_lamp_metal_2e9ccc7d25e7 (推定必須メモリ：9.462593 MB)...
+[2026.10.15-23.58.28:392][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7)…
+[2026.10.15-23.58.28:758][  0]LogStaticMesh: Display: SM_ParisLantern_lamp_metal_2e9ccc7d25e7 には、不正確なシェーディングの原因となる縮退した接線ベースがあります。メッシュのビルド設定で「タンジェントを再計算する」オプションを有効にしてみてください。 
+[2026.10.15-23.58.28:759][  0]LogStaticMesh: Display: SM_ParisLantern_lamp_metal_2e9ccc7d25e7 には、問題を引き起こす可能性のあるほぼゼロの従法線がいくつかあります。(1E-4 の許容範囲)
+[2026.10.15-23.58.28:761][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_ParisLantern_lamp_metal_2e9ccc7d25e7 (推定必須メモリ：9.462593 MB)...
+[2026.10.15-23.58.28:776][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7)…
+[2026.10.15-23.58.29:157][  0]LogStaticMesh: Display: スタティックメッシュをビルド中 SM_ParisLantern_lamp_metal_2e9ccc7d25e7 (推定必須メモリ：9.462593 MB)...
+[2026.10.15-23.58.29:174][  0]LogStaticMesh: Display: スタティック メッシュの準備ができるのを待ってます。0/1 (/Game/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7)…
+[2026.10.15-23.58.29:584][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.30:085][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.30:586][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.31:087][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.31:588][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.32:089][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.32:590][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.33:092][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.33:593][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.34:095][  0]LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.34:596][  0]LogFileManager: Error: Error moving file 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset'.
+[2026.10.15-23.58.34:596][  0]LogSavePackage: Warning: Failed to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' from temp directory
+[2026.10.15-23.58.34:596][  0]LogSavePackage: Error: Error saving 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset'
+[2026.10.15-23.58.34:635][  0]LogSourceControl: Display: Uncontrolled Changelist persistency file loaded C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SourceControl/UncontrolledChangelists.json
+[2026.10.15-23.58.34:637][  0]EditorErrors: Warning: 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' を保存時のエラー
+[2026.10.15-23.58.34:642][  0]LogPython: Error: Traceback (most recent call last):
+[2026.10.15-23.58.34:642][  0]LogPython: Error:   File "D:/work/develop/21_マインクラフト風AI街/unreal/scripts/bake-paris-street-detail.py", line 28, in <module>
+[2026.10.15-23.58.34:642][  0]LogPython: Error:     if not assets.save_loaded_asset(mesh):raise RuntimeError('Lantern asset save failed')
+[2026.10.15-23.58.34:642][  0]LogPython: Error:                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026.10.15-23.58.34:642][  0]LogPython: Error: RuntimeError: Lantern asset save failed
+[2026.10.15-23.58.34:642][  0]LogPythonScriptCommandlet: Error: Python script executed with errors
+[2026.10.15-23.58.34:642][  0]LogInit: Display: 
+[2026.10.15-23.58.34:642][  0]LogInit: Display: Warning/Error Summary (Unique only)
+[2026.10.15-23.58.34:642][  0]LogInit: Display: -----------------------------------
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogFileManager: Error: Error moving file 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset'.
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogSavePackage: Error: Error saving 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset'
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogPython: Error: Traceback (most recent call last):
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogPython: Error:   File "D:/work/develop/21_マインクラフト風AI街/unreal/scripts/bake-paris-street-detail.py", line 28, in <module>
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogPython: Error:     if not assets.save_loaded_asset(mesh):raise RuntimeError('Lantern asset save failed')
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogPython: Error:                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogPython: Error: RuntimeError: Lantern asset save failed
+[2026.10.15-23.58.34:642][  0]LogInit: Display: LogPythonScriptCommandlet: Error: Python script executed with errors
+[2026.10.15-23.58.34:643][  0]LogInit: Display: LogFileManager: Warning: MoveFile was unable to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Saved/SM_ParisLantern_lamp_metal_2e9cc7B655D2848C6519A5C41E59EFFB7EEEB.tmp' to 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' (Error Code 3), retrying in .5s...
+[2026.10.15-23.58.34:643][  0]LogInit: Display: LogSavePackage: Warning: Failed to move 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' from temp directory
+[2026.10.15-23.58.34:643][  0]LogInit: Display: EditorErrors: Warning: 'C:/Users/ku_fu/AppData/Local/AIWorldUE/0dc607e3641b/Content/ParisPhotoreal/Street/SM_ParisLantern_lamp_metal_2e9ccc7d25e7.uasset' を保存時のエラー
+[2026.10.15-23.58.34:643][  0]LogInit: Display: 
+[2026.10.15-23.58.34:643][  0]LogInit: Display: Commandlet->Main return this error code: -1
+[2026.10.15-23.58.34:643][  0]LogInit: Display: With 8 error(s), 12 warning(s)
+[2026.10.15-23.58.34:643][  0]LogInit: Display: 
+
+Execution of commandlet took:  6.78 seconds, PeakPhysMemoryMB=1673 MB, PeakVirtMemoryMB=1604 MB
+[2026.10.15-23.58.34:805][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles (PostWrite): 1 .ref files found, 1 referenced binaries
+[2026.10.15-23.58.34:806][  0]LogAssetRegistry: Display: CleanupOrphanedCacheFiles: 1 total binaries, 1 referenced (kept), 0 old-style pre-migration (kept), 0 orphans deleted, 0 orphans locked (kept)
+[2026.10.15-23.58.34:969][  0]LogShaderCompilers: Display: Exiting ShaderCompilingThread

@@ -1,0 +1,216 @@
+{
+  "native_binary_sha256": "de6aaea66a0e56c944bf39f67af86edd7f4ed5f7d0c2fef427dee00853e74fa0",
+  "matrices": [
+    {
+      "mode": "compact",
+      "count": 13,
+      "passed": true,
+      "tests": [
+        {
+          "name": "BusinessesAndTerraces",
+          "result": "Success"
+        },
+        {
+          "name": "CafeSeatingLifecycle",
+          "result": "Success"
+        },
+        {
+          "name": "CafeVisitLifecycle",
+          "result": "Success"
+        },
+        {
+          "name": "CoordinateAgreement",
+          "result": "Success"
+        },
+        {
+          "name": "LocalSocialInteraction",
+          "result": "Success"
+        },
+        {
+          "name": "RenderCacheParityAndModes",
+          "result": "Success"
+        },
+        {
+          "name": "RuntimePacketSafety",
+          "result": "Success"
+        },
+        {
+          "name": "SceneCollisionAndDebug",
+          "result": "Success"
+        },
+        {
+          "name": "StreetInstancesAndQuality",
+          "result": "Success"
+        },
+        {
+          "name": "SurfaceMaterialsAndDetails",
+          "result": "Success"
+        },
+        {
+          "name": "TrafficAndMappedProps",
+          "result": "Success"
+        },
+        {
+          "name": "WalkingAndPedestrians",
+          "result": "Success"
+        },
+        {
+          "name": "WalkingGraphRouting",
+          "result": "Success"
+        }
+      ],
+      "log": "paris-twin-render-compact-tests.log"
+    },
+    {
+      "mode": "legacy_json",
+      "count": 13,
+      "passed": true,
+      "tests": [
+        {
+          "name": "BusinessesAndTerraces",
+          "result": "Success"
+        },
+        {
+          "name": "CafeSeatingLifecycle",
+          "result": "Success"
+        },
+        {
+          "name": "CafeVisitLifecycle",
+          "result": "Success"
+        },
+        {
+          "name": "CoordinateAgreement",
+          "result": "Success"
+        },
+        {
+          "name": "LocalSocialInteraction",
+          "result": "Success"
+        },
+        {
+          "name": "RenderCacheParityAndModes",
+          "result": "Success"
+        },
+        {
+          "name": "RuntimePacketSafety",
+          "result": "Success"
+        },
+        {
+          "name": "SceneCollisionAndDebug",
+          "result": "Success"
+        },
+        {
+          "name": "StreetInstancesAndQuality",
+          "result": "Success"
+        },
+        {
+          "name": "SurfaceMaterialsAndDetails",
+          "result": "Success"
+        },
+        {
+          "name": "TrafficAndMappedProps",
+          "result": "Success"
+        },
+        {
+          "name": "WalkingAndPedestrians",
+          "result": "Success"
+        },
+        {
+          "name": "WalkingGraphRouting",
+          "result": "Success"
+        }
+      ],
+      "log": "paris-twin-render-legacy-tests.log"
+    },
+    {
+      "mode": "procedural_fallback",
+      "count": 13,
+      "passed": true,
+      "tests": [
+        {
+          "name": "BusinessesAndTerraces",
+          "result": "Success"
+        },
+        {
+          "name": "CafeSeatingLifecycle",
+          "result": "Success"
+        },
+        {
+          "name": "CafeVisitLifecycle",
+          "result": "Success"
+        },
+        {
+          "name": "CoordinateAgreement",
+          "result": "Success"
+        },
+        {
+          "name": "LocalSocialInteraction",
+          "result": "Success"
+        },
+        {
+          "name": "RenderCacheParityAndModes",
+          "result": "Success"
+        },
+        {
+          "name": "RuntimePacketSafety",
+          "result": "Success"
+        },
+        {
+          "name": "SceneCollisionAndDebug",
+          "result": "Success"
+        },
+        {
+          "name": "StreetInstancesAndQuality",
+          "result": "Success"
+        },
+        {
+          "name": "SurfaceMaterialsAndDetails",
+          "result": "Success"
+        },
+        {
+          "name": "TrafficAndMappedProps",
+          "result": "Success"
+        },
+        {
+          "name": "WalkingAndPedestrians",
+          "result": "Success"
+        },
+        {
+          "name": "WalkingGraphRouting",
+          "result": "Success"
+        }
+      ],
+      "log": "paris-twin-render-fallback-tests.log"
+    },
+    {
+      "mode": "village",
+      "count": 5,
+      "passed": true,
+      "tests": [
+        {
+          "name": "AuthoredModels",
+          "result": "Success"
+        },
+        {
+          "name": "SavedVillage",
+          "result": "Success"
+        },
+        {
+          "name": "ArchivedGISMesh",
+          "result": "Success"
+        },
+        {
+          "name": "NativeCommands",
+          "result": "Success"
+        },
+        {
+          "name": "SaveAndTerrain",
+          "result": "Success"
+        }
+      ],
+      "log": "paris-twin-render-village-tests.log"
+    }
+  ],
+  "total_passed": 44,
+  "gis_scene_sha256": "3840a8c864991c111ef7f48485707541daeaf4d3b1df3d67956a5368e032232f",
+  "backup_crc_checked": true
+}

@@ -1,0 +1,45 @@
+Compact runtime
+[2026.10.15-10.02.22:546][884]LogAutomationController: Display: Test Completed. Result={Success} Name={BusinessesAndTerraces} Path={ParisDigitalTwin.Live.BusinessesAndTerraces}
+[2026.10.15-10.02.22:550][887]LogAutomationController: Display: Test Completed. Result={Success} Name={CafeSeatingLifecycle} Path={ParisDigitalTwin.Live.CafeSeatingLifecycle}
+[2026.10.15-10.02.22:553][889]LogAutomationController: Display: Test Completed. Result={Success} Name={CafeVisitLifecycle} Path={ParisDigitalTwin.Live.CafeVisitLifecycle}
+[2026.10.15-10.02.37:111][891]LogAutomationController: Display: Test Completed. Result={Success} Name={CoordinateAgreement} Path={ParisDigitalTwin.Live.CoordinateAgreement}
+[2026.10.15-10.02.37:117][893]LogAutomationController: Display: Test Completed. Result={Success} Name={LocalSocialInteraction} Path={ParisDigitalTwin.Live.LocalSocialInteraction}
+[2026.10.15-10.02.37:119][895]LogAutomationController: Display: Test Completed. Result={Success} Name={RuntimePacketSafety} Path={ParisDigitalTwin.Live.RuntimePacketSafety}
+[2026.10.15-10.02.50:923][898]LogAutomationController: Display: Test Completed. Result={Success} Name={SceneCollisionAndDebug} Path={ParisDigitalTwin.Live.SceneCollisionAndDebug}
+[2026.10.15-10.02.51:523][901]LogAutomationController: Display: Test Completed. Result={Success} Name={StreetInstancesAndQuality} Path={ParisDigitalTwin.Live.StreetInstancesAndQuality}
+[2026.10.15-10.02.52:106][904]LogAutomationController: Display: Test Completed. Result={Success} Name={SurfaceMaterialsAndDetails} Path={ParisDigitalTwin.Live.SurfaceMaterialsAndDetails}
+[2026.10.15-10.02.52:671][907]LogAutomationController: Display: Test Completed. Result={Success} Name={TrafficAndMappedProps} Path={ParisDigitalTwin.Live.TrafficAndMappedProps}
+[2026.10.15-10.02.58:983][  9]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingAndPedestrians} Path={ParisDigitalTwin.Live.WalkingAndPedestrians}
+[2026.10.15-10.02.59:017][ 12]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingGraphRouting} Path={ParisDigitalTwin.Live.WalkingGraphRouting}
+Legacy JSON
+[2026.10.15-10.03.29:686][916]LogAutomationController: Display: Test Completed. Result={Success} Name={BusinessesAndTerraces} Path={ParisDigitalTwin.Live.BusinessesAndTerraces}
+[2026.10.15-10.03.29:692][919]LogAutomationController: Display: Test Completed. Result={Success} Name={CafeSeatingLifecycle} Path={ParisDigitalTwin.Live.CafeSeatingLifecycle}
+[2026.10.15-10.03.29:697][922]LogAutomationController: Display: Test Completed. Result={Success} Name={CafeVisitLifecycle} Path={ParisDigitalTwin.Live.CafeVisitLifecycle}
+[2026.10.15-10.03.44:429][923]LogAutomationController: Display: Test Completed. Result={Success} Name={CoordinateAgreement} Path={ParisDigitalTwin.Live.CoordinateAgreement}
+[2026.10.15-10.03.44:435][926]LogAutomationController: Display: Test Completed. Result={Success} Name={LocalSocialInteraction} Path={ParisDigitalTwin.Live.LocalSocialInteraction}
+[2026.10.15-10.03.44:437][929]LogAutomationController: Display: Test Completed. Result={Success} Name={RuntimePacketSafety} Path={ParisDigitalTwin.Live.RuntimePacketSafety}
+[2026.10.15-10.03.58:627][933]LogAutomationController: Display: Test Completed. Result={Success} Name={SceneCollisionAndDebug} Path={ParisDigitalTwin.Live.SceneCollisionAndDebug}
+[2026.10.15-10.03.59:198][937]LogAutomationController: Display: Test Completed. Result={Success} Name={StreetInstancesAndQuality} Path={ParisDigitalTwin.Live.StreetInstancesAndQuality}
+[2026.10.15-10.03.59:804][940]LogAutomationController: Display: Test Completed. Result={Success} Name={SurfaceMaterialsAndDetails} Path={ParisDigitalTwin.Live.SurfaceMaterialsAndDetails}
+[2026.10.15-10.04.00:393][943]LogAutomationController: Display: Test Completed. Result={Success} Name={TrafficAndMappedProps} Path={ParisDigitalTwin.Live.TrafficAndMappedProps}
+[2026.10.15-10.04.06:728][938]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingAndPedestrians} Path={ParisDigitalTwin.Live.WalkingAndPedestrians}
+[2026.10.15-10.04.06:767][940]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingGraphRouting} Path={ParisDigitalTwin.Live.WalkingGraphRouting}
+Existing AIWorld
+[2026.10.15-09.53.27:424][620]LogAutomationController: Display: Test Completed. Result={Success} Name={AuthoredModels} Path={AIWorld.Assets.AuthoredModels}
+[2026.10.15-09.53.27:448][623]LogAutomationController: Display: Test Completed. Result={Success} Name={SavedVillage} Path={AIWorld.Live.SavedVillage}
+[2026.10.15-09.53.42:198][625]LogAutomationController: Display: Test Completed. Result={Success} Name={ArchivedGISMesh} Path={AIWorld.ParisTwin.ArchivedGISMesh}
+[2026.10.15-09.53.42:226][628]LogAutomationController: Display: Test Completed. Result={Success} Name={NativeCommands} Path={AIWorld.Protocol.NativeCommands}
+[2026.10.15-09.53.42:229][630]LogAutomationController: Display: Test Completed. Result={Success} Name={SaveAndTerrain} Path={AIWorld.Protocol.SaveAndTerrain}
+After planar surface optimization (compact)
+[2026.10.15-10.08.43:715][172]LogAutomationController: Display: Test Completed. Result={Success} Name={BusinessesAndTerraces} Path={ParisDigitalTwin.Live.BusinessesAndTerraces}
+[2026.10.15-10.08.43:719][174]LogAutomationController: Display: Test Completed. Result={Success} Name={CafeSeatingLifecycle} Path={ParisDigitalTwin.Live.CafeSeatingLifecycle}
+[2026.10.15-10.08.43:724][177]LogAutomationController: Display: Test Completed. Result={Success} Name={CafeVisitLifecycle} Path={ParisDigitalTwin.Live.CafeVisitLifecycle}
+[2026.10.15-10.08.57:710][179]LogAutomationController: Display: Test Completed. Result={Success} Name={CoordinateAgreement} Path={ParisDigitalTwin.Live.CoordinateAgreement}
+[2026.10.15-10.08.57:715][181]LogAutomationController: Display: Test Completed. Result={Success} Name={LocalSocialInteraction} Path={ParisDigitalTwin.Live.LocalSocialInteraction}
+[2026.10.15-10.08.57:718][184]LogAutomationController: Display: Test Completed. Result={Success} Name={RuntimePacketSafety} Path={ParisDigitalTwin.Live.RuntimePacketSafety}
+[2026.10.15-10.09.12:454][187]LogAutomationController: Display: Test Completed. Result={Success} Name={SceneCollisionAndDebug} Path={ParisDigitalTwin.Live.SceneCollisionAndDebug}
+[2026.10.15-10.09.12:958][190]LogAutomationController: Display: Test Completed. Result={Success} Name={StreetInstancesAndQuality} Path={ParisDigitalTwin.Live.StreetInstancesAndQuality}
+[2026.10.15-10.09.13:548][193]LogAutomationController: Display: Test Completed. Result={Success} Name={SurfaceMaterialsAndDetails} Path={ParisDigitalTwin.Live.SurfaceMaterialsAndDetails}
+[2026.10.15-10.09.14:152][197]LogAutomationController: Display: Test Completed. Result={Success} Name={TrafficAndMappedProps} Path={ParisDigitalTwin.Live.TrafficAndMappedProps}
+[2026.10.15-10.09.20:461][ 64]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingAndPedestrians} Path={ParisDigitalTwin.Live.WalkingAndPedestrians}
+[2026.10.15-10.09.20:500][ 66]LogAutomationController: Display: Test Completed. Result={Success} Name={WalkingGraphRouting} Path={ParisDigitalTwin.Live.WalkingGraphRouting}
