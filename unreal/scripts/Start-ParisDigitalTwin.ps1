@@ -1,6 +1,8 @@
-param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$EntryDetail,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
+param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
+    [switch]$EntryDetail,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
 $ErrorActionPreference='Stop'
 if($EntryDetail){$Photoreal=$true;$PhotoCamera='Street'}
+if($PortalDetail){$Photoreal=$true;$PhotoCamera='Front'}
 if($StreetPhotoView -and -not $PSBoundParameters.ContainsKey('Quality')){$Quality='High'}
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $gisOptions=@()
@@ -47,7 +49,15 @@ if($Photoreal){
     $architecturePath=Join-Path (Split-Path $project) 'Content\Data\paris-photo-architecture.json'
     if(Test-Path -LiteralPath $architecturePath){
         $architecture=Get-Content -LiteralPath $architecturePath -Raw | ConvertFrom-Json
+        if($architecture.detail_revision -ne 9){$ready=$false}
         foreach($part in $architecture.objects){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$part.asset.Substring(6)+'.uasset')))){$ready=$false}}
+    }
+    $scanPath=Join-Path (Split-Path $project) 'Content\Data\paris-notredame-scan.json'
+    if(-not $NoScannedFacade -and (Test-Path -LiteralPath $scanPath)){
+        $scan=Get-Content -LiteralPath $scanPath -Raw | ConvertFrom-Json
+        $scanAssets=@($scan.asset,$scan.surface_material)+@($scan.underlays.PSObject.Properties | ForEach-Object {$_.Value})
+        foreach($texture in $scan.textures.PSObject.Properties){$scanAssets+=('/Game/ParisPhotoreal/NotreDameScan/T_NDScan_'+$texture.Name+'_'+$texture.Value.sha256.Substring(0,10))}
+        foreach($asset in $scanAssets){if(-not $asset -or -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+($asset -split '\.')[0].Substring(6)+'.uasset')))){$ready=$false}}
     }
     $groundPath=Join-Path (Split-Path $project) 'Content\Data\paris-photo-ground.json'
     if(Test-Path -LiteralPath $groundPath){
@@ -72,6 +82,8 @@ $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor.exe'
 if(-not(Test-Path -LiteralPath $editor)){throw 'Unreal Engine is not installed at '+$EngineRoot}
 $launchArgs=@( ('"'+$project+'"'),'-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-NoSplash')
 if($Photoreal){$launchArgs=@($launchArgs | Where-Object {$_ -ne '-dx11'});$launchArgs+=@('-dx12','-sm6','-CustomConfig=ParisPhotoreal','-ParisPhotoreal')}
+if($NoScannedFacade){$launchArgs+='-ParisTwinNoScannedFacade'}
+if($PortalDetail){$launchArgs+="-ParisTwinPortalDetail"}
 if($EntryDetail){$launchArgs+='-ParisTwinEntryDetail'}
 if($PhotoCamera){$launchArgs+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';Street='Camera_Paris_Street'}[$PhotoCamera])}
 if($Eye){$launchArgs+='-ParisTwinEye'}

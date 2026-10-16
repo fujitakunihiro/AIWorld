@@ -25,8 +25,10 @@ UMaterialInterface* AParisTwinScene::SurfaceMaterialFor(const TSharedPtr<FJsonOb
     if(Kind==TEXT("roof")&&bLevels)return VertexMaterial.Get();
     if(Kind==TEXT("facade_trim")||Kind==TEXT("facade_relief"))return LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisCutStone.M_ParisCutStone"));
     if(Kind==TEXT("building")&&FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoArchitecture"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces")))
-        for(const auto& ID:Array(Object(Feature,TEXT("properties")),TEXT("source_ids")))if(ID->AsString()==TEXT("osm/way/201611261"))
+        for(const auto& ID:Array(Object(Feature,TEXT("properties")),TEXT("source_ids")))if(ID->AsString()==TEXT("osm/way/201611261")){
+            if(bPhotoScanReady&&PhotoScanBodyMaterial&&!bFootprints)return PhotoScanBodyMaterial;
             if(auto Cathedral=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisCathedralStone")))return Cathedral;
+        }
     if(Kind==TEXT("building")||Kind==TEXT("quay"))return StoneMaterial.Get();
     if(Kind==TEXT("roof"))return String(Object(Feature,TEXT("properties")),TEXT("roof_material"))==TEXT("zinc")&&ZincMaterial?ZincMaterial.Get():SlateMaterial.Get();
     if(Kind==TEXT("facade_roof"))return ZincMaterial?ZincMaterial.Get():SlateMaterial.Get();

@@ -22,6 +22,9 @@
 #include "HAL/IConsoleManager.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonSerializer.h"
 using namespace AIWorld;
 
 template<class T> static T* ReuseOrSpawn(UWorld* World){
@@ -133,7 +136,18 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
 #if WITH_EDITOR
         Camera->SetActorLabel(Name.ToString());
 #endif
-        FVector Position(P[0]->AsNumber(),P[1]->AsNumber(),P[2]->AsNumber());const FVector Aim(Target[0]->AsNumber(),Target[1]->AsNumber(),Target[2]->AsNumber());
+        FVector Position(P[0]->AsNumber(),P[1]->AsNumber(),P[2]->AsNumber());FVector Aim(Target[0]->AsNumber(),Target[1]->AsNumber(),Target[2]->AsNumber());
+        double DetailLens=0;
+        if(Name==TEXT("Camera_NotreDame_Front")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPortalDetail"))){
+            FString Text;TSharedPtr<FJsonObject> Architecture;
+            if(FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Data/paris-photo-architecture.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Architecture)&&Architecture&&String(Architecture,TEXT("source_id"))==TEXT("osm/way/201611261")){
+                const auto Detail=Object(Architecture,TEXT("detail_camera"));const auto& DP=Array(Detail,TEXT("position_cm"));const auto& DT=Array(Detail,TEXT("target_cm"));
+                if(DP.Num()==3&&DT.Num()==3){
+                    const FVector Location(DP[0]->AsNumber(),DP[1]->AsNumber(),DP[2]->AsNumber()),TargetPoint(DT[0]->AsNumber(),DT[1]->AsNumber(),DT[2]->AsNumber());
+                    if(!Location.ContainsNaN()&&!TargetPoint.ContainsNaN()&&(TargetPoint-Location).Size()>100){Position=Location;Aim=TargetPoint;DetailLens=Number(Detail,TEXT("focal_length_mm"),35);Camera->Tags.AddUnique(TEXT("ParisCathedralPortalCamera"));}
+                }
+            }
+        }
         // Road decks / triangulated terrain can differ from the DEM sample
         // at an embankment. Stand 170cm above the actual walkable surface,
         // retaining the geographic XY anchor and all original source data.
@@ -149,7 +163,7 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
         if(!OnBridge&&Scene->GetWorld()->LineTraceSingleByChannel(Ground,Position+FVector(0,0,20000),Position-FVector(0,0,20000),ECC_Pawn,Query)&&Ground.ImpactNormal.Z>.4)
             Position.Z=Ground.ImpactPoint.Z+170;
         Camera->SetActorLocationAndRotation(Position,(Aim-Position).Rotation());auto C=Camera->GetCameraComponent();
-        const double Lens=FMath::Clamp(Number(J,TEXT("focal_length_mm"),35),24.,85.);
+        const double Lens=FMath::Clamp(DetailLens>0?DetailLens:Number(J,TEXT("focal_length_mm"),35),24.,85.);
         C->SetFieldOfView(FMath::RadiansToDegrees(2.*FMath::Atan(36./(2.*Lens))));C->PostProcessBlendWeight=1;
         C->PostProcessSettings.bOverride_DepthOfFieldFstop=true;C->PostProcessSettings.DepthOfFieldFstop=8;
         C->PostProcessSettings.bOverride_DepthOfFieldFocalDistance=true;C->PostProcessSettings.DepthOfFieldFocalDistance=(Aim-Position).Size();

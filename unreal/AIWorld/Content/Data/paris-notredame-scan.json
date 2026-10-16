@@ -1,0 +1,115 @@
+{
+  "format": "paris_historic_scanned_facade_v1",
+  "source_id": "osm/way/201611261",
+  "source": {
+    "format": "paris_facade_point_cloud_v1",
+    "uid": "50deeb164f324d1c8607bafa67f948b9",
+    "title": "Notre Dame Paris Facade - Hi Res Point Cloud",
+    "author": "UC San Diego - Digital Media Lab (embedded credit); current Sketchfab account CHEI - UC San Diego",
+    "source_url": "https://sketchfab.com/3d-models/notre-dame-paris-facade-hi-res-point-cloud-50deeb164f324d1c8607bafa67f948b9",
+    "record_url": "https://zenodo.org/records/10363984",
+    "file_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-093/50deeb164f324d1c8607bafa67f948b9.glb",
+    "license": "CC-BY-4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "published": "2019-05-06",
+    "description": "Reconstruction from 105 Flickr and Wikimedia tourist photos; historical appearance, not the 2024 restoration.",
+    "file": "50deeb164f324d1c8607bafa67f948b9.glb",
+    "bytes": 405027212,
+    "md5": "6d5d5ae624614283ddc99a5cfc3d3452",
+    "sha256": "7dec002065505a878941f663a2e8a5df528cb7a94dbf359405617a0cdfdf7b1e",
+    "acceptance": "Research candidate: points only; no claim of surface reconstruction, PBR or surveyed georegistration"
+  },
+  "local_frame": {
+    "front_cm": [
+      14308.9902,
+      16242.7923,
+      -76.6547
+    ],
+    "across": [
+      0.4538288404804823,
+      -0.891088875224094,
+      0
+    ],
+    "depth": [
+      0.891088875224094,
+      0.4538288404804823,
+      0
+    ]
+  },
+  "origin_wgs84": [
+    2.3471,
+    48.8547
+  ],
+  "origin_elevation_ngf_m": 35.38,
+  "asset": "/Game/ParisPhotoreal/NotreDameScan/SM_NotreDameScan_bc2b32452c1f",
+  "geometry_sha256": "bc2b32452c1f320e296c0cb8b35443c5b6c4b1f6196a88bc0487e6f788511532",
+  "binary": "unreal/assets/notre-dame-facade/facade-surface.bin",
+  "vertices": 102688,
+  "triangles": 201271,
+  "dimensions_reference": "https://www.notredamedeparis.fr/comprendre/architecture/plans/",
+  "registration": {
+    "method": "Provisional independent width/height calibration to official 43.5m / 69m; depth uses vertical scale. Not survey georegistration.",
+    "source_ground": 536.4406127929688,
+    "source_crown": 15575.0498046875,
+    "source_across_limits": [
+      -4082.439606914561,
+      6313.894207500614
+    ],
+    "source_wall_depth": -798.4792464430273,
+    "horizontal_scale_m": 0.004184167301331215,
+    "vertical_scale_m": 0.004588190245490882,
+    "depth_scale_m": 0.004588190245490882
+  },
+  "surface": {
+    "texture_step_m": 0.0125,
+    "mesh_step_m": 0.07500000000000001,
+    "max_fill_distance_m": 0.4,
+    "albedo_border_padding_m": 0.025,
+    "observed_cells": 2052370,
+    "filled_cells": 1661478,
+    "selection": "Dense central portal, western rose and kings gallery only; other facade areas keep the authored fallback",
+    "depth_filter": "3x3 median; inferred completion up to 0.4m distance",
+    "texture_width": 3481,
+    "texture_height": 3601,
+    "mesh_coverage_fraction": 0.2890131304297116,
+    "depth_jump_limit_m": 1.2,
+    "lower_height_m": 45,
+    "width_m": 43.5
+  },
+  "provenance": "Historic photo-derived colour and filtered 2.5D depth; bounded inferred completion up to 0.4m distance and provisional art registration. Roughness is estimated, photographed lighting is not fully removed. Not a finished surveyed L4/L5 or a complete cathedral exterior.",
+  "textures": {
+    "colour": {
+      "file": "unreal/assets/notre-dame-facade/facade-colour.png",
+      "sha256": "5e667f124b020e98df0b80c3ed80b42692e33aee75c6024421904129f4641f16"
+    },
+    "normal": {
+      "file": "unreal/assets/notre-dame-facade/facade-normal.png",
+      "sha256": "21b152841eb730bcf5274099fbdcfdee8d3bdd24193e045202d43d1958ba6baa"
+    },
+    "coverage": {
+      "file": "unreal/assets/notre-dame-facade/facade-coverage.png",
+      "sha256": "16d9fce561cc00e8b5e8092bd1aa86cace51f7e890cf544f0274896f54ff373f"
+    }
+  },
+  "underlays": {
+    "stone": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stone_bc8850f32481",
+    "wood": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_wood_12499caad7d7",
+    "glass": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_glass_2b1bdec2f1fe",
+    "iron": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_iron_d8ef6ec75ad5",
+    "sculpture": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_sculpture_70a6f357ce8f",
+    "stained": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stained_4c4db58fee4a",
+    "body": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_body_56af81ba28a4"
+  },
+  "surface_material": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Surface_b491f7d4e504.M_NDScan_Surface_b491f7d4e504",
+  "fallback_triangles": 201271,
+  "material_calibration": {
+    "albedo_multiplier_linear": [
+      0.72,
+      0.64,
+      0.52
+    ],
+    "normal_strength": 0.35,
+    "estimated_roughness": 0.82,
+    "note": "Visual matching to existing stone. Original photographed illumination remains; not calibrated survey albedo."
+  }
+}

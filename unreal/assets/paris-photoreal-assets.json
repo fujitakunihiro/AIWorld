@@ -9,6 +9,9 @@
     {"id":"asphalt","recipe":"Asphalt","material":"/Game/Materials/M_ParisAsphalt","surface_layout":"ARH","normal_source":"world_height_derivatives"}
   ],
   "photographic_manifest": "unreal/textures/paris-photo/manifest.json",
+  "partial_landmark_assets": [
+    {"id":"notre_dame_historic_west_patches","status":"available_partial","runtime_manifest":"unreal/AIWorld/Content/Data/paris-notredame-scan.json","credits":"unreal/assets/notre-dame-facade/CREDITS.md","license":"CC-BY-4.0","scope":"Dense central portal, western rose and kings gallery only; 2019 historical photo reconstruction","limitations":"2.5D surfaces, bounded inferred completion, provisional independent width/height registration, captured lighting remains. Does not satisfy the full exterior landmark requirement or surveyed L4/L5."}
+  ],
   "photographic_note": "Two CC0 photographic appearance proxies and one HDR environment are bundled. Stone is white sandstone, not surveyed Paris limestone. Imported ORM is R=AO G=roughness B=metallic. DirectX normals. No geographic fidelity promotion.",
   "required_assets": [
     {"id":"surveyed_limestone","status":"missing","ue_asset":null,"priority":1,"kind":"texture_set","spec":"2K baseline / 4K focus; unlit albedo sRGB, DirectX normal linear, ORM linear, optional 16-bit height; physical tile size; clean and weathered variants","evidence_required":"Photo/source reference, license and redistribution terms; no baked lighting"},

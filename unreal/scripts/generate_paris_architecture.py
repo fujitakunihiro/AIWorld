@@ -31,14 +31,15 @@ def generate():
     def world(p,normal=False):
         x,y,z=p;e=-dy*x+dx*y;n=dx*x+dy*y
         return [e,-n,z] if normal else [round((front[0]+e-geo.origin[0])*100,4),round(-(front[1]+n-geo.origin[1])*100,4),round((ground+z)*100,4)]
-    groups={name:dict(positions_cm=[],normals=[],indices=[]) for name in ['stone','recess','wood','glass','iron']}
-    def face(kind,points,n):
+    groups={name:dict(positions_cm=[],normals=[],indices=[]) for name in ['stone','wood','glass','iron','sculpture','stained']}
+    def face(kind,points,n,tint=None):
         out=groups[kind];start=len(out['positions_cm']);points=[world(p) for p in points];normal=world(n,True)
         magnitude=math.sqrt(sum(v*v for v in normal));normal=[v/magnitude for v in normal]
         u=[points[1][i]-points[0][i] for i in range(3)];v=[points[2][i]-points[0][i] for i in range(3)]
         cross=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]]
         reverse=sum(cross[i]*normal[i] for i in range(3))>0
         out['positions_cm'].extend(points);out['normals'].extend([normal]*len(points))
+        if kind=='stained':out.setdefault('colors_srgb',[]).extend([tint or '233943']*len(points))
         for i in range(1,len(points)-1):out['indices'].extend([start,start+i+1,start+i] if reverse else [start,start+i,start+i+1])
     def box(kind,x,y,z,w,d,h):
         x0,x1=x-w/2,x+w/2;y0,y1=y-d/2,y+d/2;z0,z1=z,z+h
@@ -128,101 +129,9 @@ def generate():
         for side in [-1,1]:
             tube('stone',[(x+side*h*.12,y,z+h*.71),(x+side*h*.2,y-h*.045,z+h*(.5 if seed%2 else .63)),(x+side*h*.08,y-h*.12,z+h*.45)],h*.041,10)
         box('stone',x,y,z,h*.36,h*.22,h*.07)
-    # The authored facade is a removable visual layer, not new GIS volume.
-    box('stone',0,-.55,0,43.5,.55,45)
-    # The belfry is an open shell. The source display material makes the same
-    # voids in the original simplified volume; its collider remains unchanged.
-    for x in [-15.25,15.25]:
-        holes=[opening(cx,58,4.6,64.7,48) for cx in [x-2.7,x+2.7]]
-        pierced_wall(x-6.5,x+6.5,45,69,-.76,1.0,holes)
-        for sx in [x-6.5,x+6.5]:
-            sideholes=[opening(cy,58,4.6,64.7,48) for cy in [4.8,10.2]]
-            pierced_wall(.7,15,45,69,0,.7,sideholes,side=sx)
-            for cy in [4.8,10.2]:
-                points=ogive(cy,58,4.6,64.7,0)
-                tube('stone',[(sx+(-.14 if sx<0 else .14),p[0],p[2]) for p in points],.2,12)
-                for d in [-2.3,2.3]:tube('stone',[(sx,cy+d,48),(sx,cy+d,58)],.19,12)
-        box('stone',x,7.3,68.5,13.4,15.8,.45)
-    for x in [-21.7,-8.5,8.5,21.7]:
-        box('stone',x,-1.05,0,1.2,1.6,45)
-        for z in [3,9,16,21,33,39,44]:box('stone',x,-1.30,z,1.65,1.9,.35)
-        if abs(x)>10:box('stone',x,-.9,45,.9,1.2,24)
-    # Three recessed portals with nested rounded archivolts and jamb columns.
-    for x,w in [(-14,8.1),(0,9.5),(14,8.1)]:
-        arch('recess',x,5.5,w,13,-.89)
-        # Tympana are carved stone, rather than a ten-metre black opening.
-        arch('stone',x,5.5,w*.98,12.9,-1.015,bottom=4.95)
-        for z in [5.0,7.45,9.4]:box('stone',x,-1.10,z,w*.97,.3,.18)
-        for row,(z,n,h) in enumerate([(5.25,9,1.75),(7.7,7,1.5),(9.65,3,1.55)]):
-            for i in range(n):figure(x+(i-(n-1)/2)*w*.085,-1.16,z,h,i+row)
-        for side in [-1,1]:
-            for k in range(4):
-                box('wood',x+side*(.15+(k+.5)*w*.108),-1.035,.12,w*.104,.08,4.7)
-        for side in [-1,1]:
-            box('wood',x+side*w*.23,-.94,0,w*.43,.16,4.85)
-            for z in [.6,2.2,4.1]:box('iron',x+side*w*.23,-1.04,z,w*.4,.05,.12)
-        for i in range(6):
-            k=i*.27;tube('stone',ogive(x,5.5,w+k*2,13+k,-1.05-i*.13),.12,10)
-            for side in [-1,1]:
-                tube('stone',[(x+side*(w/2+k),-1.05-i*.13,.2),(x+side*(w/2+k),-1.05-i*.13,5.5)],.13,10)
-                box('stone',x+side*(w/2+k),-1.07-i*.13,5.25,.4,.4,.4)
-        # Inferred sculptural relief silhouettes, deliberately not named statues.
-        for side in [-1,1]:
-            for k in range(3):
-                sx=x+side*(w/2+.32+k*.4);tube('stone',[(sx,-1.1,1),(sx,-1.1,3.6)],.16,8)
-                tube('stone',[(sx,-1.1,3.6),(sx,-1.1,4.05)],.22,10)
-    # Gallery of 28 generic kings: rhythm and volume only, no surveyed sculpture.
-    for z,w in [(17,44.6),(22.1,44.6),(34.5,44),(45,44)]:
-        for step in range(3):box('stone',0,-1.0-step*.15,z+step*.18,w+step*.2,1.4+step*.2,.18)
-    for i in range(28):
-        x=(i-13.5)*1.45
-        arch('recess',x,20.2,1.15,21.3,-.89,bottom=17.6)
-        for side in [-1,1]:tube('stone',[(x+side*.65,-1.25,17.6),(x+side*.65,-1.25,20.7)],.09)
-        tube('stone',ogive(x,20.2,1.3,21.45,-1.25),.1)
-        figure(x,-1.20,17.85,2.35,i)
-    # Official western rose diameter 9.70m; radial tracery remains inferred.
-    rose_z=28.1;rose_r=4.85
-    face('glass',list(reversed(circle(0,rose_z,rose_r,-.9)[:-1])),(0,-1,0))
-    for r,thickness in [(4.9,.2),(5.15,.15),(5.4,.14),(.65,.14),(2.45,.11)]:tube('stone',circle(0,rose_z,r,-1.2),thickness,10)
-    for i in range(16):
-        angle=i*math.tau/16
-        tube('stone',[(.65*math.cos(angle),-1.2,rose_z+.65*math.sin(angle)),(4.8*math.cos(angle),-1.2,rose_z+4.8*math.sin(angle))],.085)
-        tube('stone',circle(3.65*math.cos(angle),rose_z+3.65*math.sin(angle),.75,-1.2,32),.055)
-    # Paired pointed windows flank the rose and tower belfries.
-    for x in [-15.2,15.2]:
-        for cx in [x-2.7,x+2.7]:
-            for spring,top,w in [(28,32,3.3),(58,64.7,4.6)]:
-                if spring==28:arch('recess',cx,spring,w,top,-.91,bottom=23.5)
-                tube('stone',ogive(cx,spring,w,top,-1.16),.2,10)
-                for side in [-1,1]:tube('stone',[(cx+side*w/2,-1.16,spring-10),(cx+side*w/2,-1.16,spring)],.18,10)
-                tube('stone',[(cx,-1.19,spring-10),(cx,-1.19,top-1.3)],.1)
-                if spring==58:
-                    # Recessed wooden louvres sit inside the stone reveal.
-                    for z in range(49,58):box('wood',cx,.1,z,w*.94,.35,.12)
-                else:
-                    for z in range(int(spring-9),int(spring)):box('iron',cx,-1.0,z,w*.95,.1,.10)
-        for z in [46,65.5,68.6]:box('stone',x,-1.0,z,13.8,1.5,.42)
-    # Open colonnade and thin balustrades create depth instead of painted windows.
-    box('recess',0,-.88,36,41.8,.05,7.5)
-    for i in range(35):
-        x=(i-17)*1.20
-        tube('stone',[(x,-1.25,36),(x,-1.25,42.5)],.12)
-        tube('stone',ogive(x+.6,42.1,1.15,44,-1.25),.1)
-    for z in [35.1,45.6,69.1]:
-        ranges=[(-21.7,21.7)] if z<46 else [(-21.7,-8.7),(8.7,21.7)]
-        for lo,hi in ranges:
-            tube('stone',[(lo,-1.5,z+1.1),(hi,-1.5,z+1.1)],.14)
-            for i in range(int((hi-lo)/.6)+1):
-                x=lo+i*.6;tube('stone',[(x,-1.5,z),(x,-1.5,z+1.1)],.075)
-    # Continuous stone courses and buttress caps break the unnaturally plain
-    # silhouette; small joints are handled by the photographic material.
-    for x in [-21.7,-8.5,8.5,21.7]:
-        for z in [22.5,34.7,45.4,66.2]:
-            for step in range(3):box('stone',x,-1.55,z+step*.14,1.75-step*.12,1.5-step*.12,.18)
-        for z in [24,29,37,41,49,54,59,64]:
-            box('stone',x,-1.9,z,1.08,.12,.09)
-    # Upper nave / transept details follow the existing IGN volume-part edges.
-    # These shapes are inferred decoration, not newly measured facade data.
+    from notredame_west import build as build_west, opening_spec, REVISION
+    west_details=build_west(face,box,tube,ellipsoid,ogive,opening,pierced_wall)
+    # Upper nave / transept details retain the existing IGN volume-part edges.
     side_bays=0;flying_buttresses=0;side_cornices=0
     for part in building['properties'].get('height_parts',[]):
         height=part.get('height_gutter_max_m',part.get('height_m',0))
@@ -328,16 +237,19 @@ def generate():
                             for z in [bottom,top-.65,top]:module('wood',0,.16,z,1.25,.045,.05)
                             if row in [1,3]:module('stone',0,.23,bottom-.52,span/count,.18,.18)
                             neighbour_windows+=1
-    materials=dict(stone='/Game/Materials/M_Paris_Limestone',recess='/Game/Materials/M_Paris_Iron',wood='/Game/Materials/M_ParisWood',glass='/Game/Materials/M_Paris_Glass',iron='/Game/Materials/M_Paris_Iron')
+    materials=dict(stone='/Game/Materials/M_Paris_Limestone',recess='/Game/Materials/M_Paris_Iron',wood='/Game/Materials/M_ParisWood',glass='/Game/Materials/M_Paris_Glass',iron='/Game/Materials/M_Paris_Iron',sculpture='/Game/Materials/M_ParisSculptedStone',stained='/Game/Materials/M_ParisStainedGlass')
     objects=[]
     for name,mesh in groups.items():
-        mesh['color']={'stone':'d2ccbf','recess':'10151a','wood':'4b3020','glass':'18252d','iron':'262c31'}[name]
+        mesh['color']={'stone':'d2ccbf','recess':'10151a','wood':'4b3020','glass':'18252d','iron':'262c31','sculpture':'dbd4c6','stained':'233943'}[name]
         signature=hashlib.sha256(json.dumps(mesh,sort_keys=True,separators=(',',':')).encode()).hexdigest()
         objects.append(dict(id=name,asset='/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_'+name+'_'+signature[:12],geometry_sha256=signature,material=materials[name],triangles=len(mesh['indices'])//3,**mesh))
     return dict(format='paris_original_architecture_study_v1',source_id=building['properties']['source_id'],source_url=building['properties']['source_url'],
+        detail_revision=REVISION,west_openings=opening_spec(),west_details=west_details,
+        detail_camera=dict(position_cm=world((-3,-22,1.7)),target_cm=world((0,-.5,8.0)),focal_length_mm=50),
+        architecture_references=['https://www.notredamedeparis.fr/comprendre/architecture/la-facade-occidentale/','https://www.notredamedeparis.fr/comprendre/architecture/le-portail-du-jugement-dernier/'],
         dimensions_reference='https://www.notredamedeparis.fr/comprendre/architecture/plans/',
         dimension_facts_m=dict(west_width=43.5,tower_height=69,west_rose_diameter=9.70),
-        appearance_provenance='Original inferred architectural study: west facade, open belfry, upper nave and nearby hospital window relief. Not a surveyed cathedral model; sculpture, depths and opening placement are approximate. Existing GIS/collision retained.',
+        appearance_provenance='Original inferred architectural study: pierced west facade, deep portals, authored sculptural relief, rose tracery and open belfry; upper nave and nearby hospital window relief. Not a surveyed cathedral model; sculpture, depths and opening placement are approximate. Existing GIS/collision retained.',
         source_ids=[building['properties']['source_id']]+([neighbour_id] if neighbour_windows else []),
         local_frame=dict(front_cm=world((0,0,0)),across=world((1,0,0),True),depth=world((0,1,0),True)),
         belfry_voids=dict(tower_centres=[-15.25,15.25],front_centres=[-17.95,-12.55,12.55,17.95],side_centres=[4.8,10.2],half_width=2.3,bottom=48,spring=58,top=64.7,depth_min=-2,depth_max=16),

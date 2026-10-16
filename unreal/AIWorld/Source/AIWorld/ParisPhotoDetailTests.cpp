@@ -18,7 +18,7 @@ bool FParisPhotoDetailWait::Update(){
         const bool Photo=FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"));
         auto Stats=MakeShared<FJsonObject>();AddParisPhotoDetailStats(Scene,Stats);
         Test->TestEqual(TEXT("GIS source building count is preserved"),Scene->BuildingCount,739);
-        Test->TestEqual(TEXT("All five authored facade materials load only in photoreal mode"),AIWorld::Number(Stats,TEXT("authored_west_facade_components")),Photo?5.:0.);
+        Test->TestEqual(TEXT("All six authored facade materials load only in photoreal mode"),AIWorld::Number(Stats,TEXT("authored_west_facade_components")),Photo?6.:0.);
         if(Photo){
             Test->TestTrue(TEXT("Real tree instances are available"),AIWorld::Number(Stats,TEXT("photo_tree_instances"))>0);
             const auto Old=Scene->DetailQuality;Scene->DetailQuality=2;Scene->ApplyDetailQuality();

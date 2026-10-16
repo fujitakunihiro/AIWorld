@@ -2,13 +2,121 @@
   "format": "paris_original_architecture_study_v1",
   "source_id": "osm/way/201611261",
   "source_url": "https://www.openstreetmap.org/way/201611261",
+  "detail_revision": 9,
+  "west_openings": {
+    "portals": [
+      {
+        "x": -14.0,
+        "width": 8.1,
+        "bottom": 0.0,
+        "spring": 5.5,
+        "top": 13.0
+      },
+      {
+        "x": 0.0,
+        "width": 9.5,
+        "bottom": 0.0,
+        "spring": 5.5,
+        "top": 13.0
+      },
+      {
+        "x": 14.0,
+        "width": 8.1,
+        "bottom": 0.0,
+        "spring": 5.5,
+        "top": 13.0
+      }
+    ],
+    "rose": {
+      "x": 0.0,
+      "z": 28.1,
+      "radius": 4.85
+    },
+    "windows": [
+      {
+        "x": -17.9,
+        "width": 3.3,
+        "bottom": 23.5,
+        "spring": 28.0,
+        "top": 32.0
+      },
+      {
+        "x": -12.5,
+        "width": 3.3,
+        "bottom": 23.5,
+        "spring": 28.0,
+        "top": 32.0
+      },
+      {
+        "x": 12.5,
+        "width": 3.3,
+        "bottom": 23.5,
+        "spring": 28.0,
+        "top": 32.0
+      },
+      {
+        "x": 17.9,
+        "width": 3.3,
+        "bottom": 23.5,
+        "spring": 28.0,
+        "top": 32.0
+      }
+    ],
+    "gallery": [
+      {
+        "left": -20.9,
+        "right": -9.25,
+        "bottom": 36.0,
+        "top": 43.6
+      },
+      {
+        "left": -7.75,
+        "right": 7.75,
+        "bottom": 36.0,
+        "top": 43.6
+      },
+      {
+        "left": 9.25,
+        "right": 20.9,
+        "bottom": 36.0,
+        "top": 43.6
+      }
+    ],
+    "depth_min": -3.0,
+    "depth_max": 2.0
+  },
+  "west_details": {
+    "portals": 3,
+    "gallery_figures": 28,
+    "archivolt_figures": 126,
+    "carved_capitals": 155,
+    "rose_glass_cells": 1536,
+    "pierced_balustrade_panels": 128
+  },
+  "detail_camera": {
+    "position_cm": [
+      12212.446,
+      15511.6955,
+      93.3453
+    ],
+    "target_cm": [
+      14264.4358,
+      16220.1009,
+      723.3453
+    ],
+    "focal_length_mm": 50
+  },
+  "architecture_references": [
+    "https://www.notredamedeparis.fr/comprendre/architecture/la-facade-occidentale/",
+    "https://www.notredamedeparis.fr/comprendre/architecture/le-portail-du-jugement-dernier/"
+  ],
   "dimensions_reference": "https://www.notredamedeparis.fr/comprendre/architecture/plans/",
   "dimension_facts_m": {
     "west_width": 43.5,
     "tower_height": 69,
     "west_rose_diameter": 9.7
   },
-  "appearance_provenance": "Original inferred architectural study: west facade, open belfry, upper nave and nearby hospital window relief. Not a surveyed cathedral model; sculpture, depths and opening placement are approximate. Existing GIS/collision retained.",
+  "appearance_provenance": "Original inferred architectural study: pierced west facade, deep portals, authored sculptural relief, rose tracery and open belfry; upper nave and nearby hospital window relief. Not a surveyed cathedral model; sculpture, depths and opening placement are approximate. Existing GIS/collision retained.",
   "source_ids": [
     "osm/way/201611261",
     "osm/relation/2449758"
@@ -71,38 +179,45 @@
   "objects": [
     {
       "id": "stone",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_df8d56f4fe0a",
-      "geometry_sha256": "df8d56f4fe0a6ddbfdf4d8007903410af49c14327665bbabc273eb6343af302b",
-      "triangles": 244197,
-      "fallback_triangles": 244197
-    },
-    {
-      "id": "recess",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_recess_d07e08f9c990",
-      "geometry_sha256": "d07e08f9c9901969b95bc470f39700731c12bf6d7ccf834a63d73cc99379ba18",
-      "triangles": 1725,
-      "fallback_triangles": 1725
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_e2f976e1492b",
+      "geometry_sha256": "e2f976e1492be6ee5ca99dfbae220d60c20b90e8afa23fc725e59b6aa43081ac",
+      "triangles": 468935,
+      "fallback_triangles": 468935
     },
     {
       "id": "wood",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_9490fd94902c",
-      "geometry_sha256": "9490fd94902cbf55058c73adf73fd90e1ad81bafdf8002b8c26df551d4e52beb",
-      "triangles": 41556,
-      "fallback_triangles": 41556
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_f327ac2e25cd",
+      "geometry_sha256": "f327ac2e25cda3687b2e7eb5510325c69188a91d6de8de80f818056f62d06b37",
+      "triangles": 45336,
+      "fallback_triangles": 45336
     },
     {
       "id": "glass",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_glass_1962bde72ea6",
-      "geometry_sha256": "1962bde72ea628c47753e39073745a447391de4542411cecc2ef4df08be25e77",
-      "triangles": 3317,
-      "fallback_triangles": 3317
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_glass_530741ae45c6",
+      "geometry_sha256": "530741ae45c65ffece9101c81c3521df9aa4206c2284997a85b0294a85b5c308",
+      "triangles": 3419,
+      "fallback_triangles": 3419
     },
     {
       "id": "iron",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_iron_ac9f8377f47d",
-      "geometry_sha256": "ac9f8377f47dde1b658a08ddba5b44e1b7b199bf9a32758dbb751c52dd53fe54",
-      "triangles": 540,
-      "fallback_triangles": 540
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_iron_7c311086a276",
+      "geometry_sha256": "7c311086a276ad6534bf90ad67ad97e8fce88ee4106957140cccca497ff653d8",
+      "triangles": 16104,
+      "fallback_triangles": 16104
+    },
+    {
+      "id": "sculpture",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_sculpture_cc9709f5be26",
+      "geometry_sha256": "cc9709f5be266ca20e40ea0780cf2ec2341d9930f18a76cc529b1ded9c6fb6d4",
+      "triangles": 539740,
+      "fallback_triangles": 539738
+    },
+    {
+      "id": "stained",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stained_2c72c16fd951",
+      "geometry_sha256": "2c72c16fd9515c75f2db6c3f7b2baf218065d227727da9649363fb5e50edaf0a",
+      "triangles": 2976,
+      "fallback_triangles": 2976
     }
   ]
 }

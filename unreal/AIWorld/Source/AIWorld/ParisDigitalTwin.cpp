@@ -81,7 +81,7 @@ static FString FeatureText(const TSharedPtr<FJsonObject>& J) {
         Text+=TEXT("\n")+String(P,TEXT("height_source"));const auto& Refs=Array(P,TEXT("height_reference_ids"));if(!Refs.IsEmpty())Text+=TEXT(" | ")+Refs[0]->AsString()+FString::Printf(TEXT(" (+%d more)"),Refs.Num()-1);
         if(!Refs.IsEmpty()){Text+=FString::Printf(TEXT(" | source precision %.1fm"),Number(P,TEXT("height_precision_max_m")));const auto& Dates=Array(P,TEXT("height_data_dates"));if(!Dates.IsEmpty())Text+=TEXT(" | updated ")+Dates.Last()->AsString().Left(10);}
         Text+=TEXT("\nAppearance: inferred doors, balconies, cornices, dormers and roof material; overall L1");
-        if(String(P,TEXT("source_id"))==TEXT("osm/way/201611261"))Text+=TEXT("\nPhoto facade: original inferred west-front study. Official overall dimensions; opening/sculpture details approximate. Not a surveyed full cathedral model.");
+        if(String(P,TEXT("source_id"))==TEXT("osm/way/201611261"))Text+=TEXT("\nWest facade: authored fallback; photoreal mode adds selected historic UCSD photo-derived surfaces (2019, CC BY 4.0). Registration and gap completion are provisional. Full surveyed exterior unfinished.");
     }
     else if(String(J,TEXT("kind"))==TEXT("business")){
         Text+=TEXT("\nInferred storefront / awning (actual exterior unverified) | building ")+String(P,TEXT("building_source_id"));

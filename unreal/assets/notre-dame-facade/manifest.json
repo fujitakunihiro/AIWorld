@@ -1,0 +1,18 @@
+{
+  "format": "paris_facade_point_cloud_v1",
+  "uid": "50deeb164f324d1c8607bafa67f948b9",
+  "title": "Notre Dame Paris Facade - Hi Res Point Cloud",
+  "author": "UC San Diego - Digital Media Lab (embedded credit); current Sketchfab account CHEI - UC San Diego",
+  "source_url": "https://sketchfab.com/3d-models/notre-dame-paris-facade-hi-res-point-cloud-50deeb164f324d1c8607bafa67f948b9",
+  "record_url": "https://zenodo.org/records/10363984",
+  "file_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-093/50deeb164f324d1c8607bafa67f948b9.glb",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "published": "2019-05-06",
+  "description": "Reconstruction from 105 Flickr and Wikimedia tourist photos; historical appearance, not the 2024 restoration.",
+  "file": "50deeb164f324d1c8607bafa67f948b9.glb",
+  "bytes": 405027212,
+  "md5": "6d5d5ae624614283ddc99a5cfc3d3452",
+  "sha256": "7dec002065505a878941f663a2e8a5df528cb7a94dbf359405617a0cdfdf7b1e",
+  "acceptance": "Research candidate: points only; no claim of surface reconstruction, PBR or surveyed georegistration"
+}

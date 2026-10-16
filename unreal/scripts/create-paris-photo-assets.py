@@ -22,6 +22,10 @@ masonry_path=os.path.join(os.path.dirname(__file__),'paris_masonry.py')
 masonry={'__file__':masonry_path,'__name__':'paris_masonry'}
 with open(masonry_path,encoding='utf-8') as f:exec(compile(f.read(),masonry_path,'exec'),masonry)
 with open(masonry_path,'rb') as f:masonry_signature=hashlib.sha256(f.read().replace(b'\r\n',b'\n')).hexdigest()
+west_path=os.path.join(os.path.dirname(__file__),'notredame_west.py')
+west={'__file__':west_path,'__name__':'notredame_west'}
+with open(west_path,encoding='utf-8') as f:exec(compile(f.read(),west_path,'exec'),west)
+with open(west_path,'rb') as f:signature+=hashlib.sha256(f.read().replace(b'\r\n',b'\n')).hexdigest()
 
 
 def imported(name, info, role):
@@ -83,6 +87,7 @@ frame=architecture.get('local_frame')
 signature+=hashlib.sha256(json.dumps(frame,sort_keys=True).encode()).hexdigest()
 entries=list(manifest['sets'])
 if frame:entries.append(dict(next(e for e in entries if e['key']=='stone'),material='M_ParisCathedralStone'))
+if frame:entries.append(dict(next(e for e in entries if e['key']=='stone'),material='M_ParisSculptedStone',sculpture=True))
 if frame:entries.append(dict(next(e for e in entries if e['key']=='paving'),material='M_ParisGroundPaving'))
 
 
@@ -132,7 +137,7 @@ for entry in entries:
         blend=node(mat,unreal.MaterialExpressionLinearInterpolate)
         link(tint,'',blend,'A');link(color,'',blend,'B');link(ground_zone,'',blend,'Alpha')
         color=blend
-    if entry['key']=='stone':
+    if entry['key']=='stone' and not entry.get('sculpture'):
         # The photograph supplies fine grain. Coursing is an explicitly
         # inferred shallow finish, not a coarse rubble photograph or geometry.
         geometric=node(mat,unreal.MaterialExpressionVertexNormalWS)
@@ -141,21 +146,12 @@ for entry in entries:
         output(weather,'',unreal.MaterialProperty.MP_BASE_COLOR)
     else:output(color, '', unreal.MaterialProperty.MP_BASE_COLOR)
     if entry['material']=='M_ParisCathedralStone':
-        # Open only the inferred belfry windows in the existing GIS display.
-        # Do not alter source vertices, collision, pick features or dimensions.
-        origin=frame['front_cm'];across=frame['across'];depth=frame['depth']
-        xyz=lambda p:'float3('+','.join(f'{x:.10f}' for x in p)+')'
-        code=f'float3 d=(Position-{xyz(origin)})*.01; float x=dot(d,{xyz(across)}), y=dot(d,{xyz(depth)}), z=d.z; '
-        code+='if(z<48||z>64.7||y<-2||y>16) return 1; float halfWidth=2.3, rise=6.7, o=(rise*rise-halfWidth*halfWidth)/(2*halfWidth), r=halfWidth+o; float hole=0; '
-        for cx in [-17.95,-12.55,12.55,17.95]:
-            code+=f'{{float a=abs(x-({cx})); hole=max(hole,(a<2.3 && z<58+sqrt(max(0,r*r-(o+a)*(o+a))))?1:0);}} '
-        code+='if(abs(abs(x)-15.25)<6.5){'
-        for cy in [4.8,10.2]:code+=f'{{float a=abs(y-{cy}); hole=max(hole,(a<2.3 && z<58+sqrt(max(0,r*r-(o+a)*(o+a))))?1:0);}} '
-        code+='} return 1-hole;'
+        # Geometry and source-display cutouts share one opening specification.
+        code=west['display_mask_hlsl'](frame)
         mask=custom(mat,code,dict(Position=(world_position,'')),y=1350)
         mat.set_editor_property('blend_mode',unreal.BlendMode.BLEND_MASKED)
         output(mask,'',unreal.MaterialProperty.MP_OPACITY_MASK)
-        assets.set_metadata_tag(mat,'ParisTwin.VisualVoids','Inferred belfry only; original GIS collision retained')
+        assets.set_metadata_tag(mat,'ParisTwin.VisualVoids','Inferred western portals, rose, windows, gallery and belfry; original GIS collision retained')
     if planar:
         # XY world UVs define a stable world-space tangent basis. Following the
         # actual road normal preserves grades without the legacy XY normal
@@ -173,7 +169,7 @@ for entry in entries:
             blend=node(mat,unreal.MaterialExpressionLinearInterpolate)
             link(normal,'',blend,'A');link(basis,'',blend,'B');link(ground_zone,'',blend,'Alpha');basis=blend
         output(basis,'',unreal.MaterialProperty.MP_NORMAL)
-    elif entry['key']=='stone':
+    elif entry['key']=='stone' and not entry.get('sculpture'):
         finish=custom(mat,masonry['normal_hlsl'](),dict(Position=(world_position,''),Geometric=(geometric,''),Photo=(samples['normal'],projection)),vector=True)
         output(finish,'',unreal.MaterialProperty.MP_NORMAL)
         assets.set_metadata_tag(mat,'ParisTwin.MasonryFinish','Scanned white_plaster_02 grain with inferred 32x88cm courses, shallow joints; not surveyed limestone')
@@ -194,6 +190,20 @@ for entry in entries:
     assets.set_metadata_tag(mat, 'ParisTwin.ChannelLayout', 'ORM; DirectX normal')
     if ground_zone:assets.set_metadata_tag(mat,'ParisTwin.AppearanceProvenance','Inferred paving on unclassified exposed terrain within 100m of the west anchor; fades to source palette by 130m. Not surveyed land cover.')
     if not assets.save_loaded_asset(mat):raise RuntimeError('Cannot save photographic material: ' + entry['material'])
+
+# Exterior stained glass is opaque and dark in daylight. No emissive glow or
+# photograph is used. The authored mosaic colours are encoded per vertex.
+name='M_ParisStainedGlass';package='/Game/Materials/'+name
+mat=assets.load_asset(package) if assets.does_asset_exist(package) else tools.create_asset(name,'/Game/Materials',unreal.Material,unreal.MaterialFactoryNew())
+if assets.get_metadata_tag(mat,'ParisTwin.PhotoGenerator')!=signature:
+    lib.delete_all_material_expressions(mat);mat.set_editor_property('two_sided',True)
+    color=node(mat,unreal.MaterialExpressionVertexColor)
+    output(color,'',unreal.MaterialProperty.MP_BASE_COLOR)
+    rough=node(mat,unreal.MaterialExpressionConstant,r=.32);output(rough,'',unreal.MaterialProperty.MP_ROUGHNESS)
+    metallic=node(mat,unreal.MaterialExpressionConstant,r=0.);output(metallic,'',unreal.MaterialProperty.MP_METALLIC)
+    lib.recompile_material(mat);assets.set_metadata_tag(mat,'ParisTwin.PhotoGenerator',signature)
+    assets.set_metadata_tag(mat,'ParisTwin.AppearanceProvenance','Original inferred stained-glass mosaic; not a reproduction of the historical iconography')
+    if not assets.save_loaded_asset(mat):raise RuntimeError('Cannot save stained glass')
 
 environment = imported('T_ParisDayEnvironment', manifest['environment'], 'environment')
 if not isinstance(environment, unreal.TextureCube):raise RuntimeError('HDR lighting must import as a real TextureCube')

@@ -1,0 +1,46 @@
+{
+  "format": "notredame_point_cloud_inspection_v1",
+  "points": 14460822,
+  "triangles": 0,
+  "embedded_credit": {
+    "author": "UC San Diego - Digital Media Lab (https://sketchfab.com/dml-ucsdlibrary)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "source": "https://sketchfab.com/3d-models/notre-dame-paris-facade-hi-res-point-cloud-50deeb164f324d1c8607bafa67f948b9",
+    "title": "Notre Dame Paris Facade - Hi Res Point Cloud"
+  },
+  "bounds_min": [
+    625.8959350585938,
+    314.11627197265625,
+    -4204.5400390625
+  ],
+  "bounds_max": [
+    2054.25439453125,
+    15632.2431640625,
+    6517.1181640625
+  ],
+  "robust_bounds_min": [
+    662.650146484375,
+    598.071044921875,
+    -4093.20556640625
+  ],
+  "robust_bounds_max": [
+    1968.53662109375,
+    15007.6806640625,
+    6304.82177734375
+  ],
+  "colour_range": [
+    0.0,
+    0.9960784316062927
+  ],
+  "horizontal_across": [
+    -0.012741348539357877,
+    0.9999188257240679
+  ],
+  "horizontal_depth": [
+    -0.9999188257240679,
+    -0.012741348539357877
+  ],
+  "pbr_textures": false,
+  "geographic_registration": "Not supplied; no accepted WGS84 registration",
+  "acceptance": "Research only. A point-cloud diagnostic does not establish a manifold facade, PBR, present-day appearance, or scene integration."
+}

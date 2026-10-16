@@ -1,0 +1,10 @@
+test_belfry_front_has_real_geometric_openings (test_paris_architecture.ArchitectureStudyTests.test_belfry_front_has_real_geometric_openings) ... ok
+test_deterministic_read_only_geographic_art_layer (test_paris_architecture.ArchitectureStudyTests.test_deterministic_read_only_geographic_art_layer) ... ok
+test_stained_glass_envelope_and_capture_camera (test_paris_architecture.ArchitectureStudyTests.test_stained_glass_envelope_and_capture_camera) ... ok
+test_western_holes_and_recessed_doors_are_real_geometry (test_paris_architecture.ArchitectureStudyTests.test_western_holes_and_recessed_doors_are_real_geometry) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 52.271s
+
+OK
+Runtime camera agrees exactly with deterministic source generation

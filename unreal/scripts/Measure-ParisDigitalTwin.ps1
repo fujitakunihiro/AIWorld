@@ -1,6 +1,6 @@
 ﻿param(
     [string]$EngineRoot='D:\Epic Games\UE_5.8',
-    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Routes','Seating','Materials','Realism','Front','Riverside','PhotoStreet','WindowDetail','EntryDetail')][string]$View='Overview',
+    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Routes','Seating','Materials','Realism','Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail')][string]$View='Overview',
     [ValidateSet('Low','Medium','High')][string]$Quality='Medium',
     [ValidateRange(10,120)][int]$Duration=20,
     [string]$ReportPath='',
@@ -17,10 +17,13 @@
     [switch]$Photoreal,
     [switch]$NoPhotoNature,
     [switch]$NoArchitecture,
+    [switch]$NoScannedFacade,
     [switch]$NoPhotoStreet,
     [switch]$NoGroundCutout,
     [switch]$NoFrontages,
     [switch]$CleanFrame,
+    [ValidateRange(640,3840)][int]$Width=1280,
+    [ValidateRange(360,2160)][int]$Height=720,
     [string]$ScreenshotPath=''
 )
 $ErrorActionPreference='Stop'
@@ -48,12 +51,13 @@ $commands+=',r.Shadow.Virtual.NonNanite.IncludeInCoarsePages'
 if($CleanFrame){$commands+=',ShowHUD'}
 if($Unlit){$commands+=',viewmode unlit'}else{$commands+=',viewmode lit'}
 if($ProfileGPU){$commands+=',stat unit,stat gpu'}
-$arguments=@( ('"'+$project+'"'),'-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-RenderOffscreen','-unattended','-nosound','-NoSplash',
+$arguments=@( ('"'+$project+'"'),'-game','-ParisTwin','-dx11','-windowed','-ForceRes',('-ResX='+$Width),('-ResY='+$Height),'-RenderOffscreen','-unattended','-nosound','-NoSplash',
     '-ParisTwinCapture','-ParisTwinWaitForAssets',"-ParisTwinCaptureAfter=$CaptureAfter","-ParisTwinBenchmark=$Duration",'-ParisTwinExit',('-ExecCmds="'+$commands+'"'),
     ('-ParisTwinQuality='+@{Low=0;Medium=1;High=2}[$Quality]),('-abslog="'+$log+'"'))
 if($Photoreal){$arguments=@($arguments | Where-Object {$_ -ne '-dx11'});$arguments+=@('-dx12','-sm6','-CustomConfig=ParisPhotoreal','-ParisPhotoreal')}
-if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail')){$arguments+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';PhotoStreet='Camera_Paris_Street';WindowDetail='Camera_Paris_Street';EntryDetail='Camera_Paris_Street'}[$View])}
+if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail')){$arguments+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';PhotoStreet='Camera_Paris_Street';WindowDetail='Camera_Paris_Street';EntryDetail='Camera_Paris_Street';PortalDetail='Camera_NotreDame_Front'}[$View])}
 if($View -eq 'WindowDetail'){$arguments+='-ParisTwinWindowDetail'}
+if($View -eq 'PortalDetail'){$arguments+='-ParisTwinPortalDetail'}
 if($View -eq 'EntryDetail'){$arguments+='-ParisTwinEntryDetail'}
 if($LegacyJSON){$arguments+='-ParisTwinLegacyJSON'}
 if($FullPeople){$arguments+='-ParisTwinFullPeople'}
@@ -65,6 +69,7 @@ if($ProfileGPU){$arguments+='-ParisTwinProfileGPU'}
 if($NoRenderCache){$arguments+='-ParisTwinNoRenderCache'}
 if($NoPhotoNature){$arguments+='-ParisTwinNoPhotoNature'}
 if($NoArchitecture){$arguments+='-ParisTwinNoArchitecture'}
+if($NoScannedFacade){$arguments+='-ParisTwinNoScannedFacade'}
 if($NoPhotoStreet){$arguments+='-ParisTwinNoPhotoStreet'}
 if($NoGroundCutout){$arguments+='-ParisTwinNoGroundCutout'}
 if($NoFrontages){$arguments+='-ParisTwinNoFrontages'}
@@ -95,16 +100,27 @@ if(-not $process.WaitForExit(600000)){
 if($process.ExitCode -ne 0 -or -not(Test-Path -LiteralPath $performance) -or (Get-Item -LiteralPath $performance).LastWriteTime -lt $started){throw 'Paris benchmark failed or did not produce a fresh report'}
 if(Select-String -LiteralPath $log -Pattern 'Fatal error|Assertion failed|missing usage flag (?:InstancedStaticMeshes|Nanite)|CPU data not available on selected LOD|Failed to compile Material' -Quiet){throw 'Unreal reported a benchmark mesh/material error'}
 $result=Get-Content -LiteralPath $performance -Raw | ConvertFrom-Json
+if(-not(Test-Path -LiteralPath $shot) -or (Get-Item -LiteralPath $shot).LastWriteTime -lt $started){throw 'No fresh rendered screenshot was produced'}
+$header=[byte[]]::new(24);$imageStream=[IO.File]::OpenRead($shot)
+try{if($imageStream.Read($header,0,24) -ne 24){throw 'Incomplete screenshot header'}}finally{$imageStream.Dispose()}
+if($header[0] -ne 137 -or $header[1] -ne 80 -or $header[2] -ne 78 -or $header[3] -ne 71){throw 'Rendered screenshot is not a PNG'}
+$actualWidth=([int]$header[16] -shl 24) -bor ([int]$header[17] -shl 16) -bor ([int]$header[18] -shl 8) -bor [int]$header[19]
+$actualHeight=([int]$header[20] -shl 24) -bor ([int]$header[21] -shl 16) -bor ([int]$header[22] -shl 8) -bor [int]$header[23]
+if($actualWidth -ne $Width -or $actualHeight -ne $Height){throw "Rendered resolution was clamped to ${actualWidth}x${actualHeight}; requested ${Width}x${Height}"}
 if(-not $result.benchmark_wait_for_assets -or $result.benchmark_assets_pending -ne 0){throw 'Benchmark started before asset/shader preparation completed'}
 if($Photoreal -and ($result.rhi -ne 'D3D12' -or $result.shader_feature_level -ne 'SM6' -or $result.gi_method -ne 1 -or $result.baked_visual_components -lt 1)){throw 'Photoreal renderer or offline visual assets were not applied'}
 if($Photoreal -and ($null -eq $result.baked_bounds_max_error_cm -or $result.baked_bounds_max_error_cm -gt .1 -or $result.baked_palette_mismatch_samples -gt 0)){throw 'Baked visual bounds or vertex colours differ from the source GIS mesh; inspect the render cache'}
+$expectedScan=if($Photoreal -and -not $NoArchitecture -and -not $NoScannedFacade -and (Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-notredame-scan.json'))){1}else{0}
+if($result.scanned_facade_components -ne $expectedScan -or ($expectedScan -eq 1 -and $result.scanned_facade_nanite -ne 1)){throw 'Observed facade mode or actual Nanite data was not applied'}
+$visibleScan=if($Quality -eq 'Low' -or $FlatMaterials){0}else{$expectedScan}
+if($result.scanned_facade_visible -ne $visibleScan){throw 'Observed facade visibility did not match the requested quality'}
 if($Photoreal -and -not $LegacyJSON){
     $expectedFrontages=if($NoFrontages){0}else{4}
     if($result.frontage_components -ne $expectedFrontages){throw 'Requested frontage mode was not applied'}
     $visibleFrontages=if($Quality -eq 'Low' -or $FlatMaterials){0}else{$expectedFrontages}
     if($result.frontage_visible -ne $visibleFrontages){throw 'Requested frontage quality/visibility was not applied'}
 }
-if($View -in @('Front','Riverside','PhotoStreet','WindowDetail') -and $result.active_photo_camera -notmatch '^Camera_'){throw 'Named photo camera did not activate'}
+if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail') -and $result.active_photo_camera -notmatch '^Camera_'){throw 'Named photo camera did not activate'}
 if($result.window_detail_view -ne ($View -eq 'WindowDetail')){throw 'Requested window inspection camera was not applied'}
 if($result.shadows_disabled -ne [bool]$NoShadows -or $result.street_details -ne (-not $NoStreetDetails)){throw 'Requested rendering diagnostic options were not applied'}
 if($null -eq $result.render_cache_components -or ($NoRenderCache -and $result.render_cache_components -ne 0) -or (-not $NoRenderCache -and $result.render_cache_components -lt 1)){throw 'Requested render cache mode was not applied; check the native build'}
@@ -117,6 +133,9 @@ $result | Add-Member -NotePropertyName 'clean_frame' -NotePropertyValue ([bool]$
 $coarseValue=Select-String -LiteralPath $log -Pattern 'r\.Shadow\.Virtual\.NonNanite\.IncludeInCoarsePages = "([01])"' | Select-Object -Last 1
 if($coarseValue){$result | Add-Member -NotePropertyName 'non_nanite_coarse_pages' -NotePropertyValue ([int]$coarseValue.Matches[0].Groups[1].Value)}
 $result | Add-Member -NotePropertyName 'screen_percentage' -NotePropertyValue $screenPercentage
+$result | Add-Member -NotePropertyName 'output_width' -NotePropertyValue $actualWidth
+$result | Add-Member -NotePropertyName 'output_height' -NotePropertyValue $actualHeight
+$result | Add-Member -NotePropertyName 'resolution_verified_from_png' -NotePropertyValue $true
 $result | Add-Member -NotePropertyName 'requested_view_mode' -NotePropertyValue $(if($Unlit){'Unlit diagnostic'}else{'Lit'})
 $result | Add-Member -NotePropertyName 'gpu_profile_overlay' -NotePropertyValue ([bool]$ProfileGPU)
 $result | Add-Member -NotePropertyName 'other_unreal_instances_at_start' -NotePropertyValue $otherEditors

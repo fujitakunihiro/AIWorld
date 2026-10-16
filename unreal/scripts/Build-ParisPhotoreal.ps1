@@ -1,4 +1,4 @@
-param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$ImportCandidate)
+param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$ImportCandidate,[switch]$SkipScannedFacade)
 $ErrorActionPreference='Stop'
 $project=& (Join-Path $PSScriptRoot 'Get-AIWorldProject.ps1')
 $running=@(Get-CimInstance Win32_Process | Where-Object {$_.Name -match '^UnrealEditor(?:-Cmd)?\.exe$' -and $_.CommandLine -like '*AIWorld.uproject*'})
@@ -41,4 +41,7 @@ if($ImportCandidate){
     $path=Join-Path $PSScriptRoot 'import-notredame-candidate.py'
     & $editor $project '-run=pythonscript' "-script=$path" -nullrhi -unattended -nosplash -stdout
     if($LASTEXITCODE -ne 0){throw 'Notre-Dame candidate import failed; it has not been placed in the scene'}
+}
+if(-not $SkipScannedFacade -and (Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-notredame-scan.json'))){
+    & (Join-Path $PSScriptRoot 'Build-NotreDameScan.ps1') -EngineRoot $EngineRoot
 }

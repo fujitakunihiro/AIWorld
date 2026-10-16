@@ -32,3 +32,8 @@ unreal/AIWorld/Content/Data/paris-photo-architecture-source.json
 unreal/AIWorld/Content/Data/paris-photo-street-source.json
 unreal/AIWorld/Content/Data/paris-photo-ground-source.json
 unreal/AIWorld/Content/Data/paris-photo-frontages-source.json
+unreal/assets/notre-dame-facade/*.glb
+unreal/assets/notre-dame-facade/*.part
+unreal/assets/notre-dame-facade/*.npz
+unreal/assets/notre-dame-facade/*.bin
+unreal/AIWorld/Content/Data/paris-notredame-scan-source.json

@@ -74,6 +74,8 @@ public:
     void ToggleStreetDetails();void CycleDetailQuality();void ApplyDetailQuality();
     void ToggleSurfaces();
     bool bDetailedSurfaces=true;
+    bool bPhotoScanReady=false;
+    UPROPERTY() TObjectPtr<UMaterialInterface> PhotoScanBodyMaterial;
     bool bReady=false,bLevels=false,bFootprints=false,bIssues=false;
     FString Status=TEXT("GISデータを読み込み中"),Selection;
     FString SelectedPersonID,SelectedBusinessID,SelectionCoordinates;

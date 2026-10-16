@@ -16,9 +16,12 @@ for item in source['objects']:
         def linear(byte):
             value=byte/255
             return value/12.92 if value<=.04045 else ((value+.055)/1.055)**2.4
-        color=unreal.LinearColor(*[linear(int(item['color'][i:i+2],16)) for i in [0,2,4]],1)
+        def vertex_color(hex_color):
+            return unreal.LinearColor(*[linear(int(hex_color[i:i+2],16)) for i in [0,2,4]],1)
+        color=vertex_color(item['color'])
+        colors=[vertex_color(c) for c in item['colors_srgb']] if item.get('colors_srgb') else [color]*len(item['normals'])
         buf=unreal.GeometryScriptSimpleMeshBuffers()
-        buf.set_editor_properties(dict(vertices=[unreal.Vector(*p) for p in item['positions_cm']],normals=[unreal.Vector(*n) for n in item['normals']],uv0=[unreal.Vector2D(0,0)]*len(item['normals']),vertex_colors=[color]*len(item['normals']),triangles=[unreal.IntVector(*item['indices'][i:i+3]) for i in range(0,len(item['indices']),3)]))
+        buf.set_editor_properties(dict(vertices=[unreal.Vector(*p) for p in item['positions_cm']],normals=[unreal.Vector(*n) for n in item['normals']],uv0=[unreal.Vector2D(0,0)]*len(item['normals']),vertex_colors=colors,triangles=[unreal.IntVector(*item['indices'][i:i+3]) for i in range(0,len(item['indices']),3)]))
         dynamic=unreal.DynamicMesh();unreal.GeometryScript_MeshEdits.append_buffers_to_mesh(dynamic,buf,material_id=0)
         options=unreal.GeometryScriptCreateNewStaticMeshAssetOptions()
         options.set_editor_properties(dict(enable_nanite=True,enable_collision=False,enable_recompute_normals=False,enable_recompute_tangents=False,use_original_vertex_order=True))

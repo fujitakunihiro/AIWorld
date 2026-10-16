@@ -1,0 +1,345 @@
+{
+  "verified_utc": "2026-10-16T23:36:45.735623+09:00",
+  "baseline_commit": "61a9c125129be1337202e48c1ca35ce58eae6d86",
+  "native_binary_sha256": "bddb0cc48ff0beaff264cec6eb0571e1ad2ec60cce5a618db1f146f19dbe8205",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "source_blob_sha256": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8",
+  "geometry": {
+    "sha256": "7ad69c15c2e697908b321b49e0b456c240cd83f59714330371847107003fd1e8",
+    "buildings": 739,
+    "source_features": 4799,
+    "core_meshes": 191
+  },
+  "geometry_matches_v8": true,
+  "native_tests": [
+    {
+      "log": "docs/paris-v9-native-photo-tests.log",
+      "passed": 20,
+      "names": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "CoveredTerrainDisplayAndCollision",
+        "FrontageGeometryAndFallback",
+        "LocalSocialInteraction",
+        "ObservedFacadeAndFallback",
+        "PhotoBridgeDeckHeight",
+        "PhotoDetailAssetsAndFallback",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ],
+      "rhi": "NullRHI automation; rendered output separately verified"
+    },
+    {
+      "log": "docs/paris-v9-native-legacy-tests.log",
+      "passed": 20,
+      "names": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "CoveredTerrainDisplayAndCollision",
+        "FrontageGeometryAndFallback",
+        "LocalSocialInteraction",
+        "ObservedFacadeAndFallback",
+        "PhotoBridgeDeckHeight",
+        "PhotoDetailAssetsAndFallback",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ],
+      "rhi": "NullRHI automation; rendered output separately verified"
+    },
+    {
+      "log": "docs/paris-v9-village-tests.log",
+      "passed": 5,
+      "names": [
+        "AuthoredModels",
+        "SavedVillage",
+        "ArchivedGISMesh",
+        "NativeCommands",
+        "SaveAndTerrain"
+      ],
+      "rhi": "NullRHI automation; rendered output separately verified"
+    }
+  ],
+  "python_tests": {
+    "docs/paris-v9-architecture-tests.txt": 4,
+    "docs/paris-v9-scan-tests.txt": 4
+  },
+  "renders": [
+    {
+      "report": "docs/paris-v9-final-portal-high-performance.json",
+      "screenshot": "docs/screenshots/paris-v9-final-portal-high.png",
+      "png_sha256": "2c30b425d727a6afeb31fa010c37f6037075d12644320c621a8d45e8392a9eca",
+      "png_size": [
+        1280,
+        720
+      ],
+      "png_header_verified_now": true,
+      "fps": 31.17934035451954,
+      "p95_ms": 36.3306999206543,
+      "screen_percentage": 100,
+      "other_ue_processes": 0,
+      "pending_assets": 0,
+      "scanned_facade_nanite": 1
+    },
+    {
+      "report": "docs/paris-v9-final-portal-medium-performance.json",
+      "screenshot": "docs/screenshots/paris-v9-final-portal-medium.png",
+      "png_sha256": "504eaab28098972fa200b079a0aa8fac746f0fc1a785895db46477175f88a13b",
+      "png_size": [
+        1280,
+        720
+      ],
+      "png_header_verified_now": true,
+      "fps": 37.414915627012746,
+      "p95_ms": 31.87979757785797,
+      "screen_percentage": 80,
+      "other_ue_processes": 0,
+      "pending_assets": 0,
+      "scanned_facade_nanite": 1
+    },
+    {
+      "report": "docs/paris-v9-final-front-high-performance.json",
+      "screenshot": "docs/screenshots/paris-v9-final-front-high.png",
+      "png_sha256": "199d8139d0396e2453c7a6cccdb040ed01210b25fc498aafa52518b9122e77e2",
+      "png_size": [
+        1280,
+        720
+      ],
+      "png_header_verified_now": true,
+      "fps": 33.82382971191168,
+      "p95_ms": 34.3628004193306,
+      "screen_percentage": 100,
+      "other_ue_processes": 0,
+      "pending_assets": 0,
+      "scanned_facade_nanite": 1
+    },
+    {
+      "report": "docs/paris-v9-final-riverside-medium-performance.json",
+      "screenshot": "docs/screenshots/paris-v9-final-riverside-medium.png",
+      "png_sha256": "a1478d2fddf302d805d8a12c6ec0b869be0f06e592d68ac0fb12009333d584b7",
+      "png_size": [
+        1280,
+        720
+      ],
+      "png_header_verified_now": true,
+      "fps": 46.011324022339515,
+      "p95_ms": 25.841999799013138,
+      "screen_percentage": 80,
+      "other_ue_processes": 0,
+      "pending_assets": 0,
+      "scanned_facade_nanite": 1
+    },
+    {
+      "report": "docs/paris-v9-final-portal-authored-only-performance.json",
+      "screenshot": "docs/screenshots/paris-v9-final-portal-authored-only.png",
+      "png_sha256": "39f55d629af2a7cd3355d59afa2da5a3dad943e96fdb4e94856f2e515f37257f",
+      "png_size": [
+        1280,
+        720
+      ],
+      "png_header_verified_now": true,
+      "fps": 31.024313550153533,
+      "p95_ms": 36.865998059511185,
+      "screen_percentage": 100,
+      "other_ue_processes": 0,
+      "pending_assets": 0,
+      "scanned_facade_nanite": 0
+    },
+    {
+      "report": "docs/paris-v9-portal-4k-performance.json",
+      "screenshot": "docs/screenshots/paris-v9-portal-4k.png",
+      "png_sha256": "ced0c81afd7ca13e7b538b2259c4c938e32c4e4018ae230307b0e194c7445fbc",
+      "png_size": [
+        3840,
+        2160
+      ],
+      "png_header_verified_now": true,
+      "fps": 6.233934625522196,
+      "p95_ms": 175.98700523376465,
+      "screen_percentage": 100,
+      "other_ue_processes": 0,
+      "pending_assets": 0,
+      "scanned_facade_nanite": 1
+    },
+    {
+      "report": "docs/paris-v9-front-4k-performance.json",
+      "screenshot": "docs/screenshots/paris-v9-front-4k.png",
+      "png_sha256": "be0cf61f484e51bfe44043f6193a9c3e6070258ed96b54bfc4472d13c57921ae",
+      "png_size": [
+        3840,
+        2160
+      ],
+      "png_header_verified_now": true,
+      "fps": 7.088216726755536,
+      "p95_ms": 156.69189393520355,
+      "screen_percentage": 100,
+      "other_ue_processes": 0,
+      "pending_assets": 0,
+      "scanned_facade_nanite": 1
+    }
+  ],
+  "scanned_facade": {
+    "source": {
+      "format": "paris_facade_point_cloud_v1",
+      "uid": "50deeb164f324d1c8607bafa67f948b9",
+      "title": "Notre Dame Paris Facade - Hi Res Point Cloud",
+      "author": "UC San Diego - Digital Media Lab (embedded credit); current Sketchfab account CHEI - UC San Diego",
+      "source_url": "https://sketchfab.com/3d-models/notre-dame-paris-facade-hi-res-point-cloud-50deeb164f324d1c8607bafa67f948b9",
+      "record_url": "https://zenodo.org/records/10363984",
+      "file_url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-093/50deeb164f324d1c8607bafa67f948b9.glb",
+      "license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "published": "2019-05-06",
+      "description": "Reconstruction from 105 Flickr and Wikimedia tourist photos; historical appearance, not the 2024 restoration.",
+      "file": "50deeb164f324d1c8607bafa67f948b9.glb",
+      "bytes": 405027212,
+      "md5": "6d5d5ae624614283ddc99a5cfc3d3452",
+      "sha256": "7dec002065505a878941f663a2e8a5df528cb7a94dbf359405617a0cdfdf7b1e",
+      "acceptance": "Research candidate: points only; no claim of surface reconstruction, PBR or surveyed georegistration"
+    },
+    "source_hash_verified": true,
+    "geometry_sha256": "bc2b32452c1f320e296c0cb8b35443c5b6c4b1f6196a88bc0487e6f788511532",
+    "triangles": 201271,
+    "vertices": 102688,
+    "surface": {
+      "texture_step_m": 0.0125,
+      "mesh_step_m": 0.07500000000000001,
+      "max_fill_distance_m": 0.4,
+      "albedo_border_padding_m": 0.025,
+      "observed_cells": 2052370,
+      "filled_cells": 1661478,
+      "selection": "Dense central portal, western rose and kings gallery only; other facade areas keep the authored fallback",
+      "depth_filter": "3x3 median; inferred completion up to 0.4m distance",
+      "texture_width": 3481,
+      "texture_height": 3601,
+      "mesh_coverage_fraction": 0.2890131304297116,
+      "depth_jump_limit_m": 1.2,
+      "lower_height_m": 45,
+      "width_m": 43.5
+    },
+    "registration": {
+      "method": "Provisional independent width/height calibration to official 43.5m / 69m; depth uses vertical scale. Not survey georegistration.",
+      "source_ground": 536.4406127929688,
+      "source_crown": 15575.0498046875,
+      "source_across_limits": [
+        -4082.439606914561,
+        6313.894207500614
+      ],
+      "source_wall_depth": -798.4792464430273,
+      "horizontal_scale_m": 0.004184167301331215,
+      "vertical_scale_m": 0.004588190245490882,
+      "depth_scale_m": 0.004588190245490882
+    },
+    "provenance": "Historic photo-derived colour and filtered 2.5D depth; bounded inferred completion up to 0.4m distance and provisional art registration. Roughness is estimated, photographed lighting is not fully removed. Not a finished surveyed L4/L5 or a complete cathedral exterior.",
+    "adopted_assets": [
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/SM_NotreDameScan_bc2b32452c1f.uasset",
+        "bytes": 3883151,
+        "sha256": "0ee179b33d37e5abd19ba7b7b8e41ca7a6d605c6701e40bb8130f906b8451417"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Surface_b491f7d4e504.uasset",
+        "bytes": 9073,
+        "sha256": "21875698f9b1e0ad7f4ef59be2fbee3f00beba2f67af547d39fa4fa4ab50070b"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stone_bc8850f32481.uasset",
+        "bytes": 45929,
+        "sha256": "61f527243eb03c43b09d94c8605e44830fd3f36e40624ba4c890c6b1c26016eb"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_wood_12499caad7d7.uasset",
+        "bytes": 11781,
+        "sha256": "77ea9ef711f1f66b080bf5e50c479f7e03a0e97c091dcefc38dd4649f27ef33d"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_glass_2b1bdec2f1fe.uasset",
+        "bytes": 11786,
+        "sha256": "615a829a1d2587a11ad03b92149fa9adb96cca0f05eebdcbd38e75fa12b3991d"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_iron_d8ef6ec75ad5.uasset",
+        "bytes": 11810,
+        "sha256": "1a9e183e864d914af167dbc271047c80e9f3bec2a0fae2370080d4191095465a"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_sculpture_70a6f357ce8f.uasset",
+        "bytes": 25877,
+        "sha256": "023a1f2f0904b5c5568c9dce6bd1d347852ef60f11f1f92c32f899bed352392f"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stained_4c4db58fee4a.uasset",
+        "bytes": 10478,
+        "sha256": "bf21fa1fb962a93c0066b9f51ced5985ea6e98313f32064000fceb913a4218dd"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_body_56af81ba28a4.uasset",
+        "bytes": 54582,
+        "sha256": "5e4804476017f491509bfee7b42ecbb454549fd567ba3d8c6751a38f89d92b1b"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/T_NDScan_colour_5e667f124b.uasset",
+        "bytes": 10831790,
+        "sha256": "b69a1788ce2dc85eae8c617cc42cb0dfcbfedb2807d6e3de01729b9756a76611"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/T_NDScan_normal_21b152841e.uasset",
+        "bytes": 9120437,
+        "sha256": "601215cd35e0032e4a31335411d80bdda46dad5da07cd54a72cc9d532f7cf208"
+      },
+      {
+        "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/T_NDScan_coverage_16d9fce561.uasset",
+        "bytes": 24134,
+        "sha256": "3820a77d3517ea5549b31dc37ddc9893749ef041a0500d94a7c1369cc3923762"
+      }
+    ]
+  },
+  "prototype_archive": {
+    "adopted": 12,
+    "archived": 32,
+    "archived_bytes": 31223778,
+    "backup": "backups/paris-v9-scan-prototypes-20261016-233141.zip",
+    "crc_verified": true,
+    "sha256": "7d00d6cdf56b9a44a593d8fae8ca07b09f26fd7f7ff69b89e08f493799aa126d"
+  },
+  "after_cleanup_render": {
+    "report": "docs/paris-v9-after-cleanup-smoke.json",
+    "nanite": 1,
+    "visible": 1,
+    "pending_assets": 0,
+    "resolution_verified_from_png": true
+  },
+  "limits": [
+    "Partial historical photo-derived west-facade surfaces only, not a complete surveyed cathedral",
+    "Provisional independent width and height registration; inferred hole completion and roughness",
+    "Captured lighting remains and detailed shapes may be soft",
+    "60fps target unmet on this integrated GPU; 4K is for still inspection",
+    "Single run per view, no claim of speed improvement from noise"
+  ],
+  "interactive_preview": {
+    "process_id": 3144,
+    "command_line": "\"D:\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe\" \"C:\\Users\\ku_fu\\AppData\\Local\\AIWorldUE\\0dc607e3641b\\AIWorld.uproject\" -game -ParisTwin -windowed -ResX=1280 -ResY=720 -NoSplash -dx12 -sm6 -CustomConfig=ParisPhotoreal -ParisPhotoreal -ParisTwinPortalDetail -ParisTwinPhotoCamera=Camera_NotreDame_Front -ParisTwinQuality=2 -ExecCmds=\"r.ScreenPercentage 100\"",
+    "checked_utc": "2026-10-16T14:39:22.9448373Z",
+    "ready_log": "[2026.10.16-14.38.41:769][  0]LogTemp: Display: PARIS_TWIN_READY buildings=739 triangles=1075590 extent=800m world_partition=0",
+    "launch_log": "docs/paris-v9-interactive-launch.log"
+  }
+}
