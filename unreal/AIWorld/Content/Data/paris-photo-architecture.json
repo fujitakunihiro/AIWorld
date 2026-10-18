@@ -2,7 +2,7 @@
   "format": "paris_original_architecture_study_v1",
   "source_id": "osm/way/201611261",
   "source_url": "https://www.openstreetmap.org/way/201611261",
-  "detail_revision": 9,
+  "detail_revision": 12,
   "west_openings": {
     "portals": [
       {
@@ -91,7 +91,17 @@
     "archivolt_figures": 126,
     "carved_capitals": 155,
     "rose_glass_cells": 1536,
-    "pierced_balustrade_panels": 128
+    "pierced_balustrade_panels": 128,
+    "door_leaves": 6,
+    "door_boards": 88,
+    "forged_ribbons": 348,
+    "forged_leaves": 216,
+    "iron_rivets": 162,
+    "near_sculptures": 21,
+    "continuous_robes": 21,
+    "sculpted_faces": 21,
+    "smooth_sleeves": 42,
+    "carved_hands": 42
   },
   "detail_camera": {
     "position_cm": [
@@ -106,9 +116,36 @@
     ],
     "focal_length_mm": 50
   },
+  "door_camera": {
+    "position_cm": [
+      13979.4246,
+      14245.7228,
+      93.3453
+    ],
+    "target_cm": [
+      14988.905,
+      15017.9593,
+      243.3453
+    ],
+    "focal_length_mm": 42
+  },
+  "virgin_camera": {
+    "position_cm": [
+      13903.1021,
+      14285.4076,
+      93.3453
+    ],
+    "target_cm": [
+      14917.6179,
+      14981.653,
+      168.3453
+    ],
+    "focal_length_mm": 50
+  },
   "architecture_references": [
     "https://www.notredamedeparis.fr/comprendre/architecture/la-facade-occidentale/",
-    "https://www.notredamedeparis.fr/comprendre/architecture/le-portail-du-jugement-dernier/"
+    "https://www.notredamedeparis.fr/comprendre/architecture/le-portail-du-jugement-dernier/",
+    "https://www.notredamedeparis.fr/comprendre/architecture/portail-sainte-anne/"
   ],
   "dimensions_reference": "https://www.notredamedeparis.fr/comprendre/architecture/plans/",
   "dimension_facts_m": {
@@ -167,6 +204,8 @@
     "side_cornice_sections": 93,
     "flying_rib_section": "rectangular masonry; inferred"
   },
+  "door_provenance": "Original inferred plank joinery, flat forged scrollwork and rivets; reference-informed medieval hinge style, not a traced or measured penture pattern. CC0 photographic wood is an appearance proxy, not cathedral timber.",
+  "near_sculpture_provenance": "Original inferred continuous stone figures: analytic facial relief, draped robes, swept sleeves and carved hands with geometric vertex normals. No surveyed shape, actual saint identity or historical iconography claim; existing anchors and GIS collision retained.",
   "anchor_wgs84": [
     2.349068261910986,
     48.853249922128704
@@ -179,17 +218,17 @@
   "objects": [
     {
       "id": "stone",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_e2f976e1492b",
-      "geometry_sha256": "e2f976e1492be6ee5ca99dfbae220d60c20b90e8afa23fc725e59b6aa43081ac",
-      "triangles": 468935,
-      "fallback_triangles": 468935
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_868d9efdf437",
+      "geometry_sha256": "868d9efdf437b41304b59933bd0a487559c50f32ff7dce4d1d2ae639a7c7cdb4",
+      "triangles": 468915,
+      "fallback_triangles": 468915
     },
     {
       "id": "wood",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_f327ac2e25cd",
-      "geometry_sha256": "f327ac2e25cda3687b2e7eb5510325c69188a91d6de8de80f818056f62d06b37",
-      "triangles": 45336,
-      "fallback_triangles": 45336
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_2f35b4e77822",
+      "geometry_sha256": "2f35b4e77822bf1a2c93c7d5388afeea8d0822434aa13700b4d853f9fed08a38",
+      "triangles": 46136,
+      "fallback_triangles": 46136
     },
     {
       "id": "glass",
@@ -200,17 +239,17 @@
     },
     {
       "id": "iron",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_iron_7c311086a276",
-      "geometry_sha256": "7c311086a276ad6534bf90ad67ad97e8fce88ee4106957140cccca497ff653d8",
-      "triangles": 16104,
-      "fallback_triangles": 16104
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_iron_1cf6223772c8",
+      "geometry_sha256": "1cf6223772c8f07d14274f983b0cb9ce92fc07a59e1a7d4822928cd26ecf80cc",
+      "triangles": 61272,
+      "fallback_triangles": 61272
     },
     {
       "id": "sculpture",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_sculpture_cc9709f5be26",
-      "geometry_sha256": "cc9709f5be266ca20e40ea0780cf2ec2341d9930f18a76cc529b1ded9c6fb6d4",
-      "triangles": 539740,
-      "fallback_triangles": 539738
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_sculpture_9e82f624416a",
+      "geometry_sha256": "9e82f624416ad285d15c68f936b9ac5ce539344aca45be67cce6391c43ec20f2",
+      "triangles": 1129360,
+      "fallback_triangles": 1129358
     },
     {
       "id": "stained",
@@ -218,6 +257,13 @@
       "geometry_sha256": "2c72c16fd9515c75f2db6c3f7b2baf218065d227727da9649363fb5e50edaf0a",
       "triangles": 2976,
       "fallback_triangles": 2976
+    },
+    {
+      "id": "virgin_fallback",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_virgin_fallback_d3ab2e587b93",
+      "geometry_sha256": "d3ab2e587b93ddb76aa3288b520528e6064f95af9c5f8790b21adfd0725ae069",
+      "triangles": 31412,
+      "fallback_triangles": 31412
     }
   ]
 }

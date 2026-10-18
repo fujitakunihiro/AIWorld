@@ -6,7 +6,7 @@ The same opening descriptions drive geometry and the source-display cutout.
 """
 import math
 
-REVISION = 9
+REVISION = 12
 PORTALS = [(-14., 8.1), (0., 9.5), (14., 8.1)]
 ROSE = dict(x=0., z=28.1, radius=4.85)
 GALLERY = [(-20.9, -9.25), (-7.75, 7.75), (9.25, 20.9)]
@@ -39,6 +39,7 @@ def display_mask_hlsl(frame):
 
 
 def build(face, box, tube, ellipsoid, ogive, opening, pierced_wall):
+    from notredame_portal_doors import build_doors
     counts=dict(portals=3, gallery_figures=28, archivolt_figures=0, carved_capitals=0,
                 rose_glass_cells=0, pierced_balustrade_panels=0)
 
@@ -68,6 +69,14 @@ def build(face, box, tube, ellipsoid, ogive, opening, pierced_wall):
 
     def person(x,y,z,h,seed=0,royal=False,angel=False,lean=0.):
         """Carved faces and fluted drapery; no identification of real sculpture."""
+        if h>=3:
+            from notredame_sculpture import build_figure
+            is_virgin_anchor=abs(x-14)<.001 and abs(y+.30)<.001 and abs(h-3.4)<.001
+            def statue_face(kind,*args,**kwargs):
+                return face('virgin_fallback' if is_virgin_anchor else kind,*args,**kwargs)
+            for key,value in build_figure(statue_face,x,y,z,h,seed).items():counts[key]=counts.get(key,0)+value
+            panel('virgin_fallback' if is_virgin_anchor else 'stone',x,y-h*.14,z,h*.38,h*.055,h*.30,.02)
+            return
         # The robe is a closed taper with varied fold directions and a hem.
         rings=[];sides=16
         for row in range(8):
@@ -119,16 +128,8 @@ def build(face, box, tube, ellipsoid, ogive, opening, pierced_wall):
         profile=ogive(x,5.5,w*.98,12.9,.62)
         face('stone',[(x-w*.49,.62,4.95),(x+w*.49,.62,4.95),*reversed(profile)],(0,-1,0))
         for zz in [4.95,7.5,9.5]:panel('stone',x,.27,zz,w*.97,.22,.40,.045)
-        for side in [-1,1]:
-            panel('wood',x+side*w*.235,.57,.12,w*.455,4.75,.25,.045)
-            for row in range(4):
-                for col in range(3):panel('wood',x+side*w*.235+(col-1)*w*.13,.50,.40+row*1.04,w*.11,.84,.10,.025)
-            for zz in [.78,2.22,3.85]:
-                tube('iron',[(x+side*.20,.42,zz),(x+side*w*.43,.42,zz)],.028,8)
-                for sign in [-1,1]:
-                    path=[(x+side*w*(.24+.12*math.sin(t*math.pi/2)),.40,zz+sign*.25*(1-math.cos(t*math.pi/2))) for t in [j/14 for j in range(15)]]
-                    tube('iron',path,.019,7)
-            tube('iron',[(x+side*.40,.37,1.75),(x+side*.40,.34,2.03)],.03,10)
+        for key,value in build_doors(face,panel,ellipsoid,x,w,index).items():
+            counts[key]=counts.get(key,0)+value
         panel('stone',x,-.03,0,.48,4.96,.68,.06)
         person(x,-.30,.72,3.40,index,royal=False)
         # Nested voussoirs with figured archivolts; every loop has a masonry core.

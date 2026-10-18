@@ -1,0 +1,53 @@
+{
+  "checked_date": "2026-10-17",
+  "candidates": [
+    {
+      "uid": "b5bbdc379daa4ee19e3775bb179dbcc1",
+      "title": "Notre-Dame de Paris - Virgin Mary",
+      "api_url": "https://api.sketchfab.com/v3/models/b5bbdc379daa4ee19e3775bb179dbcc1",
+      "source_url": "https://sketchfab.com/3d-models/notre-dame-de-paris-virgin-mary-b5bbdc379daa4ee19e3775bb179dbcc1",
+      "description": "Detail from the Portal of the Virgin, Notre-Dame's facade, Paris, France.\nThe pictures were shot in 2012 or 2013, and I finally decided to process the photos following the recent events.\n\n3D scanned using Agisoft Metashape.",
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/bbfe3f7dbcdd4122b966b85b9786a989",
+        "label": "CC Attribution-NonCommercial",
+        "fullName": "Creative Commons Attribution-NonCommercial",
+        "requirements": "Author must be credited. No commercial use.",
+        "url": "http://creativecommons.org/licenses/by-nc/4.0/",
+        "slug": "by-nc"
+      },
+      "author": "Benoît Rogez",
+      "triangles": 1001053,
+      "downloadable": true,
+      "status": "adopted_optional_personal_noncommercial",
+      "reason": "Actual UE render, Nanite data, correct northern/left anchor, handedness, source hashes and fallback verified. Personal noncommercial authorization retained.",
+      "ue_asset": "/Game/ParisPhotoreal/NotreDameStatues/SM_VirginMary_ffb9edabbdce_e6e6e859",
+      "source_sha256": "73c16fb28067adc8480f8719192329b66ac8b84b1ceff8193d8a0245923a1b54",
+      "geometry_sha256": "ffb9edabbdce5ac76e73a7987ac5ca2e8a3ac5f0ad5beaae16d17e23b271f592"
+    },
+    {
+      "uid": "5f96979d285746338502636d6950f377",
+      "title": "Notre-Dame de Paris - Jesus Christ",
+      "api_url": "https://api.sketchfab.com/v3/models/5f96979d285746338502636d6950f377",
+      "source_url": "https://sketchfab.com/3d-models/notre-dame-de-paris-jesus-christ-5f96979d285746338502636d6950f377",
+      "description": "Notre-Dame de Paris, detail from the Portal of the Last Judgment (\"portail du Jugement Dernier\" in French).\n3D scanned using Agisoft Metashape.\n2019 update : I reprocessed the same pictures with a more powerful computer : the model is now more precise.",
+      "license": {
+        "uri": "https://api.sketchfab.com/v3/licenses/bbfe3f7dbcdd4122b966b85b9786a989",
+        "label": "CC Attribution-NonCommercial",
+        "fullName": "Creative Commons Attribution-NonCommercial",
+        "requirements": "Author must be credited. No commercial use.",
+        "url": "http://creativecommons.org/licenses/by-nc/4.0/",
+        "slug": "by-nc"
+      },
+      "author": "Benoît Rogez",
+      "triangles": 429179,
+      "downloadable": true,
+      "status": "not_adopted",
+      "reason": "Personal NC use authorized, but UID absent from the public Objaverse index. No download or adoption; official authenticated download remains needed.",
+      "official_download_api_status_without_auth": 401,
+      "official_download_api_url": "https://api.sketchfab.com/v3/models/5f96979d285746338502636d6950f377/download"
+    }
+  ],
+  "commercial_use_not_assumed": true,
+  "user_authorized_scope": "personal_noncommercial",
+  "authorization_date": "2026-10-17"
+}

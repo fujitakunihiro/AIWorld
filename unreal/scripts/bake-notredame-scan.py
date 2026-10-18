@@ -4,7 +4,11 @@ import hashlib
 import json
 import os
 import struct
+import sys
 import unreal
+
+sys.path.insert(0,os.path.dirname(__file__))
+from notredame_scan_atlas import atlas_uv_hlsl
 
 ROOT=os.path.realpath(os.path.join(os.path.dirname(__file__),'..','..'))
 DATA=os.path.join(unreal.Paths.project_content_dir(),'Data')
@@ -66,6 +70,12 @@ for key,item in source['textures'].items():
     tex.set_editor_property('srgb',key=='colour')
     tex.set_editor_property('compression_settings',unreal.TextureCompressionSettings.TC_NORMALMAP if key=='normal' else unreal.TextureCompressionSettings.TC_MASKS if key=='coverage' else unreal.TextureCompressionSettings.TC_DEFAULT)
     tex.set_editor_property('max_texture_size',4096)
+    tex.set_editor_property('address_x',unreal.TextureAddress.TA_CLAMP)
+    tex.set_editor_property('address_y',unreal.TextureAddress.TA_CLAMP)
+    if key=='coverage':
+        # Coverage is a source-visibility contract, not colour. Averaged mip
+        # levels must not close gaps or sample a different atlas tile.
+        tex.set_editor_property('mip_gen_settings',unreal.TextureMipGenSettings.TMGS_NO_MIPMAPS)
     if key=='normal':tex.set_editor_property('flip_green_channel',False)
     assets.set_metadata_tag(tex,'ParisTwin.License','CC-BY-4.0');assets.set_metadata_tag(tex,'ParisTwin.SourceURL',source['source']['source_url'])
     if not assets.save_loaded_asset(tex):raise RuntimeError('Cannot save facade texture')
@@ -92,18 +102,29 @@ bases=dict(stone='M_ParisLimestone',wood='M_ParisWood',glass='M_ParisGlass',iron
 for key,base in bases.items():
     original=assets.load_asset('/Game/Materials/'+base)
     if not original:raise RuntimeError('Underlying material is missing: '+base)
-    mask_code=local+'return (abs(x)<21.75&&z>=0&&z<45&&y>-5&&y<8)?1-Active*(Coverage>.85?1:0):1;'
-    identity=hashlib.sha256((mask_code+source['textures']['coverage']['sha256']+base+assets.get_metadata_tag(original,'ParisTwin.PhotoGenerator')).encode()).hexdigest()[:12]
+    height=source['surface'].get('full_height_m',45)
+    uv_code=atlas_uv_hlsl(source['surface'])
+    # A frontal coverage image must not cut the first metres off side walls.
+    # Source collision is untouched; only forward-facing body triangles are
+    # eligible. Authored tower side shells are preserved for the same reason.
+    facing=f'dot(Direction,{xyz(frame["depth"])})'
+    # The source has both face orientations at the front. Preserve side walls
+    # by perpendicularity, not a signed normal test that can retain an
+    # occluding front face behind the old rose and portal openings.
+    preserve=f'if(abs({facing})<0.35)return 1;' if key=='body' else f'if(z>=45&&abs({facing})<0.35)return 1;'
+    mask_code=local+preserve+f'return (abs(x)<21.75&&z>=0&&z<{height}&&y>-5&&y<8)?1-Active*(Coverage>.85?1:0):1;'
+    identity=hashlib.sha256((mask_code+uv_code+source['textures']['coverage']['sha256']+base+assets.get_metadata_tag(original,'ParisTwin.PhotoGenerator')).encode()).hexdigest()[:12]
     path=folder+'/M_NDScan_Underlay_'+key+'_'+identity
     mat=assets.load_asset(path) if assets.does_asset_exist(path) else assets.duplicate_asset('/Game/Materials/'+base,path)
     if not mat:raise RuntimeError('Cannot preserve underlying material graph')
     if assets.get_metadata_tag(mat,'ParisTwin.ScanUnderlay')!=identity:
         position=node(mat,unreal.MaterialExpressionWorldPosition)
-        uv=custom(mat,local+'return float2((x+21.75)/43.5,1-z/45);',{'Position':(position,'')},unreal.CustomMaterialOutputType.CMOT_FLOAT2)
+        uv=custom(mat,local+uv_code,{'Position':(position,'')},unreal.CustomMaterialOutputType.CMOT_FLOAT2)
         coverage=node(mat,unreal.MaterialExpressionTextureSample,texture=textures['coverage'],sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
         link(uv,'',coverage,'UVs')
         active=node(mat,unreal.MaterialExpressionScalarParameter,parameter_name='NDScanActive',default_value=1. if key=='body' else 0.)
-        mask=custom(mat,mask_code,{'Position':(position,''),'Coverage':(coverage,'R'),'Active':(active,'')})
+        direction=node(mat,unreal.MaterialExpressionVertexNormalWS)
+        mask=custom(mat,mask_code,{'Position':(position,''),'Direction':(direction,''),'Coverage':(coverage,'R'),'Active':(active,'')})
         if key=='body':
             westpath=os.path.join(os.path.dirname(__file__),'notredame_west.py');scope={'__name__':'notredame_west','__file__':westpath}
             with open(westpath,encoding='utf-8') as f:exec(compile(f.read(),westpath,'exec'),scope)
@@ -113,7 +134,8 @@ for key,base in bases.items():
         assets.set_metadata_tag(mat,'ParisTwin.ScanUnderlay',identity);save(mat)
     underlays[key]=path
 
-mesh=assets.load_asset(source['asset']) if assets.does_asset_exist(source['asset']) else None
+mesh_path=source['asset']+'_'+recipe[:8]
+mesh=assets.load_asset(mesh_path) if assets.does_asset_exist(mesh_path) else None
 if not mesh:
     with open(os.path.join(ROOT,source['binary']),'rb') as f:blob=f.read()
     if hashlib.sha256(blob).hexdigest()!=source['geometry_sha256']:raise RuntimeError('Facade surface binary changed')
@@ -128,8 +150,8 @@ if not mesh:
         triangles=[unreal.IntVector(*indices[i:i+3]) for i in range(0,len(indices),3)]))
     dynamic=unreal.DynamicMesh();unreal.GeometryScript_MeshEdits.append_buffers_to_mesh(dynamic,buf,material_id=0)
     opts=unreal.GeometryScriptCreateNewStaticMeshAssetOptions()
-    opts.set_editor_properties(dict(enable_nanite=True,enable_collision=False,enable_recompute_normals=False,enable_recompute_tangents=True,use_original_vertex_order=True))
-    mesh,outcome=unreal.GeometryScript_NewAssetUtils.create_new_static_mesh_asset_from_mesh(dynamic,source['asset'],opts)
+    opts.set_editor_properties(dict(enable_nanite=True,enable_collision=False,enable_recompute_normals=True,enable_recompute_tangents=True,use_original_vertex_order=True))
+    mesh,outcome=unreal.GeometryScript_NewAssetUtils.create_new_static_mesh_asset_from_mesh(dynamic,mesh_path,opts)
     if not mesh:raise RuntimeError('Cannot create the observed facade surface')
 mesh.set_material(0,surface)
 settings=mesh.get_editor_property('nanite_settings');settings.set_editor_property('enabled',True)
@@ -139,8 +161,9 @@ settings.set_editor_property('fallback_percent_triangles',1.);settings.set_edito
 mesh.set_editor_property('nanite_settings',settings);mesh.set_editor_property('allow_cpu_access',True)
 for key,value in dict(SourceURL=source['source']['source_url'],License='CC-BY-4.0',Author=source['source']['author'],SourceID=source['source_id'],GeometryProvenance=source['provenance']).items():assets.set_metadata_tag(mesh,'ParisTwin.'+key,value)
 if not assets.save_loaded_asset(mesh):raise RuntimeError('Cannot save the real observed facade mesh')
-runtime=dict(source,underlays=underlays,surface_material=surface.get_path_name(),fallback_triangles=mesh.get_num_triangles(0),
+runtime=dict(source,asset=mesh_path,underlays=underlays,surface_material=surface.get_path_name(),fallback_triangles=mesh.get_num_triangles(0),bake_recipe_sha256=recipe,
     material_calibration=dict(albedo_multiplier_linear=[.72,.64,.52],normal_strength=.35,estimated_roughness=.82,
+        vertex_normals='Normals and tangents recomputed from actual mesh; fine normals are sampled in world space',
         note='Visual matching to existing stone. Original photographed illumination remains; not calibrated survey albedo.'))
 with open(os.path.join(DATA,'paris-notredame-scan.json'),'w',encoding='utf-8') as f:json.dump(runtime,f,indent=2)
 unreal.log_warning('PARIS_SCANNED_FACADE_READY '+str(runtime['triangles']))

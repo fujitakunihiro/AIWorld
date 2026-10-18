@@ -42,7 +42,13 @@ bool FParisPhotoWait::Update(){
         for(auto Name:{TEXT("Camera_NotreDame_Front"),TEXT("Camera_NotreDame_Riverside"),TEXT("Camera_Paris_Street")}){
             Test->TestTrue(TEXT("Named GIS-anchored camera activates"),ActivateParisPhotoCamera(Scene,FName(Name)));
             Test->TestEqual(TEXT("View target is the named photographic camera"),PC->GetViewTarget()->GetFName(),FName(Name));
-            if(auto Camera=Cast<ACameraActor>(PC->GetViewTarget())){const double Lens=FString(Name)==TEXT("Camera_Paris_Street")?35.:28.;Test->TestTrue(TEXT("Natural photographic angle from lens metadata"),FMath::IsNearlyEqual(double(Camera->GetCameraComponent()->FieldOfView),FMath::RadiansToDegrees(2.*FMath::Atan(36./(2.*Lens))),.01));}
+            if(auto Camera=Cast<ACameraActor>(PC->GetViewTarget())){
+                const bool Door=FString(Name)==TEXT("Camera_NotreDame_Front")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinDoorDetail"));
+                const bool StatueOrPortal=FString(Name)==TEXT("Camera_NotreDame_Front")&&(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinVirginDetail"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPortalDetail")));
+                const double Lens=StatueOrPortal?50.:Door?42.:FString(Name)==TEXT("Camera_Paris_Street")?35.:28.;
+                Test->TestTrue(TEXT("Natural photographic angle from lens metadata"),FMath::IsNearlyEqual(double(Camera->GetCameraComponent()->FieldOfView),FMath::RadiansToDegrees(2.*FMath::Atan(36./(2.*Lens))),.01));
+                if(Door)Test->TestTrue(TEXT("Door inspection uses the geographic door camera"),Camera->ActorHasTag(TEXT("ParisCathedralDoorCamera")));
+            }
             PC->ReturnToFree();Test->TestEqual(TEXT("Free navigation restores the possessed camera"),PC->GetViewTarget(),static_cast<AActor*>(PC->GetPawn()));
         }
         Test->TestFalse(TEXT("Unknown camera is rejected"),ActivateParisPhotoCamera(Scene,TEXT("MissingCamera")));

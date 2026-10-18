@@ -1,6 +1,6 @@
-﻿param(
+param(
     [string]$EngineRoot='D:\Epic Games\UE_5.8',
-    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Routes','Seating','Materials','Realism','Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail')][string]$View='Overview',
+    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Routes','Seating','Materials','Realism','Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail','DoorDetail','VirginDetail')][string]$View='Overview',
     [ValidateSet('Low','Medium','High')][string]$Quality='Medium',
     [ValidateRange(10,120)][int]$Duration=20,
     [string]$ReportPath='',
@@ -18,6 +18,7 @@
     [switch]$NoPhotoNature,
     [switch]$NoArchitecture,
     [switch]$NoScannedFacade,
+    [switch]$NoNCStatues,
     [switch]$NoPhotoStreet,
     [switch]$NoGroundCutout,
     [switch]$NoFrontages,
@@ -55,9 +56,12 @@ $arguments=@( ('"'+$project+'"'),'-game','-ParisTwin','-dx11','-windowed','-Forc
     '-ParisTwinCapture','-ParisTwinWaitForAssets',"-ParisTwinCaptureAfter=$CaptureAfter","-ParisTwinBenchmark=$Duration",'-ParisTwinExit',('-ExecCmds="'+$commands+'"'),
     ('-ParisTwinQuality='+@{Low=0;Medium=1;High=2}[$Quality]),('-abslog="'+$log+'"'))
 if($Photoreal){$arguments=@($arguments | Where-Object {$_ -ne '-dx11'});$arguments+=@('-dx12','-sm6','-CustomConfig=ParisPhotoreal','-ParisPhotoreal')}
-if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail')){$arguments+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';PhotoStreet='Camera_Paris_Street';WindowDetail='Camera_Paris_Street';EntryDetail='Camera_Paris_Street';PortalDetail='Camera_NotreDame_Front'}[$View])}
+if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail','DoorDetail','VirginDetail')){$arguments+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';PhotoStreet='Camera_Paris_Street';WindowDetail='Camera_Paris_Street';EntryDetail='Camera_Paris_Street';PortalDetail='Camera_NotreDame_Front';DoorDetail='Camera_NotreDame_Front';VirginDetail='Camera_NotreDame_Front'}[$View])}
 if($View -eq 'WindowDetail'){$arguments+='-ParisTwinWindowDetail'}
 if($View -eq 'PortalDetail'){$arguments+='-ParisTwinPortalDetail'}
+if($View -eq 'DoorDetail'){$arguments+='-ParisTwinDoorDetail'}
+if($View -eq 'VirginDetail'){$arguments+='-ParisTwinVirginDetail'}
+if($NoNCStatues){$arguments+='-ParisTwinNoNCStatues'}
 if($View -eq 'EntryDetail'){$arguments+='-ParisTwinEntryDetail'}
 if($LegacyJSON){$arguments+='-ParisTwinLegacyJSON'}
 if($FullPeople){$arguments+='-ParisTwinFullPeople'}
@@ -120,7 +124,9 @@ if($Photoreal -and -not $LegacyJSON){
     $visibleFrontages=if($Quality -eq 'Low' -or $FlatMaterials){0}else{$expectedFrontages}
     if($result.frontage_visible -ne $visibleFrontages){throw 'Requested frontage quality/visibility was not applied'}
 }
-if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail') -and $result.active_photo_camera -notmatch '^Camera_'){throw 'Named photo camera did not activate'}
+if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail','DoorDetail','VirginDetail') -and $result.active_photo_camera -notmatch '^Camera_'){throw 'Named photo camera did not activate'}
+if($result.virgin_detail_view -ne ($View -eq 'VirginDetail')){throw 'Requested Virgin inspection camera was not applied'}
+if($result.door_detail_view -ne ($View -eq 'DoorDetail')){throw 'Requested door inspection camera was not applied'}
 if($result.window_detail_view -ne ($View -eq 'WindowDetail')){throw 'Requested window inspection camera was not applied'}
 if($result.shadows_disabled -ne [bool]$NoShadows -or $result.street_details -ne (-not $NoStreetDetails)){throw 'Requested rendering diagnostic options were not applied'}
 if($null -eq $result.render_cache_components -or ($NoRenderCache -and $result.render_cache_components -ne 0) -or (-not $NoRenderCache -and $result.render_cache_components -lt 1)){throw 'Requested render cache mode was not applied; check the native build'}
@@ -153,6 +159,26 @@ $result | Add-Member -NotePropertyName 'gpu' -NotePropertyValue ((Get-CimInstanc
 $scene=Join-Path (Split-Path $project) 'Content\Data\paris-digital-twin.json'
 $result | Add-Member -NotePropertyName 'scene_sha256' -NotePropertyValue ((Get-FileHash -LiteralPath $scene -Algorithm SHA256).Hash.ToLowerInvariant())
 $result | Add-Member -NotePropertyName 'native_binary_sha256' -NotePropertyValue ((Get-FileHash -LiteralPath $native -Algorithm SHA256).Hash.ToLowerInvariant())
+$result | Add-Member -NotePropertyName 'nc_statues_disabled' -NotePropertyValue ([bool]$NoNCStatues)
+$statueManifest=Join-Path (Split-Path $project) 'Content\Data\paris-notredame-statue.json'
+if(Test-Path -LiteralPath $statueManifest){
+    $statueDescription=Get-Content -LiteralPath $statueManifest -Raw | ConvertFrom-Json
+    $result | Add-Member -NotePropertyName 'available_statue_manifest_sha256' -NotePropertyValue ((Get-FileHash -LiteralPath $statueManifest -Algorithm SHA256).Hash.ToLowerInvariant())
+    $result | Add-Member -NotePropertyName 'available_statue_geometry_sha256' -NotePropertyValue $statueDescription.geometry_sha256
+}
+$architectureManifest=Join-Path (Split-Path $project) 'Content\Data\paris-photo-architecture.json'
+if(Test-Path -LiteralPath $architectureManifest){
+    $architectureDescription=Get-Content -LiteralPath $architectureManifest -Raw | ConvertFrom-Json
+    $result | Add-Member -NotePropertyName 'available_architecture_manifest_sha256' -NotePropertyValue ((Get-FileHash -LiteralPath $architectureManifest -Algorithm SHA256).Hash.ToLowerInvariant())
+    $result | Add-Member -NotePropertyName 'available_architecture_revision' -NotePropertyValue $architectureDescription.detail_revision
+}
+$scanManifest=Join-Path (Split-Path $project) 'Content\Data\paris-notredame-scan.json'
+if(Test-Path -LiteralPath $scanManifest){
+    $scanDescription=Get-Content -LiteralPath $scanManifest -Raw | ConvertFrom-Json
+    $result | Add-Member -NotePropertyName 'available_scan_manifest_sha256' -NotePropertyValue ((Get-FileHash -LiteralPath $scanManifest -Algorithm SHA256).Hash.ToLowerInvariant())
+    $result | Add-Member -NotePropertyName 'available_scan_geometry_sha256' -NotePropertyValue $scanDescription.geometry_sha256
+    $result | Add-Member -NotePropertyName 'available_scan_revision' -NotePropertyValue $scanDescription.surface.revision
+}
 $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $ReportPath -Encoding utf8
 if(-not(Test-Path -LiteralPath $shot) -or (Get-Item -LiteralPath $shot).LastWriteTime -lt $started){throw 'The run did not produce a fresh screenshot; inspection may not have found a clear camera'}
 if(Test-Path -LiteralPath $shot){

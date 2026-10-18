@@ -54,6 +54,9 @@ def material(name, texture_path=None, tile_cm=400, roughness=.8, metallic=0, sur
     mat=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,'/Game/Materials',unreal.Material,unreal.MaterialFactoryNew())
     if assets.get_metadata_tag(mat,'ParisTwin.Generator')==GENERATOR:return
     lib.delete_all_material_expressions(mat)
+    # Rebuilding a procedural base invalidates any photographic graph tag on
+    # that same material (notably M_ParisWood). The next stage must rebind PBR.
+    assets.set_metadata_tag(mat,'ParisTwin.PhotoGenerator','')
     mat.set_editor_property('two_sided',True)
     lib.set_material_usage(mat,unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
     color=expression(mat,unreal.MaterialExpressionVertexColor,-900,-200)

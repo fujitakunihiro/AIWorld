@@ -109,6 +109,10 @@ void AddParisPhotoEnvironmentStats(UWorld* World,const TSharedPtr<FJsonObject>& 
     Report->SetNumberField(TEXT("sky_atmospheres"),Atmosphere);Report->SetNumberField(TEXT("height_fogs"),Fog);
     Report->SetNumberField(TEXT("post_process_volumes"),Post);Report->SetNumberField(TEXT("photo_cameras"),Cameras);
     Report->SetNumberField(TEXT("photographic_sky_domes"),Panoramas);
+    bool DoorDetail=false;for(TActorIterator<ACameraActor> It(World);It;++It)DoorDetail|=It->ActorHasTag(TEXT("ParisCathedralDoorCamera"));
+    Report->SetBoolField(TEXT("door_detail_view"),DoorDetail);
+    bool VirginDetail=false;for(TActorIterator<ACameraActor> It(World);It;++It)VirginDetail|=It->ActorHasTag(TEXT("ParisCathedralVirginCamera"));
+    Report->SetBoolField(TEXT("virgin_detail_view"),VirginDetail);
     if(auto PC=World->GetFirstPlayerController())Report->SetStringField(TEXT("active_photo_camera"),PC->GetViewTarget()?PC->GetViewTarget()->GetName():TEXT(""));
 }
 
@@ -138,13 +142,15 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
 #endif
         FVector Position(P[0]->AsNumber(),P[1]->AsNumber(),P[2]->AsNumber());FVector Aim(Target[0]->AsNumber(),Target[1]->AsNumber(),Target[2]->AsNumber());
         double DetailLens=0;
-        if(Name==TEXT("Camera_NotreDame_Front")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPortalDetail"))){
+        const bool DoorDetail=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinDoorDetail"));
+        const bool VirginDetail=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinVirginDetail"));
+        if(Name==TEXT("Camera_NotreDame_Front")&&(VirginDetail||DoorDetail||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPortalDetail")))){
             FString Text;TSharedPtr<FJsonObject> Architecture;
             if(FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Data/paris-photo-architecture.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Architecture)&&Architecture&&String(Architecture,TEXT("source_id"))==TEXT("osm/way/201611261")){
-                const auto Detail=Object(Architecture,TEXT("detail_camera"));const auto& DP=Array(Detail,TEXT("position_cm"));const auto& DT=Array(Detail,TEXT("target_cm"));
+                const auto Detail=Object(Architecture,VirginDetail?TEXT("virgin_camera"):(DoorDetail?TEXT("door_camera"):TEXT("detail_camera")));const auto& DP=Array(Detail,TEXT("position_cm"));const auto& DT=Array(Detail,TEXT("target_cm"));
                 if(DP.Num()==3&&DT.Num()==3){
                     const FVector Location(DP[0]->AsNumber(),DP[1]->AsNumber(),DP[2]->AsNumber()),TargetPoint(DT[0]->AsNumber(),DT[1]->AsNumber(),DT[2]->AsNumber());
-                    if(!Location.ContainsNaN()&&!TargetPoint.ContainsNaN()&&(TargetPoint-Location).Size()>100){Position=Location;Aim=TargetPoint;DetailLens=Number(Detail,TEXT("focal_length_mm"),35);Camera->Tags.AddUnique(TEXT("ParisCathedralPortalCamera"));}
+                    if(!Location.ContainsNaN()&&!TargetPoint.ContainsNaN()&&(TargetPoint-Location).Size()>100){Position=Location;Aim=TargetPoint;DetailLens=Number(Detail,TEXT("focal_length_mm"),35);Camera->Tags.AddUnique(VirginDetail?TEXT("ParisCathedralVirginCamera"):(DoorDetail?TEXT("ParisCathedralDoorCamera"):TEXT("ParisCathedralPortalCamera")));}
                 }
             }
         }

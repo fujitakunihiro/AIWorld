@@ -31,14 +31,19 @@ def generate():
     def world(p,normal=False):
         x,y,z=p;e=-dy*x+dx*y;n=dx*x+dy*y
         return [e,-n,z] if normal else [round((front[0]+e-geo.origin[0])*100,4),round(-(front[1]+n-geo.origin[1])*100,4),round((ground+z)*100,4)]
-    groups={name:dict(positions_cm=[],normals=[],indices=[]) for name in ['stone','wood','glass','iron','sculpture','stained']}
-    def face(kind,points,n,tint=None):
+    groups={name:dict(positions_cm=[],normals=[],indices=[]) for name in ['stone','wood','glass','iron','sculpture','stained','virgin_fallback']}
+    def face(kind,points,n,tint=None,vertex_normals=None):
         out=groups[kind];start=len(out['positions_cm']);points=[world(p) for p in points];normal=world(n,True)
         magnitude=math.sqrt(sum(v*v for v in normal));normal=[v/magnitude for v in normal]
         u=[points[1][i]-points[0][i] for i in range(3)];v=[points[2][i]-points[0][i] for i in range(3)]
         cross=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]]
         reverse=sum(cross[i]*normal[i] for i in range(3))>0
-        out['positions_cm'].extend(points);out['normals'].extend([normal]*len(points))
+        out['positions_cm'].extend(points)
+        if vertex_normals is not None:
+            if len(vertex_normals)!=len(points):raise ValueError('Sculpture vertex normal count differs from its face')
+            normals=[world(v,True) for v in vertex_normals]
+            out['normals'].extend([[v/math.sqrt(sum(q*q for q in row)) for v in row] for row in normals])
+        else:out['normals'].extend([normal]*len(points))
         if kind=='stained':out.setdefault('colors_srgb',[]).extend([tint or '233943']*len(points))
         for i in range(1,len(points)-1):out['indices'].extend([start,start+i+1,start+i] if reverse else [start,start+i,start+i+1])
     def box(kind,x,y,z,w,d,h):
@@ -238,15 +243,18 @@ def generate():
                             if row in [1,3]:module('stone',0,.23,bottom-.52,span/count,.18,.18)
                             neighbour_windows+=1
     materials=dict(stone='/Game/Materials/M_Paris_Limestone',recess='/Game/Materials/M_Paris_Iron',wood='/Game/Materials/M_ParisWood',glass='/Game/Materials/M_Paris_Glass',iron='/Game/Materials/M_Paris_Iron',sculpture='/Game/Materials/M_ParisSculptedStone',stained='/Game/Materials/M_ParisStainedGlass')
+    materials['virgin_fallback']=materials['sculpture']
     objects=[]
     for name,mesh in groups.items():
-        mesh['color']={'stone':'d2ccbf','recess':'10151a','wood':'4b3020','glass':'18252d','iron':'262c31','sculpture':'dbd4c6','stained':'233943'}[name]
+        mesh['color']={'stone':'d2ccbf','recess':'10151a','wood':'4b3020','glass':'18252d','iron':'262c31','sculpture':'dbd4c6','stained':'233943','virgin_fallback':'dbd4c6'}[name]
         signature=hashlib.sha256(json.dumps(mesh,sort_keys=True,separators=(',',':')).encode()).hexdigest()
         objects.append(dict(id=name,asset='/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_'+name+'_'+signature[:12],geometry_sha256=signature,material=materials[name],triangles=len(mesh['indices'])//3,**mesh))
     return dict(format='paris_original_architecture_study_v1',source_id=building['properties']['source_id'],source_url=building['properties']['source_url'],
         detail_revision=REVISION,west_openings=opening_spec(),west_details=west_details,
         detail_camera=dict(position_cm=world((-3,-22,1.7)),target_cm=world((0,-.5,8.0)),focal_length_mm=50),
-        architecture_references=['https://www.notredamedeparis.fr/comprendre/architecture/la-facade-occidentale/','https://www.notredamedeparis.fr/comprendre/architecture/le-portail-du-jugement-dernier/'],
+        door_camera=dict(position_cm=world((16.3,-12,1.7)),target_cm=world((14,.5,3.2)),focal_length_mm=42),
+        virgin_camera=dict(position_cm=world((15.6,-12.5,1.7)),target_cm=world((14,-.30,2.45)),focal_length_mm=50),
+        architecture_references=['https://www.notredamedeparis.fr/comprendre/architecture/la-facade-occidentale/','https://www.notredamedeparis.fr/comprendre/architecture/le-portail-du-jugement-dernier/','https://www.notredamedeparis.fr/comprendre/architecture/portail-sainte-anne/'],
         dimensions_reference='https://www.notredamedeparis.fr/comprendre/architecture/plans/',
         dimension_facts_m=dict(west_width=43.5,tower_height=69,west_rose_diameter=9.70),
         appearance_provenance='Original inferred architectural study: pierced west facade, deep portals, authored sculptural relief, rose tracery and open belfry; upper nave and nearby hospital window relief. Not a surveyed cathedral model; sculpture, depths and opening placement are approximate. Existing GIS/collision retained.',
@@ -254,6 +262,8 @@ def generate():
         local_frame=dict(front_cm=world((0,0,0)),across=world((1,0,0),True),depth=world((0,1,0),True)),
         belfry_voids=dict(tower_centres=[-15.25,15.25],front_centres=[-17.95,-12.55,12.55,17.95],side_centres=[4.8,10.2],half_width=2.3,bottom=48,spring=58,top=64.7,depth_min=-2,depth_max=16),
         inferred_details=dict(upper_side_bays=side_bays,flying_buttresses=flying_buttresses,neighbour_windows=neighbour_windows,side_cornice_sections=side_cornices,flying_rib_section='rectangular masonry; inferred'),
+        door_provenance='Original inferred plank joinery, flat forged scrollwork and rivets; reference-informed medieval hinge style, not a traced or measured penture pattern. CC0 photographic wood is an appearance proxy, not cathedral timber.',
+        near_sculpture_provenance='Original inferred continuous stone figures: analytic facial relief, draped robes, swept sleeves and carved hands with geometric vertex normals. No surveyed shape, actual saint identity or historical iconography claim; existing anchors and GIS collision retained.',
         anchor_wgs84=list(geo.inverse.transform(*front)),origin_wgs84=config['origin_wgs84'],origin_elevation_ngf_m=terrain.origin_ngf,
         objects=objects)
 

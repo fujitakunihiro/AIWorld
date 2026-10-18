@@ -11,8 +11,8 @@
 #if WITH_DEV_AUTOMATION_TESTS
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FParisPhotoTest,"ParisDigitalTwin.Live.PhotographicSurfaceBindings",EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FParisPhotoTest::RunTest(const FString&){
-    for(const FString Key:{TEXT("Stone"),TEXT("Paving"),TEXT("Grass"),TEXT("Asphalt")}){
-        const FString MatName=Key==TEXT("Stone")?TEXT("Limestone"):Key==TEXT("Grass")?TEXT("GrassPhotographic"):Key==TEXT("Asphalt")?TEXT("AsphaltPhotographic"):TEXT("Paving");
+    for(const FString Key:{TEXT("Stone"),TEXT("Paving"),TEXT("Grass"),TEXT("Asphalt"),TEXT("Wood")}){
+        const FString MatName=Key==TEXT("Stone")?TEXT("Limestone"):Key==TEXT("Grass")?TEXT("GrassPhotographic"):Key==TEXT("Asphalt")?TEXT("AsphaltPhotographic"):Key==TEXT("Wood")?TEXT("Wood"):TEXT("Paving");
         auto Mat=LoadObject<UMaterial>(nullptr,*(TEXT("/Game/Materials/M_Paris")+MatName));
         if(!TestNotNull(TEXT("Actual photo material loads"),Mat))continue;
         TestFalse(TEXT("Normal graph is in world space"),Mat->bTangentSpaceNormal);

@@ -104,8 +104,21 @@ for entry in entries:
     lib.set_material_usage(mat, unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
     tile = node(mat, unreal.MaterialExpressionConstant, -1400, 150, r=entry['tile_cm'])
     samples = {}
-    planar = entry['key'] in ('paving','grass','asphalt')
-    if planar:
+    wood = entry['key']=='wood'
+    planar = entry['key'] in ('paving','grass','asphalt') or wood
+    if wood:
+        # The photograph's grain runs along U. Align it vertically on the west
+        # doors in the same geographic frame; procedural meshes have no UVs.
+        if not frame:raise RuntimeError('A shared GIS frame is required for door grain')
+        position=node(mat,unreal.MaterialExpressionWorldPosition,-1900,0)
+        across='float3('+','.join(f'{v:.10f}' for v in frame['across'])+')'
+        origin='float3('+','.join(f'{v:.10f}' for v in frame['front_cm'])+')'
+        uv=node(mat,unreal.MaterialExpressionCustom,-1500,0)
+        uv.set_editor_property('output_type',unreal.CustomMaterialOutputType.CMOT_FLOAT2)
+        pin=unreal.CustomInput();pin.set_editor_property('input_name','Position');uv.set_editor_property('inputs',[pin])
+        uv.set_editor_property('code',f'float3 d=Position-{origin};return float2(d.z,dot(d,{across}))/200.;')
+        link(position,'',uv,'Position')
+    elif planar:
         position=node(mat,unreal.MaterialExpressionWorldPosition,-1900,0)
         xy=node(mat,unreal.MaterialExpressionComponentMask,-1700,0,r=True,g=True,b=False)
         uv=node(mat,unreal.MaterialExpressionDivide,-1500,0)
@@ -144,6 +157,12 @@ for entry in entries:
         weather=custom(mat,masonry['color_hlsl'](),
             dict(Position=(world_position,''),Albedo=(color,''),Geometric=(geometric,'')),vector=True,y=-300)
         output(weather,'',unreal.MaterialProperty.MP_BASE_COLOR)
+    elif wood:
+        # Subtle inferred base patina. No emissive lighting, painted shadows,
+        # species identification or measured cathedral wood claim.
+        weather=custom(mat,f'float z=(Position-{origin}).z*.01;float damp=1-.18*(1-smoothstep(.12,.85,z));return Albedo*damp*float3(.78,.86,.94);',
+                       dict(Position=(world_position,''),Albedo=(color,'')),vector=True)
+        output(weather,'',unreal.MaterialProperty.MP_BASE_COLOR)
     else:output(color, '', unreal.MaterialProperty.MP_BASE_COLOR)
     if entry['material']=='M_ParisCathedralStone':
         # Geometry and source-display cutouts share one opening specification.
@@ -163,7 +182,9 @@ for entry in entries:
         for name in ['Surface','Geometric']:
             inp=unreal.CustomInput();inp.set_editor_property('input_name',name);inputs.append(inp)
         basis.set_editor_property('inputs',inputs)
-        basis.set_editor_property('code','float3 N=normalize(Geometric); float3 T=normalize(float3(1,0,0)-N*N.x); float3 B=normalize(cross(N,T)); return normalize(T*Surface.x+B*Surface.y+N*Surface.z);')
+        basis.set_editor_property('code',
+            f'float3 N=normalize(Geometric);float3 axis=abs(N.z)<.95?float3(0,0,1):{across};float3 T=normalize(axis-N*dot(N,axis));float3 B=normalize(cross(N,T));return normalize(T*Surface.x*.45+B*Surface.y*.45+N*Surface.z);' if wood else
+            'float3 N=normalize(Geometric); float3 T=normalize(float3(1,0,0)-N*N.x); float3 B=normalize(cross(N,T)); return normalize(T*Surface.x+B*Surface.y+N*Surface.z);')
         link(normal,'',basis,'Geometric');link(samples['normal'],'',basis,'Surface')
         if ground_zone:
             blend=node(mat,unreal.MaterialExpressionLinearInterpolate)
@@ -173,12 +194,25 @@ for entry in entries:
         finish=custom(mat,masonry['normal_hlsl'](),dict(Position=(world_position,''),Geometric=(geometric,''),Photo=(samples['normal'],projection)),vector=True)
         output(finish,'',unreal.MaterialProperty.MP_NORMAL)
         assets.set_metadata_tag(mat,'ParisTwin.MasonryFinish','Scanned white_plaster_02 grain with inferred 32x88cm courses, shallow joints; not surveyed limestone')
+    elif entry.get('sculpture'):
+        # Fine plaster grain is an appearance proxy, not the figure's shape.
+        # Preserve its actual smooth geometric normals at grazing angles.
+        geometric=node(mat,unreal.MaterialExpressionVertexNormalWS)
+        strength=node(mat,unreal.MaterialExpressionScalarParameter,parameter_name='SculptureGrainStrength',default_value=.18)
+        blend=node(mat,unreal.MaterialExpressionLinearInterpolate)
+        link(geometric,'',blend,'A');link(samples['normal'],projection,blend,'B');link(strength,'',blend,'Alpha')
+        normalized=node(mat,unreal.MaterialExpressionNormalize)
+        link(blend,'',normalized,'');output(normalized,'',unreal.MaterialProperty.MP_NORMAL)
+        assets.set_metadata_tag(mat,'ParisTwin.SculptureNormalPolicy','World-space geometric normals plus subtle photographic fine grain at 0.18; not scanned sculpture detail')
     else:output(samples['normal'], projection, unreal.MaterialProperty.MP_NORMAL)
     for channel, prop in [('r',unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),
                           ('g',unreal.MaterialProperty.MP_ROUGHNESS),('b',unreal.MaterialProperty.MP_METALLIC)]:
         mask = node(mat, unreal.MaterialExpressionComponentMask, -450, 100 + len(channel) * 30,
                     r=channel=='r', g=channel=='g', b=channel=='b')
         link(samples['orm'], projection, mask, '')
+        if wood and channel=='g':
+            clamp=node(mat,unreal.MaterialExpressionClamp,min_default=.58,max_default=.92)
+            link(mask,'',clamp,'');mask=clamp
         if ground_zone:
             blend=node(mat,unreal.MaterialExpressionLinearInterpolate,const_a=1. if channel=='r' else .9 if channel=='g' else 0.)
             link(mask,'',blend,'B');link(ground_zone,'',blend,'Alpha');mask=blend
@@ -188,6 +222,7 @@ for entry in entries:
     assets.set_metadata_tag(mat, 'ParisTwin.SourceURL', entry['source_url'])
     assets.set_metadata_tag(mat, 'ParisTwin.SurfaceRecipe', 'photographic:' + entry['id'])
     assets.set_metadata_tag(mat, 'ParisTwin.ChannelLayout', 'ORM; DirectX normal')
+    if wood:assets.set_metadata_tag(mat,'ParisTwin.AppearanceProvenance','CC0 dark_wood at 2m scale; vertical grain in the shared GIS frame, inferred outdoor roughness/patina; not sampled cathedral wood')
     if ground_zone:assets.set_metadata_tag(mat,'ParisTwin.AppearanceProvenance','Inferred paving on unclassified exposed terrain within 100m of the west anchor; fades to source palette by 130m. Not surveyed land cover.')
     if not assets.save_loaded_asset(mat):raise RuntimeError('Cannot save photographic material: ' + entry['material'])
 

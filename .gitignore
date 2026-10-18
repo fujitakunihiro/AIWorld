@@ -37,3 +37,11 @@ unreal/assets/notre-dame-facade/*.part
 unreal/assets/notre-dame-facade/*.npz
 unreal/assets/notre-dame-facade/*.bin
 unreal/AIWorld/Content/Data/paris-notredame-scan-source.json
+unreal/assets/notre-dame-sculptures/*.glb
+unreal/assets/notre-dame-sculptures/*.gz
+unreal/assets/notre-dame-sculptures/*.part
+unreal/assets/notre-dame-sculptures/*.bin
+unreal/assets/notre-dame-sculptures/*.jpg
+unreal/AIWorld/Content/Data/paris-notredame-statue-source.json
+# Optional noncommercial content is acquired locally, never silently published with code.
+unreal/AIWorld/Content/ParisPhotoreal/NotreDameStatues/*.uasset

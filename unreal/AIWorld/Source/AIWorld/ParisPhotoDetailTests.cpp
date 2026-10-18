@@ -18,14 +18,14 @@ bool FParisPhotoDetailWait::Update(){
         const bool Photo=FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"));
         auto Stats=MakeShared<FJsonObject>();AddParisPhotoDetailStats(Scene,Stats);
         Test->TestEqual(TEXT("GIS source building count is preserved"),Scene->BuildingCount,739);
-        Test->TestEqual(TEXT("All six authored facade materials load only in photoreal mode"),AIWorld::Number(Stats,TEXT("authored_west_facade_components")),Photo?6.:0.);
+        Test->TestEqual(TEXT("Authored facade plus isolated optional-scan fallback load only in photoreal mode"),AIWorld::Number(Stats,TEXT("authored_west_facade_components")),Photo?7.:0.);
         if(Photo){
             Test->TestTrue(TEXT("Real tree instances are available"),AIWorld::Number(Stats,TEXT("photo_tree_instances"))>0);
             const auto Old=Scene->DetailQuality;Scene->DetailQuality=2;Scene->ApplyDetailQuality();
             TArray<UStaticMeshComponent*> Parts;Scene->GetComponents(Parts);
             TMap<UStaticMeshComponent*,UStaticMesh*> HighTrees;
             for(auto Part:Parts){
-                if(Part->ComponentHasTag(TEXT("ParisPhotoArchitecture"))){Test->TestTrue(TEXT("Authored facade visible at high quality"),Part->IsVisible());Test->TestEqual(TEXT("Art cannot replace source collision"),Part->GetCollisionEnabled(),ECollisionEnabled::NoCollision);}
+                if(Part->ComponentHasTag(TEXT("ParisPhotoArchitecture"))){if(!Part->ComponentHasTag(TEXT("ParisVirginFallback")))Test->TestTrue(TEXT("Authored facade visible at high quality"),Part->IsVisible());Test->TestEqual(TEXT("Art cannot replace source collision"),Part->GetCollisionEnabled(),ECollisionEnabled::NoCollision);}
                 if(Part->ComponentHasTag(TEXT("ParisPhotoTree"))){HighTrees.Add(Part,Part->GetStaticMesh());auto HISM=CastChecked<UHierarchicalInstancedStaticMeshComponent>(Part);Test->TestNotNull(TEXT("Original mapped tree ID survives partitioning"),Scene->StreetInstanceSource(HISM,0).Get());}
             }
             Scene->ToggleLevels();for(auto Part:Parts)if(Part->ComponentHasTag(TEXT("ParisPhotoArchitecture")))Test->TestFalse(TEXT("Source accuracy debug hides inferred art"),Part->IsVisible());Scene->ToggleLevels();

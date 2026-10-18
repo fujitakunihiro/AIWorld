@@ -19,6 +19,8 @@ ASSETS = {
                   material='M_ParisGrassPhotographic',description='Photographic grass/soil appearance proxy on mapped parks; not surveyed Paris vegetation'),
     'asphalt': dict(id='asphalt_02',tile_cm=300,author='Rob Tuytel',
                   material='M_ParisAsphaltPhotographic',description='Photographic asphalt at source scale; inferred road finish, not a surveyed Paris pavement'),
+    'wood': dict(id='dark_wood',tile_cm=200,author='Dimitrios Savva, Dario Barresi, Rico Cilliers',
+                material='M_ParisWood',description='CC0 dark hardwood grain appearance proxy; not sampled from Notre-Dame doors and no claim about their timber species'),
 }
 MAPS = dict(albedo='Diffuse', normal='nor_dx', orm='arm')
 ENVIRONMENT = 'kloppenheim_05_puresky'

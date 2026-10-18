@@ -1,0 +1,11 @@
+test_arh_and_srgb_normal_cannot_be_misread_as_orm (test_photo_sources.PhotoSourceTests.test_arh_and_srgb_normal_cannot_be_misread_as_orm) ... ok
+test_license_and_path_confinement (test_photo_sources.PhotoSourceTests.test_license_and_path_confinement) ... ok
+test_modified_source_and_missing_normal_are_rejected (test_photo_sources.PhotoSourceTests.test_modified_source_and_missing_normal_are_rejected) ... ok
+test_offline_manifest_and_all_bundled_originals (test_photo_sources.PhotoSourceTests.test_offline_manifest_and_all_bundled_originals) ... ok
+test_old_or_duplicate_material_cache_requires_refresh (test_photo_sources.PhotoSourceTests.test_old_or_duplicate_material_cache_requires_refresh) ... ok
+test_wrong_asset_identity_or_scale_is_not_a_valid_offline_cache (test_photo_sources.PhotoSourceTests.test_wrong_asset_identity_or_scale_is_not_a_valid_offline_cache) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 2.374s
+
+OK

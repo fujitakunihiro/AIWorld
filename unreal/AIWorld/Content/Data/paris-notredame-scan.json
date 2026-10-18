@@ -41,11 +41,11 @@
     48.8547
   ],
   "origin_elevation_ngf_m": 35.38,
-  "asset": "/Game/ParisPhotoreal/NotreDameScan/SM_NotreDameScan_bc2b32452c1f",
-  "geometry_sha256": "bc2b32452c1f320e296c0cb8b35443c5b6c4b1f6196a88bc0487e6f788511532",
+  "asset": "/Game/ParisPhotoreal/NotreDameScan/SM_NotreDameScan_1befb61ece65_6de6ffef",
+  "geometry_sha256": "1befb61ece65a81971e872ec2ce0d75f5362ca36021a64decad378904dc190db",
   "binary": "unreal/assets/notre-dame-facade/facade-surface.bin",
-  "vertices": 102688,
-  "triangles": 201271,
+  "vertices": 150065,
+  "triangles": 294525,
   "dimensions_reference": "https://www.notredamedeparis.fr/comprendre/architecture/plans/",
   "registration": {
     "method": "Provisional independent width/height calibration to official 43.5m / 69m; depth uses vertical scale. Not survey georegistration.",
@@ -61,47 +61,91 @@
     "depth_scale_m": 0.004588190245490882
   },
   "surface": {
+    "revision": 10,
     "texture_step_m": 0.0125,
     "mesh_step_m": 0.07500000000000001,
     "max_fill_distance_m": 0.4,
     "albedo_border_padding_m": 0.025,
-    "observed_cells": 2052370,
-    "filled_cells": 1661478,
-    "selection": "Dense central portal, western rose and kings gallery only; other facade areas keep the authored fallback",
-    "depth_filter": "3x3 median; inferred completion up to 0.4m distance",
+    "observed_cells": 2248421,
+    "filled_cells": 3176068,
+    "selection": "Central portal, side-portal sculpture above 5.2m, western rose and kings gallery; side doors, sparse upper facade and tower candidates retain the authored fallback",
+    "side_portal_min_height_m": 5.2,
+    "depth_filter": "3x3 median; inferred completion <=0.4m lower / <=0.2m upper; neighbor depth range <=0.6m",
     "texture_width": 3481,
     "texture_height": 3601,
-    "mesh_coverage_fraction": 0.2890131304297116,
+    "sparse_smoothing": {
+      "lower_radius_m": 0.1,
+      "upper_radius_m": 0.15,
+      "fully_preserved_density": 0.4,
+      "note": "Confidence-weighted depth regularization in sparse areas; inferred colour interpolation is smoothed, dense observations retained"
+    },
+    "mesh_coverage_fraction": 0.423168103448276,
     "depth_jump_limit_m": 1.2,
     "lower_height_m": 45,
-    "width_m": 43.5
+    "full_height_m": 45.0,
+    "width_m": 43.5,
+    "rejected_tiles": [
+      {
+        "id": "upper",
+        "reason": "Insufficient direct support for a coherent upper surface; native comparison showed ragged depth and registration mismatch. Authored upper facade retained.",
+        "observed_fraction": 0.3442371113679285,
+        "required_fraction": 0.6,
+        "observed_cells": 48850,
+        "eligible_cells": 141908,
+        "candidate_triangles": 17072
+      }
+    ],
+    "atlas": {
+      "width": 3481,
+      "height": 3601,
+      "gutter_pixels": 8,
+      "tiles": [
+        {
+          "id": "lower",
+          "bottom_m": 0.0,
+          "top_m": 45.0,
+          "step_m": 0.0125,
+          "stride": 6,
+          "fill_distance_m": 0.4,
+          "row": 0,
+          "width": 3481,
+          "height": 3601,
+          "observed_cells": 2248421,
+          "filled_cells": 3176068,
+          "observed_fraction": 0.40973585550695407,
+          "triangles": 294525,
+          "projected_area_m2": 828.3515625000002
+        }
+      ]
+    }
   },
   "provenance": "Historic photo-derived colour and filtered 2.5D depth; bounded inferred completion up to 0.4m distance and provisional art registration. Roughness is estimated, photographed lighting is not fully removed. Not a finished surveyed L4/L5 or a complete cathedral exterior.",
   "textures": {
     "colour": {
       "file": "unreal/assets/notre-dame-facade/facade-colour.png",
-      "sha256": "5e667f124b020e98df0b80c3ed80b42692e33aee75c6024421904129f4641f16"
+      "sha256": "e28d737e754127dbc3cd40a1c9bc16293b163ab64fb7605847b08bc47d558d2d"
     },
     "normal": {
       "file": "unreal/assets/notre-dame-facade/facade-normal.png",
-      "sha256": "21b152841eb730bcf5274099fbdcfdee8d3bdd24193e045202d43d1958ba6baa"
+      "sha256": "4689d504c853e801f4ea71788650253acd3bca4e8f8e79a462cc4edee2534cc9"
     },
     "coverage": {
       "file": "unreal/assets/notre-dame-facade/facade-coverage.png",
-      "sha256": "16d9fce561cc00e8b5e8092bd1aa86cace51f7e890cf544f0274896f54ff373f"
+      "sha256": "e843d298e6da8d9ef4e564f73eac51de5f6e63d2f631dc5759e9d560e30c9f11"
     }
   },
   "underlays": {
-    "stone": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stone_bc8850f32481",
-    "wood": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_wood_12499caad7d7",
-    "glass": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_glass_2b1bdec2f1fe",
-    "iron": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_iron_d8ef6ec75ad5",
-    "sculpture": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_sculpture_70a6f357ce8f",
-    "stained": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stained_4c4db58fee4a",
-    "body": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_body_56af81ba28a4"
+    "stone": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stone_7ebe0c1a9df1",
+    "wood": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_wood_8f8dc7cab5f3",
+    "glass": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_glass_2caaafaf57ee",
+    "iron": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_iron_306fadd25919",
+    "sculpture": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_sculpture_a486b21746c4",
+    "stained": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stained_f830d97278c3",
+    "body": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_body_e28e1d23db2c"
   },
-  "surface_material": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Surface_b491f7d4e504.M_NDScan_Surface_b491f7d4e504",
-  "fallback_triangles": 201271,
+  "surface_material": "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Surface_54f8ba926372.M_NDScan_Surface_54f8ba926372",
+  "fallback_triangles": 294525,
+  "bake_recipe_sha256": "6de6ffeff149c1e4d34a38b3776f56c812d2d537d2a78e1dc5d2281713262b42",
   "material_calibration": {
     "albedo_multiplier_linear": [
       0.72,
@@ -110,6 +154,7 @@
     ],
     "normal_strength": 0.35,
     "estimated_roughness": 0.82,
+    "vertex_normals": "Normals and tangents recomputed from actual mesh; fine normals are sampled in world space",
     "note": "Visual matching to existing stone. Original photographed illumination remains; not calibrated survey albedo."
   }
 }

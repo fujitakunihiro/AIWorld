@@ -209,6 +209,47 @@
           "srgb": false
         }
       }
+    },
+    {
+      "id": "dark_wood",
+      "tile_cm": 200,
+      "author": "Dimitrios Savva, Dario Barresi, Rico Cilliers",
+      "material": "M_ParisWood",
+      "description": "CC0 dark hardwood grain appearance proxy; not sampled from Notre-Dame doors and no claim about their timber species",
+      "key": "wood",
+      "license": "CC0-1.0",
+      "source_url": "https://polyhaven.com/a/dark_wood",
+      "metadata_url": "https://api.polyhaven.com/files/dark_wood",
+      "surface_layout": "ORM",
+      "normal_convention": "DirectX",
+      "photographic": true,
+      "paris_site_reference": false,
+      "maps": {
+        "albedo": {
+          "file": "wood_albedo_2k.jpg",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/dark_wood/dark_wood_diff_2k.jpg",
+          "bytes": 2894186,
+          "provider_md5": "f6e205a05ff7f1b45c675795b18ea0f5",
+          "sha256": "ff811f97ab46f1148f2753451fd9d64abf0ab9101e85922ed9f45fc3595a3cf2",
+          "srgb": true
+        },
+        "normal": {
+          "file": "wood_normal_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/dark_wood/dark_wood_nor_dx_2k.png",
+          "bytes": 18636146,
+          "provider_md5": "624152d95434db959b090bd4050f9c3f",
+          "sha256": "bc196f8ba1f98d8edbec0e06d1dea329433475630b2db908eae976685c0b98cf",
+          "srgb": false
+        },
+        "orm": {
+          "file": "wood_orm_2k.png",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/dark_wood/dark_wood_arm_2k.png",
+          "bytes": 16354635,
+          "provider_md5": "5025524bd1c6746ac83e7c4f4bbcacfe",
+          "sha256": "466bdbee094874d25b9d43d32928375d0e54cd716ca4d65fcc78eb6733843b16",
+          "srgb": false
+        }
+      }
     }
   ],
   "environment": {

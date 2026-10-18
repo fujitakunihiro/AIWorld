@@ -1,0 +1,182 @@
+{
+  "animationCount": 0,
+  "categories": [
+    {
+      "uid": "86f23935367b4a1f9647c8a20e03d716",
+      "name": "Cultural Heritage & History",
+      "slug": "cultural-heritage-history",
+      "uri": "https://api.sketchfab.com/v3/categories/86f23935367b4a1f9647c8a20e03d716",
+      "icon": "https://static.sketchfab.com/static/builds/web/dist/static/assets/images/icons/categories/bb22d75450272105e64c47756c323f1f-v2.svg",
+      "thumbnails": [
+        {
+          "width": "512",
+          "height": "288",
+          "url": "https://static.sketchfab.com/categories/86f23935367b4a1f9647c8a20e03d716/512x288.png"
+        },
+        {
+          "width": "800",
+          "height": "450",
+          "url": "https://static.sketchfab.com/categories/86f23935367b4a1f9647c8a20e03d716/800x450.png"
+        }
+      ]
+    }
+  ],
+  "commentCount": 1,
+  "createdAt": "2019-04-17T18:39:09.794598",
+  "embedUrl": "https://sketchfab.com/models/b5bbdc379daa4ee19e3775bb179dbcc1/embed",
+  "faceCount": 1001053,
+  "isAgeRestricted": false,
+  "license": {
+    "uri": "https://api.sketchfab.com/v3/licenses/bbfe3f7dbcdd4122b966b85b9786a989",
+    "label": "CC Attribution-NonCommercial",
+    "fullName": "Creative Commons Attribution-NonCommercial",
+    "requirements": "Author must be credited. No commercial use.",
+    "url": "http://creativecommons.org/licenses/by-nc/4.0/",
+    "slug": "by-nc"
+  },
+  "likeCount": 115,
+  "name": "Notre-Dame de Paris - Virgin Mary",
+  "publishedAt": "2019-04-17T18:47:03.739203",
+  "soundCount": 0,
+  "staffpickedAt": null,
+  "tags": [
+    {
+      "name": "paris",
+      "slug": "paris",
+      "uri": "https://api.sketchfab.com/v3/tags/paris"
+    },
+    {
+      "name": "cathedral",
+      "slug": "cathedral",
+      "uri": "https://api.sketchfab.com/v3/tags/cathedral"
+    },
+    {
+      "name": "statue",
+      "slug": "statue",
+      "uri": "https://api.sketchfab.com/v3/tags/statue"
+    },
+    {
+      "name": "Mary",
+      "slug": "mary",
+      "uri": "https://api.sketchfab.com/v3/tags/mary"
+    },
+    {
+      "name": "virgin",
+      "slug": "virgin",
+      "uri": "https://api.sketchfab.com/v3/tags/virgin"
+    },
+    {
+      "name": "notre-dame",
+      "slug": "notre-dame",
+      "uri": "https://api.sketchfab.com/v3/tags/notre-dame"
+    },
+    {
+      "name": "notredame",
+      "slug": "notredame",
+      "uri": "https://api.sketchfab.com/v3/tags/notredame"
+    },
+    {
+      "name": "noai",
+      "slug": "noai",
+      "uri": "https://api.sketchfab.com/v3/tags/noai"
+    }
+  ],
+  "thumbnails": {
+    "images": [
+      {
+        "uid": "ed0ea1020e6642b38e45566c0f9c6843",
+        "width": 1920,
+        "height": 1080,
+        "size": 213369,
+        "url": "https://media.sketchfab.com/models/b5bbdc379daa4ee19e3775bb179dbcc1/thumbnails/83cfef5023e44804a428a0568a540fde/83e3360ec07047718f49af529c4838b7.jpeg"
+      },
+      {
+        "uid": "1945ca8d726943eba4fbe831bbd2c439",
+        "width": 1024,
+        "height": 576,
+        "size": 59463,
+        "url": "https://media.sketchfab.com/models/b5bbdc379daa4ee19e3775bb179dbcc1/thumbnails/83cfef5023e44804a428a0568a540fde/fe73d81ee3a74b5fa4554d935329c0df.jpeg"
+      },
+      {
+        "uid": "41c19299e86a4857a61c0b6a776fbb6f",
+        "width": 720,
+        "height": 405,
+        "size": 33306,
+        "url": "https://media.sketchfab.com/models/b5bbdc379daa4ee19e3775bb179dbcc1/thumbnails/83cfef5023e44804a428a0568a540fde/c41e3963c94d480698bd302d89f0467a.jpeg"
+      },
+      {
+        "uid": "078c1703edab42ecab89bd4507bbaa85",
+        "width": 256,
+        "height": 144,
+        "size": 6359,
+        "url": "https://media.sketchfab.com/models/b5bbdc379daa4ee19e3775bb179dbcc1/thumbnails/83cfef5023e44804a428a0568a540fde/1c212f54b3904ad0bd8127e32cbfda81.jpeg"
+      },
+      {
+        "uid": "e99083632de2492ea0b2f003ca2ed204",
+        "width": 64,
+        "height": 36,
+        "size": 968,
+        "url": "https://media.sketchfab.com/models/b5bbdc379daa4ee19e3775bb179dbcc1/thumbnails/83cfef5023e44804a428a0568a540fde/80f1883abf494e45ae77c30cad675df6.jpeg"
+      }
+    ]
+  },
+  "uid": "b5bbdc379daa4ee19e3775bb179dbcc1",
+  "uri": "https://api.sketchfab.com/v3/models/b5bbdc379daa4ee19e3775bb179dbcc1",
+  "user": {
+    "uid": "0508b819c8644c079d4a4c2c8720f37c",
+    "username": "shadows44",
+    "displayName": "Benoît Rogez",
+    "account": "pro",
+    "profileUrl": "https://sketchfab.com/shadows44",
+    "avatar": {
+      "uid": "bac31db52b6b43a4ab3436fc526661dd",
+      "uri": "https://api.sketchfab.com/v3/avatars/bac31db52b6b43a4ab3436fc526661dd",
+      "images": [
+        {
+          "width": 100,
+          "height": 100,
+          "size": 2208,
+          "url": "https://media.sketchfab.com/avatars/bac31db52b6b43a4ab3436fc526661dd/2817d407d22c4767a30c227739cd92e4.jpeg"
+        },
+        {
+          "width": 90,
+          "height": 90,
+          "size": 1917,
+          "url": "https://media.sketchfab.com/avatars/bac31db52b6b43a4ab3436fc526661dd/8aaf8e58a9b647bb8d1039d397ea9b4a.jpeg"
+        },
+        {
+          "width": 48,
+          "height": 48,
+          "size": 828,
+          "url": "https://media.sketchfab.com/avatars/bac31db52b6b43a4ab3436fc526661dd/5b8947d934b544cc95754609a0c7cf8d.jpeg"
+        },
+        {
+          "width": 32,
+          "height": 32,
+          "size": 526,
+          "url": "https://media.sketchfab.com/avatars/bac31db52b6b43a4ab3436fc526661dd/a9aa9f9ea3ba406ebd121db37e27a4d9.jpeg"
+        }
+      ]
+    },
+    "uri": "https://api.sketchfab.com/v3/users/0508b819c8644c079d4a4c2c8720f37c"
+  },
+  "vertexCount": 507724,
+  "viewCount": 4806,
+  "viewerUrl": "https://sketchfab.com/3d-models/notre-dame-de-paris-virgin-mary-b5bbdc379daa4ee19e3775bb179dbcc1",
+  "isDownloadable": true,
+  "isProtected": false,
+  "description": "Detail from the Portal of the Virgin, Notre-Dame's facade, Paris, France.\nThe pictures were shot in 2012 or 2013, and I finally decided to process the photos following the recent events.\n\n3D scanned using Agisoft Metashape.",
+  "price": null,
+  "downloadCount": 1036,
+  "editorUrl": "https://sketchfab.com/models/b5bbdc379daa4ee19e3775bb179dbcc1/edit",
+  "status": {
+    "warning": {},
+    "processing": "SUCCEEDED"
+  },
+  "source": "website",
+  "hasCommentsDisabled": false,
+  "updatedAt": "2023-11-21T16:56:39.399277",
+  "pbrType": null,
+  "textureCount": 1,
+  "materialCount": 1
+}

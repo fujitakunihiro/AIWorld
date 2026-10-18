@@ -1,5 +1,6 @@
 #include "ParisPhotoArchitecture.h"
 #include "ParisPhotoFrontages.h"
+#include "ParisScannedStatue.h"
 #include "ParisDigitalTwin.h"
 #include "WorldProtocol.h"
 #include "Components/StaticMeshComponent.h"
@@ -66,15 +67,17 @@ void CreateParisPhotoArchitecture(AParisTwinScene* Scene){
     if(Origin.Num()!=2||FMath::Abs(Number(Data,TEXT("origin_elevation_ngf_m"))-Scene->GeoReference.OriginElevationNGF)>.001)return;
     // Verify the shared frame, never apply a second GIS/Cesium transform.
     if(Scene->GeoReference.ToUE(FVector2D(Origin[0]->AsNumber(),Origin[1]->AsNumber()),Scene->GeoReference.OriginElevationNGF).Size()>.1)return;
-    auto Scan=ScannedFacadeData(Data);TMap<FString,UMaterialInterface*> Underlays;UStaticMesh* ScanMesh=nullptr;
+    auto Scan=ScannedFacadeData(Data);TMap<FString,UMaterialInterface*> Underlays;UStaticMesh* ScanMesh=nullptr;UMaterialInterface* ScanSurface=nullptr;
     if(Scan){
         const FString Prefix=TEXT("/Game/ParisPhotoreal/NotreDameScan/");const FString Path=String(Scan,TEXT("asset"));
         if(Path.StartsWith(Prefix))ScanMesh=LoadObject<UStaticMesh>(nullptr,*Path);
+        const FString SurfacePath=String(Scan,TEXT("surface_material"));
+        if(SurfacePath.StartsWith(Prefix))ScanSurface=LoadObject<UMaterialInterface>(nullptr,*SurfacePath);
         for(const FString ID:{TEXT("stone"),TEXT("wood"),TEXT("glass"),TEXT("iron"),TEXT("sculpture"),TEXT("stained"),TEXT("body")}){
             const FString MaterialPath=String(Object(Scan,TEXT("underlays")),*ID);
             if(MaterialPath.StartsWith(Prefix))if(auto Material=LoadObject<UMaterialInterface>(nullptr,*MaterialPath))Underlays.Add(ID,Material);
         }
-        if(!ScanMesh||Underlays.Num()!=7){ScanMesh=nullptr;Underlays.Empty();UE_LOG(LogTemp,Warning,TEXT("Incomplete observed facade assets; keeping the complete authored fallback"));}
+        if(!ScanMesh||!ScanSurface||Underlays.Num()!=7){ScanMesh=nullptr;Underlays.Empty();UE_LOG(LogTemp,Warning,TEXT("Incomplete observed facade assets; keeping the complete authored fallback"));}
     }
     Scene->bPhotoScanReady=ScanMesh!=nullptr;
     if(ScanMesh)Scene->PhotoScanBodyMaterial=Underlays[TEXT("body")];
@@ -82,14 +85,17 @@ void CreateParisPhotoArchitecture(AParisTwinScene* Scene){
         auto Mesh=LoadObject<UStaticMesh>(nullptr,*Path);if(!Mesh){UE_LOG(LogTemp,Warning,TEXT("Missing authored facade asset %s"),*Path);continue;}
         auto Part=NewObject<UStaticMeshComponent>(Scene);Scene->AddInstanceComponent(Part);Part->SetupAttachment(Scene->GetRootComponent());Part->SetStaticMesh(Mesh);
         if(auto Material=Underlays.Find(String(J,TEXT("id"))))Part->SetMaterial(0,UMaterialInstanceDynamic::Create(*Material,Part));
+        if(String(J,TEXT("id"))==TEXT("virgin_fallback"))Part->ComponentTags.Add(TEXT("ParisVirginFallback"));
         Part->ComponentTags.Add(TEXT("ParisPhotoArchitecture"));Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);Part->SetCanEverAffectNavigation(false);Part->SetCullDistance(45000);Part->RegisterComponent();
     }
     if(ScanMesh){
         auto Part=NewObject<UStaticMeshComponent>(Scene);Scene->AddInstanceComponent(Part);Part->SetupAttachment(Scene->GetRootComponent());Part->SetStaticMesh(ScanMesh);
+        Part->SetMaterial(0,ScanSurface);
         // Coverage masks remain on the source body at distance. Keep the one
         // observed patch available there too; Nanite supplies its distant LOD.
         Part->ComponentTags.Add(TEXT("ParisScannedFacade"));Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);Part->SetCanEverAffectNavigation(false);Part->SetCullDistance(0);Part->RegisterComponent();
     }
+    CreateParisScannedStatue(Scene,Data);
     Scene->ApplyDetailQuality();
 }
 
@@ -104,10 +110,12 @@ void SyncParisPhotoArchitecture(AParisTwinScene* Scene){
         }
         if(Part->ComponentHasTag(TEXT("ParisScannedFacade")))Part->SetVisibility(ScanVisible);
     }
+    SyncParisScannedStatue(Scene,Detailed);
 }
 
 void AddParisPhotoDetailStats(const AParisTwinScene* Scene,const TSharedPtr<FJsonObject>& Report){
     AddParisFrontageStats(Scene,Report);
+    AddParisScannedStatueStats(Scene,Report);
     int32 Architecture=0,Trees=0,TreeCandidates=0,VisibleArchitecture=0,NaniteTrees=0,Lamps=0,LampParts=0,VisibleLamps=0,Ground=0,GroundVisible=0,GroundTriangles=0;int64 Triangles=0,TreeFallbackTriangles=0,LampTriangles=0;
     TArray<UStaticMeshComponent*> Parts;Scene->GetComponents(Parts);
     int32 ScanCount=0,ScanVisible=0,ScanNanite=0,ScanTriangles=0;

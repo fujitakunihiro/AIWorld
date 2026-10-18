@@ -1,0 +1,253 @@
+{
+  "format": "paris_v12_verified_artifacts_v2",
+  "native_binary_sha256": "3d086e3c86e5d3899f765cbc04d4d98333f0e8746aef0a5c1d5e9810601b38b1",
+  "cpp_rebuild_performed": true,
+  "architecture_revision": 12,
+  "architecture_manifest_sha256": "767f0ef0c5decfb3f07a180c3c152649c0578e1a3c824d83d3565c318fda64d5",
+  "scan_manifest_sha256": "cdf38fa29046a3c58b2038989f939e69e797e822349abbad2ed169646746bcf5",
+  "scan_geometry_sha256": "1befb61ece65a81971e872ec2ce0d75f5362ca36021a64decad378904dc190db",
+  "statue_manifest_sha256": "ce2ea36104cb52d687ed92ff7ac660ed6f760f4b884c2658a93749be3cecf86a",
+  "statue_geometry_sha256": "ffb9edabbdce5ac76e73a7987ac5ca2e8a3ac5f0ad5beaae16d17e23b271f592",
+  "statue_source_sha256": "73c16fb28067adc8480f8719192329b66ac8b84b1ceff8193d8a0245923a1b54",
+  "statue_license": "CC-BY-NC-4.0",
+  "original_geography_unchanged": {
+    "paris-digital-twin.json": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+    "paris-digital-twin-meshes.bin": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8"
+  },
+  "tests": {
+    "native-photo": {
+      "passed": 21,
+      "sha256": "3ef04a8a95b9a73fb57e1e9e0d43fc3db5f0e06dc4f720f885282795a171660f",
+      "names": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "CoveredTerrainDisplayAndCollision",
+        "FrontageGeometryAndFallback",
+        "LocalSocialInteraction",
+        "ObservedFacadeAndFallback",
+        "PhotoBridgeDeckHeight",
+        "PhotoDetailAssetsAndFallback",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "ScannedVirginAndFallback",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ]
+    },
+    "native-nc-off": {
+      "passed": 21,
+      "sha256": "bb5e90431034cbf0f6b69f7303b47e62fae47162b2ec48e0a58a130c9f6dd59c",
+      "names": [
+        "BusinessesAndTerraces",
+        "CafeSeatingLifecycle",
+        "CafeVisitLifecycle",
+        "CoordinateAgreement",
+        "CoveredTerrainDisplayAndCollision",
+        "FrontageGeometryAndFallback",
+        "LocalSocialInteraction",
+        "ObservedFacadeAndFallback",
+        "PhotoBridgeDeckHeight",
+        "PhotoDetailAssetsAndFallback",
+        "PhotoEnvironmentAndCameraSwitching",
+        "PhotographicSurfaceBindings",
+        "RenderCacheParityAndModes",
+        "RuntimePacketSafety",
+        "ScannedVirginAndFallback",
+        "SceneCollisionAndDebug",
+        "StreetInstancesAndQuality",
+        "SurfaceMaterialsAndDetails",
+        "TrafficAndMappedProps",
+        "WalkingAndPedestrians",
+        "WalkingGraphRouting"
+      ]
+    },
+    "sculpture": {
+      "passed": 5,
+      "sha256": "770b6c6ce3e0f7d7b155ae036f0d83bc61dd331e0593c066ce9a3fd72187cbb3"
+    },
+    "architecture": {
+      "passed": 5,
+      "sha256": "5f4318002ca91a700e30cf122227f089912d629064c784bf9f7233a48b35fb84"
+    },
+    "scan": {
+      "passed": 4,
+      "sha256": "34aaac08d47ce0e59671d7f4ca80ed91e69ebe95f66da43652f533df6c94c0b3"
+    }
+  },
+  "adopted_assets": {
+    "/Game/Materials/M_ParisSculptedStone": {
+      "file": "unreal/AIWorld/Content/Materials/M_ParisSculptedStone.uasset",
+      "sha256": "d668a2ee3e247c2ce979f78881ab291a78cc28f40e0415375fe097f0418e4a02"
+    },
+    "/Game/Materials/M_ParisStainedGlass": {
+      "file": "unreal/AIWorld/Content/Materials/M_ParisStainedGlass.uasset",
+      "sha256": "b5ed497500aa559a03a7b2a56a1bd89d6b5d7ddeff72309f89c0d1fef54be175"
+    },
+    "/Game/Materials/M_ParisWood": {
+      "file": "unreal/AIWorld/Content/Materials/M_ParisWood.uasset",
+      "sha256": "183b2773a66a4896271de1db5e029704da396ba0f8c9ab3a63866c3c32be28e1"
+    },
+    "/Game/Materials/M_Paris_Glass": {
+      "file": "unreal/AIWorld/Content/Materials/M_Paris_Glass.uasset",
+      "sha256": "4ab8cb1459448c444dbe2de88b076fd5c73ba04c24e9824fd44a6a54d1c2a7a0"
+    },
+    "/Game/Materials/M_Paris_Iron": {
+      "file": "unreal/AIWorld/Content/Materials/M_Paris_Iron.uasset",
+      "sha256": "eab58034438ac036d7906eb89cbc83109cdd26407c944557cfbc8a3909e9c2a0"
+    },
+    "/Game/Materials/M_Paris_Limestone": {
+      "file": "unreal/AIWorld/Content/Materials/M_Paris_Limestone.uasset",
+      "sha256": "2ab28838ac9fd1df820aab40621798dc117b1832b15d557be2dfcb9a860214c3"
+    },
+    "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_glass_530741ae45c6": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/Architecture/SM_NotreDameWest_glass_530741ae45c6.uasset",
+      "sha256": "bfa0fc8d4649482603fa6369dbf0deae5d76a1272c1cd743c0d0cee7e5d3e492"
+    },
+    "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_iron_1cf6223772c8": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/Architecture/SM_NotreDameWest_iron_1cf6223772c8.uasset",
+      "sha256": "6f295e49cea4c3f2e3eac082a08cc8388aa54c37fa32ca60265b4ba1242c3ccc"
+    },
+    "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_sculpture_9e82f624416a": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/Architecture/SM_NotreDameWest_sculpture_9e82f624416a.uasset",
+      "sha256": "2a883a6bd23fcd3d5177fdbb7070ed5eeb36ed5d810c004aab747fdf4556c707"
+    },
+    "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stained_2c72c16fd951": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/Architecture/SM_NotreDameWest_stained_2c72c16fd951.uasset",
+      "sha256": "311d1711e5405add5509efb0eb469087c06703c34e97e6e83f368882a4d1edec"
+    },
+    "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_868d9efdf437": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_868d9efdf437.uasset",
+      "sha256": "6c365efb3c03b9ee6191a523fb9eef73759635933cd9eae711cbecee557fab01"
+    },
+    "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_virgin_fallback_d3ab2e587b93": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/Architecture/SM_NotreDameWest_virgin_fallback_d3ab2e587b93.uasset",
+      "sha256": "20022a27315019d5dfec0a03258d03f5adfe2b56665e96602d4ee6e5abe3eb9e"
+    },
+    "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_2f35b4e77822": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/Architecture/SM_NotreDameWest_wood_2f35b4e77822.uasset",
+      "sha256": "7dfd53b95e6c13cf6a92d98d6b3f44d0dbf5ea434bb1c643cc519d24bb8797fc"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Surface_54f8ba926372.M_NDScan_Surface_54f8ba926372": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Surface_54f8ba926372.uasset",
+      "sha256": "7bd758997ff0082e93339b2f348a66872556378134957e85e2602aae8f83d93b"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_body_e28e1d23db2c": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_body_e28e1d23db2c.uasset",
+      "sha256": "eab957c3a6e484553579e67f22867e8a27b6962d8cd51fd908ab73930ca6fc85"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_glass_2caaafaf57ee": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_glass_2caaafaf57ee.uasset",
+      "sha256": "d1e7622ff9cd285b3b6e16b86811e0ddbb59646a8b0783d6e811b9d2128e39f1"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_iron_306fadd25919": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_iron_306fadd25919.uasset",
+      "sha256": "8f25226a61154492f5b89462ad4fe1662384ba9e352d8fd8d98e5921f5bddeac"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_sculpture_a486b21746c4": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_sculpture_a486b21746c4.uasset",
+      "sha256": "a061fd5fdfb1757f256a44f10a3b581d297f32072c28801d84b8ab6cacfbe4fa"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stained_f830d97278c3": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stained_f830d97278c3.uasset",
+      "sha256": "5cb92ed23d5d45d014bb36bb8178eee0aae8d6a564d39f210baf7af338c8fafd"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stone_7ebe0c1a9df1": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_stone_7ebe0c1a9df1.uasset",
+      "sha256": "de4b27f9b50cf635532052c7c91dd64c7255c719d55c6b629cf1471c0eefeff3"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_wood_8f8dc7cab5f3": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/M_NDScan_Underlay_wood_8f8dc7cab5f3.uasset",
+      "sha256": "a76c705ab1fd45853c6dd8d182d85892042abdeacc897d713f3510b6a026d85e"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/SM_NotreDameScan_1befb61ece65_6de6ffef": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/SM_NotreDameScan_1befb61ece65_6de6ffef.uasset",
+      "sha256": "aed84d65e2150f4cb35fb0f5f2026e22718e98e27c5168f1f6dc9b97c516c26d"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/T_NDScan_colour_e28d737e75": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/T_NDScan_colour_e28d737e75.uasset",
+      "sha256": "00776faee533bea807f18da3ee36a69da8f61c59864aa0d867421e9af5d15e8b"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/T_NDScan_coverage_e843d298e6": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/T_NDScan_coverage_e843d298e6.uasset",
+      "sha256": "67340683c2d84fceaf7d712a4a5092732238ea897c9172dc5e7c52fabf5e3600"
+    },
+    "/Game/ParisPhotoreal/NotreDameScan/T_NDScan_normal_4689d504c8": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameScan/T_NDScan_normal_4689d504c8.uasset",
+      "sha256": "e6166b94f8650315c8acf4ebb042022b0b90a56050b0bcc95c823bb2786c8216"
+    },
+    "/Game/ParisPhotoreal/NotreDameStatues/M_VirginMary_0eee7ad1649e": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameStatues/M_VirginMary_0eee7ad1649e.uasset",
+      "sha256": "18d69e83614a6b453fee021c5f94b01af30625feb9c0c786c01df73906c14bd1"
+    },
+    "/Game/ParisPhotoreal/NotreDameStatues/SM_VirginMary_ffb9edabbdce_e6e6e859": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameStatues/SM_VirginMary_ffb9edabbdce_e6e6e859.uasset",
+      "sha256": "dde7c26896f7113f126c1593e13950f1e050a2136a63753131c85a71c910f448"
+    },
+    "/Game/ParisPhotoreal/NotreDameStatues/T_VirginMary_ff68235f6b93": {
+      "file": "unreal/AIWorld/Content/ParisPhotoreal/NotreDameStatues/T_VirginMary_ff68235f6b93.uasset",
+      "sha256": "5417731fc4d1cd57fac98fab616de3dbc6383ed1285e5a03bd33160c221ec1d6"
+    }
+  },
+  "renders": [
+    {
+      "image": "docs/screenshots/paris-v12-virgin-high.png",
+      "sha256": "0ca68eea064edd07d98fcc3f44dfb77004bbe2592070363a4c1f8a8bbdcbef29",
+      "width": 1920,
+      "height": 1080,
+      "report": "docs/paris-v12-virgin-high-performance.json",
+      "report_sha256": "1652d5ebd0eef9d0232cfa028a21bb073d4006fcb7cf4ac6492296f33e9cff6d",
+      "fps": 19.23523771484189,
+      "p95_ms": 59.40429866313934
+    },
+    {
+      "image": "docs/screenshots/paris-v12-virgin-fallback-high.png",
+      "sha256": "524e2e998041470879b2031e297ca60ff61d8a1c4896297b29c98361a8497364",
+      "width": 1920,
+      "height": 1080,
+      "report": "docs/paris-v12-virgin-fallback-high-performance.json",
+      "report_sha256": "3227b72a793058c295287fdb425e2bab56785711b3c5111b33e221f51751725b",
+      "fps": 19.15583794728768,
+      "p95_ms": 59.26100164651871
+    },
+    {
+      "image": "docs/screenshots/paris-v12-front-high.png",
+      "sha256": "48f859c90f9f40d474f9e0090450b27082bc73866960fd40c7477fc9afbd567c",
+      "width": 1280,
+      "height": 720,
+      "report": "docs/paris-v12-front-high-performance.json",
+      "report_sha256": "6b3e1e6ef0bade675b242da7325a04662274684df36bae6edac392318d4ea2ec",
+      "fps": 37.59697433572961,
+      "p95_ms": 30.948199331760406
+    }
+  ],
+  "backup": {
+    "backup": "D:\\work\\develop\\21_マインクラフト風AI街\\backups\\paris-v12-baseline-20261017-080805.zip",
+    "sha256": "e60df3d74efebfed5939027b305d3f7db58defef26322a27018acdee47b4dd64",
+    "bytes": 315324333,
+    "files": 238,
+    "crc_verified": true
+  },
+  "limitations": [
+    "Only the left Virgin is an actual optional NC historical photo scan; other large figures are inferred",
+    "Statue texture is 1024px and retains photographed lighting; roughness and registration are estimated",
+    "Full cathedral accuracy and entrance-depth joins remain unfinished",
+    "Measurements are on the local integrated GPU, no current-phone verification"
+  ],
+  "repaired_failure": "Initial batch completed architecture/facade but NC asset save failed from absent physical directory. Repaired sculpture bake succeeded separately; both logs retained.",
+  "interactive_preview": {
+    "process_id": 40316,
+    "responding": true,
+    "view": "VirginDetail",
+    "quality": "High",
+    "log": "docs/paris-v12-interactive-launch.log",
+    "post_launch_geography_and_native_hashes_unchanged": true
+  }
+}
