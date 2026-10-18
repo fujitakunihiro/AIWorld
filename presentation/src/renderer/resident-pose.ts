@@ -22,8 +22,6 @@ export function residentMood(r: Resident): 'calm' | 'happy' | 'tired' | 'worried
   if (r.action === 'socializing' || r.speech) return 'happy';
   return 'calm';
 }
-// Pixel size, rather than population or randomness, determines animation detail.
-export function animationInterval(pixels: number, selected = false) { return selected || pixels >= 28 ? 0 : pixels >= 12 ? .1 : .25; }
 // Only presentation state is derived here. The action, inventory, and task are read-only.
 // time is a per-resident animation clock; the renderer freezes it while paused.
 export function residentPose(r: Resident, time: number, reduced: boolean, resource?: Resource): ResidentPose {

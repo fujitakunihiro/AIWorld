@@ -2,6 +2,8 @@
 
 2026-10-12。Three.js r180のプリミティブから独自のモデルを制作。外部アセット、有料API、新規依存パッケージは使用していない。住民モデルの刷新は次のPhase 3で行う。
 
+> **アーカイブ:** 旧ブラウザー版の実装記録です。現在のゲーム画面はUE版です。ブラウザーUIと5173番ポートは削除し、UEで使う共有モデル生成コードだけを presentation/src/renderer に移しました。
+
 ## 実装した見た目
 
 - 樹木：丸い樹冠の広葉樹と、重なる円錐の針葉樹。既存の幹と葉の配置を読んで同じ場所に表示。木材採集地と再生周期は従来どおり。
@@ -76,13 +78,13 @@ Windowsの実GPU（AMD Radeon Graphics、ANGLE / Direct3D11）を使用したCod
 
 | ファイル | 内容 |
 | --- | --- |
-| `frontend/src/renderer/model-plan.ts` | 非破壊の樹木・装飾・建物・橋の表示計画 |
-| `frontend/src/renderer/model-kit.ts` | 独自プリミティブモデルと材質別ジオメトリ結合 |
-| `frontend/src/renderer/world-models.ts` | インスタンス描画、村の状態との同期、距離・密度・GPU資源管理 |
-| `frontend/src/renderer/mesh-worker.ts` | 元の地形と描画用コピーのメッシュ生成 |
-| `frontend/src/renderer/world-renderer.ts` | 旧/新メッシュ、モデル、編集モードの切り替え |
-| `frontend/src/renderer/village-renderer.ts` | 旧ボクセルの畑・採集地を比較表示用に維持 |
-| `frontend/src/renderer/graphics.ts`, `frontend/src/ui/graphics-ui.ts` | 密度と距離の品質設定・保存 |
+| `presentation/src/renderer/model-plan.ts` | 非破壊の樹木・装飾・建物・橋の表示計画 |
+| `presentation/src/renderer/model-kit.ts` | 独自プリミティブモデルと材質別ジオメトリ結合 |
+| `frontend/src/renderer/world-models.ts（旧Web専用・削除済み）` | インスタンス描画、村の状態との同期、距離・密度・GPU資源管理 |
+| `frontend/src/renderer/mesh-worker.ts（旧Web専用・削除済み）` | 元の地形と描画用コピーのメッシュ生成 |
+| `frontend/src/renderer/world-renderer.ts（旧Web専用・削除済み）` | 旧/新メッシュ、モデル、編集モードの切り替え |
+| `frontend/src/renderer/village-renderer.ts（旧Web専用・削除済み）` | 旧ボクセルの畑・採集地を比較表示用に維持 |
+| `frontend/src/renderer/graphics.ts（旧Web専用・削除済み）`, `frontend/src/ui/graphics-ui.ts` | 密度と距離の品質設定・保存 |
 | `frontend/src/main.ts`, `frontend/index.html` | 村の状態の接続、設定の操作 |
 | `tests/models.test.ts` | モデル表示と既存データの整合性のテスト |
 | `README.md`, `docs/graphics-phase2.md`, `docs/graphics-phase2-performance.json`, `docs/screenshots/models-*.png` | 操作、測定、比較画面 |

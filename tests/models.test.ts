@@ -5,10 +5,8 @@ import { Block, generateWorld, getBlock, index } from '../shared/world';
 import { Simulation } from '../backend/src/simulation/engine';
 import { buildingBlocks } from '../backend/src/buildings/development';
 import type { Hut } from '../shared/village';
-import { buildingVoxels, planModels, presentationWorld, bridgeEdges } from '../frontend/src/renderer/model-plan';
-import { ModelKit } from '../frontend/src/renderer/model-kit';
-import { WorldModels } from '../frontend/src/renderer/world-models';
-import { QUALITY_PROFILES } from '../frontend/src/renderer/graphics';
+import { buildingVoxels, planModels, presentationWorld, bridgeEdges } from '../presentation/src/renderer/model-plan';
+import { ModelKit } from '../presentation/src/renderer/model-kit';
 
 test('model planning is deterministic and preserves every saved terrain byte and village field', () => {
   const data = generateWorld(73129), simulation = new Simulation(data), before = data.slice(), village = JSON.stringify(simulation.state);
@@ -78,51 +76,4 @@ test('baked tile models keep the doorway walkable and construction progress hide
   const ray = new THREE.Raycaster(new THREE.Vector3(1.5, 1.7, 6), new THREE.Vector3(0, 0, -1));
   const hit = ray.intersectObject(complete, true)[0]; assert.ok(hit && hit.point.z < 3, 'no new door blocks the original entrance');
   for (const g of [planned, early, complete]) kit.release(g); kit.dispose();
-});
-
-test('night windows and indoor roof cutaway are presentation only and recover when following ends', () => {
-  const data = generateWorld(73129), simulation = new Simulation(data), scene = new THREE.Scene(), models = new WorldModels(scene);
-  const h = simulation.state.huts[0]; h.status = 'complete'; h.progress = h.total;
-  for (const e of buildingBlocks(h)) data[index(e.x, e.y, e.z)] = e.block;
-  simulation.state.residents[0].home = h.id;
-  const before = data.slice(), state = JSON.stringify(simulation.state);
-  models.world(data); models.update(simulation.state); models.refresh();
-  const settings = { style: 'diorama' as const, quality: 'high' as const, shadows: true, ao: true, distance: 'standard' as const, preview: 'world' as const, grass: 'lush' as const };
-  models.configure(settings, QUALITY_PROFILES.high);
-  const building = models.root.children.find(o => o.userData.modelId === h.id)!;
-  const roofs = building.children.filter(o => o.userData.roof); assert.ok(roofs.length > 0);
-  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 720, 1);
-  const pane = building.children.find(o => o instanceof THREE.Mesh && (o.material as THREE.MeshStandardMaterial).color.getHexString() === '628e94') as THREE.Mesh;
-  assert.ok(pane); const material = pane.material as THREE.MeshStandardMaterial; assert.equal(material.emissiveIntensity, 0);
-  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 1320, 1, false, new THREE.Vector3(h.x + 2, h.y + 1, h.z + 2));
-  assert.ok(material.emissiveIntensity > 1); assert.ok(roofs.every(o => !o.visible));
-  assert.ok(roofs.every(o => !models.occluders().includes(o as THREE.Mesh)), 'hidden roofs cannot block selecting an indoor resident');
-  const smoke = models.root.children.find(o => o instanceof THREE.InstancedMesh && o.userData.skipAO) as THREE.InstancedMesh;
-  assert.equal(smoke.count, 0, 'cutaway also hides the chimney smoke');
-  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 1320, 1);
-  assert.ok(roofs.every(o => o.visible)); assert.equal(smoke.count, 3);
-  assert.ok(roofs.every(o => models.occluders().includes(o as THREE.Mesh)));
-  const matrix = new THREE.Matrix4(); smoke.getMatrixAt(0, matrix);
-  models.frame(new THREE.Vector3(h.x, h.y, h.z), 16, 80, 1320, 1, true);
-  const paused = new THREE.Matrix4(); smoke.getMatrixAt(0, paused); assert.deepEqual(paused, matrix);
-  models.configure(settings, QUALITY_PROFILES.low); models.frame(new THREE.Vector3(), 16, 80, 1320, 1); assert.equal(smoke.visible, false);
-  assert.deepEqual(data, before); assert.equal(JSON.stringify(simulation.state), state);
-});
-
-test('style/quality changes and repeated state updates reuse instance geometry and restore model visibility', () => {
-  const data = generateWorld(73129), simulation = new Simulation(data), scene = new THREE.Scene(), models = new WorldModels(scene);
-  models.world(data); models.update(simulation.state); assert.ok(models.refresh());
-  const settings = { style: 'diorama' as const, quality: 'high' as const, shadows: true, ao: true, distance: 'standard' as const, preview: 'day' as const, grass: 'lush' as const };
-  models.configure(settings, QUALITY_PROFILES.high);
-  let highInstances = 0, highMeshes = 0;
-  models.root.traverse(o => { if (o instanceof THREE.InstancedMesh) { highInstances += o.count; highMeshes++; assert.ok(o.boundingSphere); } });
-  assert.ok(highInstances > highMeshes * 3);
-  models.update(structuredClone(simulation.state)); assert.equal(models.refresh(), null);
-  models.configure({ ...settings, style: 'classic' }, QUALITY_PROFILES.high); assert.equal(models.root.visible, false);
-  models.configure(settings, QUALITY_PROFILES.low); assert.equal(models.root.visible, true);
-  let lowInstances = 0; models.root.traverse(o => { if (o instanceof THREE.InstancedMesh) lowInstances += o.count; });
-  assert.ok(lowInstances < highInstances);
-  models.setEditing(true); assert.equal(models.root.visible, false); models.setEditing(false); assert.equal(models.root.visible, true);
-  const saved = JSON.parse(JSON.stringify(simulation.state)); models.world(data.slice()); models.update(saved);
-  assert.deepEqual(models.refresh()?.hidden, planModels(data, simulation.state).hidden);
 });

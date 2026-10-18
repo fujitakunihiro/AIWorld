@@ -28,7 +28,12 @@ bool FParisPhotoTest::RunTest(const FString&){
             TestTrue(TEXT("Texture is wired into the material output"),Chain.ContainsByPredicate([&](auto Expression){return Expression&&Expression->GetReferencedTexture()==Texture;}));
 #endif
             TestEqual(TEXT("Correct colour space per role"),bool(Texture->SRGB),Role==TEXT("Albedo"));
-            if(Role==TEXT("Normal")){TestEqual(TEXT("Normal compression"),Texture->CompressionSettings,TC_Normalmap);TestFalse(TEXT("DirectX normals are not inverted twice"),bool(Texture->bFlipGreenChannel));}
+            if(Role==TEXT("Normal")){
+                TestEqual(TEXT("Normal compression"),Texture->CompressionSettings,TC_Normalmap);
+#if WITH_EDITORONLY_DATA
+                TestFalse(TEXT("DirectX normals are not inverted twice"),bool(Texture->bFlipGreenChannel));
+#endif
+            }
             if(Role==TEXT("Orm"))TestEqual(TEXT("ORM retains independent linear channels"),Texture->CompressionSettings,TC_Masks);
 #if WITH_EDITORONLY_DATA
             TestEqual(TEXT("Actual 2K source width"),Texture->Source.GetSizeX(),int64(2048));

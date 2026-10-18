@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Hut } from '../../../shared/village';
-import { lightingAt } from './graphics';
+import { lightingAt } from './lighting';
 
 export interface ModelPart { geometry: THREE.BufferGeometry; color: string; matrix: THREE.Matrix4; stage: number }
 // Original geometry built from primitives; shared resources belong to this kit.

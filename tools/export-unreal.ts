@@ -1,12 +1,12 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import * as THREE from 'three';
-import { ModelKit } from '../frontend/src/renderer/model-kit';
-import { eiffelModel } from '../frontend/src/renderer/eiffel-model';
-import { frenchCityModels } from '../frontend/src/renderer/french-city-model';
-import { parisLandmarks } from '../frontend/src/renderer/paris-landmarks-model';
-import { ResidentModelLibrary } from '../frontend/src/renderer/resident-model';
-import { residentPose } from '../frontend/src/renderer/resident-pose';
+import { ModelKit } from '../presentation/src/renderer/model-kit';
+import { eiffelModel } from '../presentation/src/renderer/eiffel-model';
+import { frenchCityModels } from '../presentation/src/renderer/french-city-model';
+import { parisLandmarks } from '../presentation/src/renderer/paris-landmarks-model';
+import { ResidentModelLibrary } from '../presentation/src/renderer/resident-model';
+import { residentPose } from '../presentation/src/renderer/resident-pose';
 import type { Hut, Resident } from '../shared/village';
 
 // The authored meshes are exported, not reimplemented: geometry/colors stay identical.

@@ -44,7 +44,7 @@ public:
     void BeginLook();void EndLook();
     FVector2D GetRawLookDelta() const;
     bool IsLooking() const { return bLooking; }
-    void ToggleFootprints();void ToggleIssues();void ToggleHelp();
+    void ToggleFootprints();void ToggleIssues();void ToggleHelp();void ToggleHUD();
     void ToggleStreetDetails();void CycleDetailQuality();void ToggleSurfaces();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
     bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();void ToggleTraffic();void InspectTraffic();void InspectBusiness();
@@ -134,4 +134,5 @@ public:
     virtual void DrawHUD() override;
     bool HandleClick(const FVector2D& Position);
     bool bHelp=false;
+    bool bVisible=true;
 };

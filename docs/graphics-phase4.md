@@ -2,6 +2,8 @@
 
 2026-10-12。元のグラフィック計画はPhase 3までのため、ユーザーの指定により「表情・建物の演出・画面の見やすさ・描画負荷をまとめて改善」をPhase 4として実装。
 
+> **アーカイブ:** 旧ブラウザー版の実装記録です。現在のゲーム画面はUE版です。ブラウザーUIと5173番ポートは削除し、UEで使う共有モデル生成コードだけを presentation/src/renderer に移しました。
+
 ## 住民の表情
 
 目と口を既存の頭メッシュ内で変形し、描画呼び出しを追加せず表情を表示する。容姿の共有・職業の衣装・行動アニメーションを継続利用する。
@@ -70,10 +72,10 @@ Windows PC / Codex内蔵Chromium / AMD Radeon Graphics（ANGLE / D3D11）/ DPR 1
 
 | ファイル | 内容 |
 | --- | --- |
-| `frontend/src/renderer/resident-pose.ts`, `resident-model.ts` | 実状態からの表情、頭メッシュの変形 |
-| `frontend/src/renderer/village-renderer.ts` | 表示サイズに応じた更新と作業先のキャッシュ |
-| `frontend/src/renderer/model-kit.ts`, `world-models.ts` | 窓の光、屋根の分離・省略、煙、選択時の遮蔽 |
-| `frontend/src/renderer/world-renderer.ts`, `frontend/src/camera/controls.ts` | 住民追跡、解除、影更新、表示モデルでの住民選択 |
+| `presentation/src/renderer/resident-pose.ts`, `resident-model.ts` | 実状態からの表情、頭メッシュの変形 |
+| `frontend/src/renderer/village-renderer.ts（旧Web専用・削除済み）` | 表示サイズに応じた更新と作業先のキャッシュ |
+| `presentation/src/renderer/model-kit.ts`, `旧Web版world-models.ts（削除済み）` | 窓の光、屋根の分離・省略、煙、選択時の遮蔽 |
+| `frontend/src/renderer/world-renderer.ts（旧Web専用・削除済み）`, `frontend/src/camera/controls.ts` | 住民追跡、解除、影更新、表示モデルでの住民選択 |
 | `frontend/src/main.ts`, `frontend/index.html`, `frontend/src/style.css` | 小さな追跡カードと既存操作の接続 |
 | `tests/resident-rendering.test.ts`, `tests/models.test.ts` | 状態・一時停止・データ非破壊・表示復帰の検証 |
 | `README.md`, `docs/graphics-phase4*`, `docs/screenshots/polish-*` | 操作、測定結果、表示記録 |

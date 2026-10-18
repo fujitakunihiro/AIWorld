@@ -142,6 +142,7 @@ void AParisTwinController::SetupInputComponent() {
     InputComponent->BindKey(EKeys::C,IE_Pressed,this,&AParisTwinController::InspectTraffic);
     InputComponent->BindKey(EKeys::B,IE_Pressed,this,&AParisTwinController::InspectBusiness);
     InputComponent->BindKey(EKeys::H,IE_Pressed,this,&AParisTwinController::ToggleHelp);
+    InputComponent->BindKey(EKeys::F10,IE_Pressed,this,&AParisTwinController::ToggleHUD);
     InputComponent->BindKey(EKeys::N,IE_Pressed,this,&AParisTwinController::ToggleNavigation);
     InputComponent->BindKey(EKeys::M,IE_Pressed,this,&AParisTwinController::ToggleSurfaces);
     InputComponent->BindKey(EKeys::One,IE_Pressed,this,&AParisTwinController::LandmarkOne);
@@ -172,6 +173,7 @@ void AParisTwinController::ToggleIssues(){if(auto S=Twin(GetWorld()))S->ToggleIs
 void AParisTwinController::ToggleStreetDetails(){if(auto S=Twin(GetWorld()))S->ToggleStreetDetails();}
 void AParisTwinController::CycleDetailQuality(){if(auto S=Twin(GetWorld()))S->CycleDetailQuality();}
 void AParisTwinController::ToggleHelp(){if(auto H=Cast<AParisTwinHUD>(GetHUD()))H->bHelp=!H->bHelp;}
+void AParisTwinController::ToggleHUD(){if(auto H=Cast<AParisTwinHUD>(GetHUD()))H->bVisible=!H->bVisible;}
 void AParisTwinController::LandmarkOne(){ReturnToFree();if(auto S=Twin(GetWorld()))S->FocusLandmark(0);}
 void AParisTwinController::LandmarkTwo(){ReturnToFree();if(auto S=Twin(GetWorld()))S->FocusLandmark(1);}
 void AParisTwinController::LandmarkThree(){ReturnToFree();if(auto S=Twin(GetWorld()))S->FocusLandmark(2);}
@@ -516,24 +518,24 @@ void AParisTwinScene::Tick(float Delta) {
 }
 struct FParisButton{int32 Action;FString Label;FVector2D Position,Size;};
 static TArray<FParisButton> ParisButtons(float Width,bool Help=false) {
-    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("Help [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Walk [F8]"),TEXT("View [V]"),TEXT("People [P]"),TEXT("Traffic [T]"),TEXT("Cafes [B]"),TEXT("Surfaces [M]")};
-    TArray<int32> Order={0,1,10,11,12,8,9,4,5,6,7};if(Help){Order.Add(2);Order.Add(3);Order.Add(13);Order.Add(14);Order.Add(15);}
+    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("Help [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Walk [F8]"),TEXT("View [V]"),TEXT("People [P]"),TEXT("Traffic [T]"),TEXT("Cafes [B]"),TEXT("Surfaces [M]"),TEXT("HUD [F10]")};
+    TArray<int32> Order={0,1,10,11,12,8,9,4,5,6,7,16};if(Help){Order.Add(2);Order.Add(3);Order.Add(13);Order.Add(14);Order.Add(15);}
     TArray<FParisButton> Result;float X=16,Y=36;
     for(int32 I:Order){const float W=Labels[I].Len()*7.f+18;if(X+W>Width-16&&X>16){X=16;Y+=34;}Result.Add({I,Labels[I],FVector2D(X,Y),FVector2D(W,28)});X+=W+5;}return Result;
 }
 bool AParisTwinHUD::HandleClick(const FVector2D& P) {
-    if(!Canvas)return false;auto C=Cast<AParisTwinController>(PlayerOwner);if(!C)return false;
-    for(const auto& B:ParisButtons(Canvas->SizeX,bHelp))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;case 7:C->ToggleHelp();break;case 8:C->ToggleStreetDetails();break;case 9:C->CycleDetailQuality();break;case 10:C->Walk();break;case 11:C->ToggleWalkView();break;case 12:C->TogglePeople();break;case 13:C->ToggleTraffic();break;case 15:C->ToggleSurfaces();break;default:C->InspectBusiness();break;}return true;}
+    if(!bVisible||!Canvas)return false;auto C=Cast<AParisTwinController>(PlayerOwner);if(!C)return false;
+    for(const auto& B:ParisButtons(Canvas->SizeX,bHelp))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;case 7:C->ToggleHelp();break;case 8:C->ToggleStreetDetails();break;case 9:C->CycleDetailQuality();break;case 10:C->Walk();break;case 11:C->ToggleWalkView();break;case 12:C->TogglePeople();break;case 13:C->ToggleTraffic();break;case 15:C->ToggleSurfaces();break;case 16:C->ToggleHUD();break;default:C->InspectBusiness();break;}return true;}
     return P.Y<ParisButtons(Canvas->SizeX,bHelp).Last().Position.Y+38;
 }
 void AParisTwinHUD::DrawHUD() {
-    Super::DrawHUD();auto S=Twin(GetWorld());if(!S||!Canvas)return;
+    Super::DrawHUD();if(!bVisible)return;auto S=Twin(GetWorld());if(!S||!Canvas)return;
     auto Text=[this](const FString& Message,float X,float Y,float Scale=1.f){Canvas->SetDrawColor(FColor::White);Canvas->DrawText(GEngine->GetSmallFont(),Message,X,Y,Scale,Scale,FFontRenderInfo());};
     const auto Buttons=ParisButtons(Canvas->SizeX,bHelp);const float Bottom=Buttons.Last().Position.Y+38;
     DrawRect(FLinearColor(.015f,.02f,.03f,.88f),8,8,Canvas->SizeX-16,Bottom-8);
     Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | %d buildings | %d storefronts + %d terraces | %d people + %d cars (simulated) | %s"),S->BuildingCount,S->BusinessCount,S->TerraceCount,S->Crowd?S->Crowd->People().Num():0,S->Traffic?S->Traffic->Vehicles().Num():0,S->DetailQuality==0?TEXT("LOW"):S->DetailQuality==1?TEXT("MEDIUM"):TEXT("HIGH")),16,15,1.05f);
     for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp)||(B.Action==8&&S->bStreetDetails)||(B.Action==10&&Cast<AParisWalker>(PlayerOwner->GetPawn()))||(B.Action==12&&S->bPeople)||(B.Action==13&&S->bTraffic)||(B.Action==15&&S->bDetailedSurfaces&&S->DetailQuality>0);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
-    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(720.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("WASD: move | F8: walk with gravity | V: first/third person | Shift: run | F2: overview"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("F1: building accuracy | F4/F5: issues/footprints | F9: shot | P/T: people/cars | C: car view | B: cafes | M: surfaces | N: paths | 4/5/6: photo cameras"),16,Bottom+84);}
+    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(720.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("WASD: move | F8: walk with gravity | V: first/third person | Shift: run | F2: overview"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("F1: building accuracy | F4/F5: issues/footprints | F9: shot | F10: hide HUD | P/T: people/cars | C: car view | B: cafes | M: surfaces | N: paths | 4/5/6: photo cameras"),16,Bottom+84);}
     if(S->bIssues){DrawRect(FLinearColor(.07f,.025f,.01f,.88f),8,Bottom+(bHelp?126:4),FMath::Min(720.f,float(Canvas->SizeX-16)),42);Text(S->IssueSummary,16,Bottom+(bHelp?134:12));Text(TEXT("Red: source overlap | Orange: separate road paths (review; not automatically errors)"),16,Bottom+(bHelp?152:30));}
     const FString Inspector=S->InspectionText();if(!Inspector.IsEmpty()){TArray<FString> Lines;Inspector.ParseIntoArrayLines(Lines);const float Height=Lines.Num()*19+16,Y=Canvas->SizeY-50-Height;DrawRect(FLinearColor(.015f,.02f,.03f,.9f),8,Y,Canvas->SizeX-16,Height);for(int32 I=0;I<Lines.Num();I++)Text(Lines[I],16,Y+8+I*19);}
     DrawRect(FLinearColor(.015f,.02f,.03f,.85f),8,Canvas->SizeY-48,Canvas->SizeX-16,44);

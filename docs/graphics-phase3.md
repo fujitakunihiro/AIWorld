@@ -2,6 +2,8 @@
 
 2026-10-12。独自のデフォルメ3D住民と、既存の行動に連動するアニメーションを実装。Three.jsのプリミティブから制作し、外部ゲームのモデル・テクスチャ、有料API、外部LLMは使用していない。
 
+> **アーカイブ:** 旧ブラウザー版の実装記録です。現在のゲーム画面はUE版です。ブラウザーUIと5173番ポートは削除し、UEで使う共有モデル生成コードだけを presentation/src/renderer に移しました。
+
 ## キャラクター
 
 丸い大きな頭、髪、目と頬、襟付きの服、手、ズボン、ブーツでミニチュア住民を表現。元の服の色を引き継ぎ、住民IDから肌・髪の色と動きの位相を決定する。読み込みのたびに容姿をランダムに変えない。
@@ -77,10 +79,10 @@ Windows上のCodex内蔵Chromium、AMD Radeon Graphics（ANGLE / Direct3D11）�
 
 | ファイル | 内容 |
 | --- | --- |
-| `frontend/src/renderer/resident-model.ts` | 独自モデル、衣装、共有材質、道具・荷物、ジオメトリ管理 |
-| `frontend/src/renderer/resident-pose.ts` | 実際の職業・作業・所持品から道具と姿勢を計算 |
-| `frontend/src/renderer/village-renderer.ts` | 旧/新モデル、職業更新、時計、向き、クリック、既存UIの接続 |
-| `frontend/src/renderer/world-renderer.ts` | 住民を近くで見るカメラの調整 |
+| `presentation/src/renderer/resident-model.ts` | 独自モデル、衣装、共有材質、道具・荷物、ジオメトリ管理 |
+| `presentation/src/renderer/resident-pose.ts` | 実際の職業・作業・所持品から道具と姿勢を計算 |
+| `frontend/src/renderer/village-renderer.ts（旧Web専用・削除済み）` | 旧/新モデル、職業更新、時計、向き、クリック、既存UIの接続 |
+| `frontend/src/renderer/world-renderer.ts（旧Web専用・削除済み）` | 住民を近くで見るカメラの調整 |
 | `frontend/index.html` | 描画スタイルの案内 |
 | `tests/resident-rendering.test.ts` | モデル・アニメーション・データ整合性のテスト |
 | `README.md`, `docs/graphics-phase3.md`, `docs/graphics-phase3-performance.json`, `docs/screenshots/residents-*.png` | 操作、性能、比較画像 |

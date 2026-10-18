@@ -4,8 +4,8 @@ import * as THREE from 'three';
 import { Simulation } from '../backend/src/simulation/engine';
 import { generateWorld } from '../shared/world';
 import type { Action, Resident } from '../shared/village';
-import { animationInterval, residentMood, residentPose, residentRole, workTool } from '../frontend/src/renderer/resident-pose';
-import { ResidentModelLibrary } from '../frontend/src/renderer/resident-model';
+import { residentMood, residentPose, residentRole, workTool } from '../presentation/src/renderer/resident-pose';
+import { ResidentModelLibrary } from '../presentation/src/renderer/resident-model';
 const resident = () => new Simulation(generateWorld(73129)).state.residents[0];
 
 test('profession and actual tasks choose different tools without changing the resident or its AI', () => {
@@ -80,9 +80,4 @@ test('expressions explain real needs and conversation, blinking stays bounded an
   const weights = mesh.morphTargetInfluences!.slice();
   library.pose(rig, residentPose({ ...r, hunger: 90 }, 2, false), 0); assert.deepEqual(mesh.morphTargetInfluences, weights);
   assert.deepEqual(r, before); library.release(rig); library.dispose();
-});
-
-test('nearby and selected residents retain smooth animation while small distant residents use fewer updates', () => {
-  assert.equal(animationInterval(60), 0); assert.equal(animationInterval(20), .1); assert.equal(animationInterval(6), .25);
-  assert.equal(animationInterval(6, true), 0);
 });

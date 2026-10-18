@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import { planModels, buildingVoxels } from '../../../frontend/src/renderer/model-plan';
+import { planModels, buildingVoxels } from '../../../presentation/src/renderer/model-plan';
 import { CHUNK, HEIGHT, SEA, SIZE, index } from '../../../shared/world';
 import type { VillageState } from '../../../shared/village';
 

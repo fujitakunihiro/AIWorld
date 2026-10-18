@@ -2,6 +2,8 @@
 
 2026-10-12。ワールドを128×128×32から256×256×32へ拡張。面積は4倍、ワールド配列は2,097,152バイト。既存の島々を残し、東側に「暁の新大陸」、南に島、北東に小島を追加した。新大陸には森林・川・山・海岸と、段差をなだらかにつなぐ平らな塔の広場がある。
 
+> **アーカイブ:** 旧ブラウザー版の実装記録です。現在のゲーム画面はUE版です。ブラウザーUIと5173番ポートは削除し、UEで使う共有モデル生成コードだけを presentation/src/renderer に移しました。
+
 ## エッフェル塔と移動
 
 塔の基点は `(196, 9, 122)`、高さは22ブロックのミニチュア表現。4本の脚、格子梁、4つの入口アーチ、3段の展望階・手すり・先端、舗装した十字の通路、庭園、ベンチを独自のThree.jsプリミティブから制作した。実寸の建築図面の再現ではない。夜には展望階の小さな灯りと縁が暖かく光る。
@@ -78,9 +80,9 @@
 | `backend/src/database/store.ts` | バージョン6への移行、拡張イベント、塔の編集保護 |
 | `backend/src/buildings/hut.ts`, `bridge.ts`, `backend/src/agents/autonomy.ts` | 広場の予約、新大陸への橋候補、目的地判定 |
 | `backend/src/simulation/engine.ts` | 新規ワールドの歴史に塔と大陸を記録 |
-| `frontend/src/renderer/eiffel-model.ts` | 独自の格子塔・アーチ・展望階・庭園・ベンチ |
-| `frontend/src/renderer/model-plan.ts`, `world-models.ts`, `model-kit.ts` | 塔の表示とボクセルの対応、夜の光、遠景の装飾負荷 |
-| `frontend/src/renderer/world-renderer.ts`, `frontend/src/camera/controls.ts` | 大陸の近景、広い全景、描画距離・霧 |
+| `presentation/src/renderer/eiffel-model.ts` | 独自の格子塔・アーチ・展望階・庭園・ベンチ |
+| `presentation/src/renderer/model-plan.ts`, `world-models.ts`, `model-kit.ts` | 塔の表示とボクセルの対応、夜の光、遠景の装飾負荷 |
+| `frontend/src/renderer/world-renderer.ts（旧Web専用・削除済み）`, `frontend/src/camera/controls.ts` | 大陸の近景、広い全景、描画距離・霧 |
 | `frontend/src/ui/life-ui.ts`, `frontend/src/main.ts`, `frontend/index.html`, `frontend/src/style.css` | 地図の座標と塔の印、移動ボタン、世界サイズの案内 |
 | `tests/continent.test.ts`, `tests/world.test.ts`, `tests/store.test.ts` | 拡張、旧地形一致、移行・保存、モデルと経路 |
 | `.gitignore`, `.dockerignore`, `README.md`, `docs/graphics-phase5*`, `docs/screenshots/continent-*` | バックアップ除外、操作、検証と表示記録 |

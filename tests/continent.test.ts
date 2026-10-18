@@ -10,11 +10,11 @@ import { WorldStore } from '../backend/src/database/store';
 import { Simulation } from '../backend/src/simulation/engine';
 import { Navigation } from '../backend/src/agents/navigation';
 import { siteClear } from '../backend/src/buildings/hut';
-import { eiffelModel } from '../frontend/src/renderer/eiffel-model';
-import { ModelKit } from '../frontend/src/renderer/model-kit';
-import { frenchCityModels } from '../frontend/src/renderer/french-city-model';
-import { parisLandmarks } from '../frontend/src/renderer/paris-landmarks-model';
-import { planModels } from '../frontend/src/renderer/model-plan';
+import { eiffelModel } from '../presentation/src/renderer/eiffel-model';
+import { ModelKit } from '../presentation/src/renderer/model-kit';
+import { frenchCityModels } from '../presentation/src/renderer/french-city-model';
+import { parisLandmarks } from '../presentation/src/renderer/paris-landmarks-model';
+import { planModels } from '../presentation/src/renderer/model-plan';
 
 test('the Paris map has walkable landmarks and permanent crossings over the Seine', () => {
   const data = generateWorld(73129), nav = new Navigation(data);
