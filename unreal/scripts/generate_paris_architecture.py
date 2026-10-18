@@ -263,7 +263,7 @@ def generate():
         belfry_voids=dict(tower_centres=[-15.25,15.25],front_centres=[-17.95,-12.55,12.55,17.95],side_centres=[4.8,10.2],half_width=2.3,bottom=48,spring=58,top=64.7,depth_min=-2,depth_max=16),
         inferred_details=dict(upper_side_bays=side_bays,flying_buttresses=flying_buttresses,neighbour_windows=neighbour_windows,side_cornice_sections=side_cornices,flying_rib_section='rectangular masonry; inferred'),
         door_provenance='Original inferred plank joinery, flat forged scrollwork and rivets; reference-informed medieval hinge style, not a traced or measured penture pattern. CC0 photographic wood is an appearance proxy, not cathedral timber.',
-        near_sculpture_provenance='Original inferred continuous stone figures: analytic facial relief, draped robes, swept sleeves and carved hands with geometric vertex normals. No surveyed shape, actual saint identity or historical iconography claim; existing anchors and GIS collision retained.',
+        near_sculpture_provenance='Original inferred continuous stone figures: analytic facial relief, draped robes, swept sleeves and carved hands with geometric vertex normals. No surveyed shape, actual saint identity or historical iconography claim; jamb spacing, width and depth corrected to avoid occlusion; central anchors and GIS collision retained.',
         anchor_wgs84=list(geo.inverse.transform(*front)),origin_wgs84=config['origin_wgs84'],origin_elevation_ngf_m=terrain.origin_ngf,
         objects=objects)
 

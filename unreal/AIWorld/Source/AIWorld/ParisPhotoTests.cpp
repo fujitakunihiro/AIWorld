@@ -10,6 +10,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Engine/StaticMeshActor.h"
+#include "ProceduralMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/SkyLight.h"
 #include "Components/SkyLightComponent.h"
@@ -38,6 +39,15 @@ bool FParisPhotoWait::Update(){
             Test->TestNotNull(TEXT("The fill has an actual loaded HDR cubemap"),Fill->GetLightComponent()->Cubemap.Get());
         }
         Test->TestTrue(TEXT("Daylight uses explicit physical camera exposure"),Stats->GetBoolField(TEXT("physical_camera_exposure")));
+        Test->TestEqual(TEXT("Environment starts at clear daytime"),Scene->EnvironmentLabel(),FString(TEXT("Day | Clear")));
+        Scene->CycleTimeOfDay();Test->TestEqual(TEXT("Time control selects sunset"),Scene->EnvironmentLabel(),FString(TEXT("Sunset | Clear")));
+        Scene->CycleTimeOfDay();Test->TestEqual(TEXT("Time control selects night"),Scene->EnvironmentLabel(),FString(TEXT("Night | Clear")));
+        Scene->ToggleWeather();Scene->Tick(.09f);Test->TestEqual(TEXT("Rain can overlay the current time preset"),Scene->EnvironmentLabel(),FString(TEXT("Night | Rain")));
+        bool RainGeometry=false;TArray<UProceduralMeshComponent*> MeshComponents;Scene->GetComponents<UProceduralMeshComponent>(MeshComponents);
+        for(auto Mesh:MeshComponents)if(Mesh->GetFName()==FName(TEXT("ParisRainStreaks")))RainGeometry=Mesh->GetProcMeshSection(0)!=nullptr&&Mesh->GetProcMeshSection(0)->ProcIndexBuffer.Num()>0;
+        Test->TestTrue(TEXT("Rain creates a lightweight visible streak mesh"),RainGeometry);
+        Scene->ToggleWeather();Test->TestEqual(TEXT("Weather toggle restores clear conditions"),Scene->EnvironmentLabel(),FString(TEXT("Night | Clear")));
+        Scene->CycleTimeOfDay();Test->TestEqual(TEXT("Time presets cycle back to daytime"),Scene->EnvironmentLabel(),FString(TEXT("Day | Clear")));
         auto PC=Cast<AParisTwinController>(World->GetFirstPlayerController());if(!Test->TestNotNull(TEXT("Photo camera controller"),PC)){Started=0;return true;}
         for(auto Name:{TEXT("Camera_NotreDame_Front"),TEXT("Camera_NotreDame_Riverside"),TEXT("Camera_Paris_Street")}){
             Test->TestTrue(TEXT("Named GIS-anchored camera activates"),ActivateParisPhotoCamera(Scene,FName(Name)));

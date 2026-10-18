@@ -73,6 +73,38 @@ class ArchitectureStudyTests(unittest.TestCase):
             self.assertFalse(any(p.covers(Point(x,55)) for p in wall),'A stone triangle seals the open belfry')
         self.assertTrue(any(p.covers(Point(15.25,55)) for p in wall),'The central structural pier is missing')
 
+    def test_jamb_faces_are_visible_in_front_of_supporting_columns(self):
+        import numpy as np
+        from notredame_west import PORTALS,JAMB_SPACING_M
+        data=self.data;frame=data['local_frame'];surfaces={}
+        for kind in ['stone','sculpture']:
+            mesh=next(m for m in data['objects'] if m['id']==kind)
+            p=(np.array(mesh['positions_cm'])-frame['front_cm'])/100
+            local=np.column_stack((p@frame['across'],p@frame['depth'],p[:,2]))
+            surfaces[kind]=local[np.array(mesh['indices']).reshape(-1,3)]
+        def first_depth(triangles,x,z):
+            t=triangles[(triangles[:,:,0].min(1)<=x)&(triangles[:,:,0].max(1)>=x)&
+                        (triangles[:,:,2].min(1)<=z)&(triangles[:,:,2].max(1)>=z)]
+            a=t[:,0][:,[0,2]];u=t[:,1][:,[0,2]]-a;v=t[:,2][:,[0,2]]-a
+            det=u[:,0]*v[:,1]-u[:,1]*v[:,0];valid=abs(det)>1e-10
+            a,u,v,det,t=a[valid],u[valid],v[valid],det[valid],t[valid]
+            q=np.array([x,z])-a
+            s=(q[:,0]*v[:,1]-q[:,1]*v[:,0])/det;r=(u[:,0]*q[:,1]-u[:,1]*q[:,0])/det
+            hit=(s>=-1e-7)&(r>=-1e-7)&(s+r<=1+1e-7)
+            depths=(t[:,0,1]+s*(t[:,1,1]-t[:,0,1])+r*(t[:,2,1]-t[:,0,1]))[hit]
+            return float(depths.min()) if len(depths) else float('inf')
+        for centre,width in PORTALS:
+            for side in [-1,1]:
+                for k in range(3):
+                    x=centre+side*(width/2+.38+k*JAMB_SPACING_M)
+                    # Cast through the nose/eyes of each of the eighteen full
+                    # jamb figures. Previously nine faces were inside columns.
+                    z=.62+.915*3.63
+                    figure=first_depth(surfaces['sculpture'],x,z)
+                    stone=first_depth(surfaces['stone'],x,z)
+                    self.assertTrue(np.isfinite(figure),f'Jamb face is missing at {x:.2f}')
+                    self.assertLess(figure+.10,stone,f'Stone column hides the face at {x:.2f}')
+
     def test_western_holes_and_recessed_doors_are_real_geometry(self):
         import numpy as np
         from shapely.geometry import Point,Polygon

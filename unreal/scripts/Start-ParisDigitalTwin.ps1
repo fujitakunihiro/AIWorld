@@ -54,13 +54,13 @@ if($Photoreal){
     $architecturePath=Join-Path (Split-Path $project) 'Content\Data\paris-photo-architecture.json'
     if(Test-Path -LiteralPath $architecturePath){
         $architecture=Get-Content -LiteralPath $architecturePath -Raw | ConvertFrom-Json
-        if($architecture.detail_revision -ne 12){$ready=$false}
+        if($architecture.detail_revision -ne 14){$ready=$false}
         foreach($part in $architecture.objects){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$part.asset.Substring(6)+'.uasset')))){$ready=$false}}
     }
     $scanPath=Join-Path (Split-Path $project) 'Content\Data\paris-notredame-scan.json'
     if(-not $NoScannedFacade -and (Test-Path -LiteralPath $scanPath)){
         $scan=Get-Content -LiteralPath $scanPath -Raw | ConvertFrom-Json
-        if($scan.surface.revision -ne 10){$ready=$false}
+        if($scan.surface.revision -ne 14){$ready=$false}
         $scanAssets=@($scan.asset,$scan.surface_material)+@($scan.underlays.PSObject.Properties | ForEach-Object {$_.Value})
         foreach($texture in $scan.textures.PSObject.Properties){$scanAssets+=('/Game/ParisPhotoreal/NotreDameScan/T_NDScan_'+$texture.Name+'_'+$texture.Value.sha256.Substring(0,10))}
         foreach($asset in $scanAssets){if(-not $asset -or -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+($asset -split '\.')[0].Substring(6)+'.uasset')))){$ready=$false}}

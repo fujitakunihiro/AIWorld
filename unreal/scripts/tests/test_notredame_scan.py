@@ -72,7 +72,7 @@ class ScannedFacadeTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256((ROOT/self.source['binary']).read_bytes()).hexdigest(),digest)
         self.assertEqual(hashlib.sha256(scene.read_bytes()).hexdigest(),before)
 
-    def test_atlas_preserves_portal_resolution_and_matches_world_mapping(self):
+    def test_atlas_preserves_source_resolution_and_matches_world_mapping(self):
         surface=self.source['surface'];atlas=surface['atlas']
         self.assertLessEqual(max(atlas['width'],atlas['height']),4096)
         lower=atlas['tiles'][0]
@@ -89,17 +89,35 @@ class ScannedFacadeTests(unittest.TestCase):
             self.assertTrue(np.allclose(self.uv[i],atlas_uv(float(x[i]),float(z[i]),surface),atol=2e-5))
         self.assertTrue(np.allclose(atlas_uv(0,-1e-8,surface),atlas_uv(0,0,surface),atol=1e-7))
 
-    def test_lateral_portals_are_added_and_unsupported_upper_surfaces_are_not_adopted(self):
+    def test_portals_keep_3d_jambs_and_supported_central_relief(self):
         frame=self.source['local_frame'];d=(self.p-np.array(frame['front_cm']))/100
         local=np.column_stack((d@frame['across'],d@frame['depth'],d[:,2]))
         centre=local[self.indices].mean(1)
-        for side in [-1,1]:
-            self.assertGreater(int(((centre[:,0]*side>9)&(centre[:,0]*side<20)&(centre[:,2]<16)).sum()),1000)
-            self.assertEqual(int(((centre[:,0]*side>9)&(centre[:,0]*side<20)&(centre[:,2]<5.19)).sum()),0,
-                'Unreliable lower-door observations must not replace the complete authored doors and lintels')
+        self.assertGreaterEqual(float(local[self.indices,2].min()),5.2-1e-5,
+            'No scan triangle may occlude the authored doors or freestanding jamb figures')
+        low=local[self.indices,2]<17.
+        self.assertTrue((abs(local[self.indices,0])[low]<6.8+1e-5).all(),
+            'Unsupported side portals must not return as masked height fields')
+        for x in [-21.,-14.,-8.,8.,14.,21.]:
+            for z in [0.,4.9,5.2,8.,13.,16.9]:
+                self.assertFalse(allowed_region(np.array([x]),np.array([z]),dict(id='lower'))[0])
+        raw=(FOLDER/'facade-coverage.png').read_bytes();w,h=struct.unpack_from('>II',raw,16);start=8;parts=[]
+        while start<len(raw):
+            n=struct.unpack_from('>I',raw,start)[0]
+            if raw[start+4:start+8]==b'IDAT':parts.append(raw[start+8:start+8+n])
+            start+=n+12
+        mask=np.frombuffer(zlib.decompress(b''.join(parts)),dtype=np.uint8).reshape(h,w+1)[:,1:]
+        self.assertFalse(mask[h-1-round(5.2/.0125):].any(),
+            'Coverage must restore every underlying door/jamb below 5.2m, not just omit scan vertices')
+        columns=np.abs(np.arange(w)*.0125-21.75)>=6.8
+        self.assertFalse(mask[h-1-round(17/.0125):,columns].any(),
+            'Coverage must preserve complete side portals as well as their removed scan triangles')
+        self.assertGreater(int(((centre[:,2]<16.2)&(centre[:,2]>5.2)&(abs(centre[:,0])<6.8)).sum()),10000)
+        self.assertGreater(int(((centre[:,2]>17)&(centre[:,2]<22.2)).sum()),30000)
+        self.assertGreater(int(((centre[:,2]>22.2)&(abs(centre[:,0])<6)).sum()),10000)
         self.assertLessEqual(float(centre[:,2].max()),45.001)
         self.assertEqual(self.source['surface']['rejected_tiles'][0]['id'],'upper')
-        self.assertGreater(self.source['surface']['mesh_coverage_fraction'],.35)
+        self.assertGreater(self.source['surface']['mesh_coverage_fraction'],.15)
 
 
 class BoundedCompletionTests(unittest.TestCase):

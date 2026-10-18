@@ -2,7 +2,7 @@
   "format": "paris_original_architecture_study_v1",
   "source_id": "osm/way/201611261",
   "source_url": "https://www.openstreetmap.org/way/201611261",
-  "detail_revision": 12,
+  "detail_revision": 14,
   "west_openings": {
     "portals": [
       {
@@ -205,7 +205,7 @@
     "flying_rib_section": "rectangular masonry; inferred"
   },
   "door_provenance": "Original inferred plank joinery, flat forged scrollwork and rivets; reference-informed medieval hinge style, not a traced or measured penture pattern. CC0 photographic wood is an appearance proxy, not cathedral timber.",
-  "near_sculpture_provenance": "Original inferred continuous stone figures: analytic facial relief, draped robes, swept sleeves and carved hands with geometric vertex normals. No surveyed shape, actual saint identity or historical iconography claim; existing anchors and GIS collision retained.",
+  "near_sculpture_provenance": "Original inferred continuous stone figures: analytic facial relief, draped robes, swept sleeves and carved hands with geometric vertex normals. No surveyed shape, actual saint identity or historical iconography claim; jamb spacing, width and depth corrected to avoid occlusion; central anchors and GIS collision retained.",
   "anchor_wgs84": [
     2.349068261910986,
     48.853249922128704
@@ -218,8 +218,8 @@
   "objects": [
     {
       "id": "stone",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_868d9efdf437",
-      "geometry_sha256": "868d9efdf437b41304b59933bd0a487559c50f32ff7dce4d1d2ae639a7c7cdb4",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_stone_371b66c2baee",
+      "geometry_sha256": "371b66c2baee62c6da9875069416fe768491bb0bd92c49d17358020b9c694293",
       "triangles": 468915,
       "fallback_triangles": 468915
     },
@@ -246,8 +246,8 @@
     },
     {
       "id": "sculpture",
-      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_sculpture_9e82f624416a",
-      "geometry_sha256": "9e82f624416ad285d15c68f936b9ac5ce539344aca45be67cce6391c43ec20f2",
+      "asset": "/Game/ParisPhotoreal/Architecture/SM_NotreDameWest_sculpture_1d8f4fba3696",
+      "geometry_sha256": "1d8f4fba3696b221a4b065a6ae39166d066151bb383c390ee69722ce4f90393a",
       "triangles": 1129360,
       "fallback_triangles": 1129358
     },

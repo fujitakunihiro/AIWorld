@@ -29,7 +29,10 @@
 #include "Engine/TextureCube.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/SkyLight.h"
+#include "Engine/ExponentialHeightFog.h"
+#include "Engine/StaticMeshActor.h"
 #include "Components/SkyAtmosphereComponent.h"
+#include "Components/ExponentialHeightFogComponent.h"
 #include "Engine/PostProcessVolume.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
@@ -145,6 +148,8 @@ void AParisTwinController::SetupInputComponent() {
     InputComponent->BindKey(EKeys::F10,IE_Pressed,this,&AParisTwinController::ToggleHUD);
     InputComponent->BindKey(EKeys::N,IE_Pressed,this,&AParisTwinController::ToggleNavigation);
     InputComponent->BindKey(EKeys::M,IE_Pressed,this,&AParisTwinController::ToggleSurfaces);
+    InputComponent->BindKey(EKeys::G,IE_Pressed,this,&AParisTwinController::CycleTimeOfDay);
+    InputComponent->BindKey(EKeys::R,IE_Pressed,this,&AParisTwinController::ToggleWeather);
     InputComponent->BindKey(EKeys::One,IE_Pressed,this,&AParisTwinController::LandmarkOne);
     InputComponent->BindKey(EKeys::Two,IE_Pressed,this,&AParisTwinController::LandmarkTwo);
     InputComponent->BindKey(EKeys::Three,IE_Pressed,this,&AParisTwinController::LandmarkThree);
@@ -172,6 +177,8 @@ void AParisTwinController::ToggleFootprints(){if(auto S=Twin(GetWorld()))S->Togg
 void AParisTwinController::ToggleIssues(){if(auto S=Twin(GetWorld()))S->ToggleIssues();}
 void AParisTwinController::ToggleStreetDetails(){if(auto S=Twin(GetWorld()))S->ToggleStreetDetails();}
 void AParisTwinController::CycleDetailQuality(){if(auto S=Twin(GetWorld()))S->CycleDetailQuality();}
+void AParisTwinController::CycleTimeOfDay(){if(auto S=Twin(GetWorld()))S->CycleTimeOfDay();}
+void AParisTwinController::ToggleWeather(){if(auto S=Twin(GetWorld()))S->ToggleWeather();}
 void AParisTwinController::ToggleHelp(){if(auto H=Cast<AParisTwinHUD>(GetHUD()))H->bHelp=!H->bHelp;}
 void AParisTwinController::ToggleHUD(){if(auto H=Cast<AParisTwinHUD>(GetHUD()))H->bVisible=!H->bVisible;}
 void AParisTwinController::LandmarkOne(){ReturnToFree();if(auto S=Twin(GetWorld()))S->FocusLandmark(0);}
@@ -378,6 +385,7 @@ void AParisTwinScene::BeginPlay() {
     bStreetDetails=!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoStreetDetails"));ApplyDetailQuality();
     if(auto J=Object(Data,TEXT("footprint_mesh"))){FParisMeshArrays A;FString Error;if(!ReadParisMeshArrays(J,GeometryBlob,A,Error)){Status=TEXT("輪郭メッシュが不正です: ")+Error;return;}FootprintMesh=NewObject<UProceduralMeshComponent>(this);AddInstanceComponent(FootprintMesh);FootprintMesh->SetupAttachment(RootComponent);FootprintMesh->RegisterComponent();FootprintMesh->CreateMeshSection_LinearColor(0,A.Positions,A.Indices,A.Normals,{},A.Colors,{},false);FootprintMesh->SetMaterial(0,VertexMaterial);FootprintMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);FootprintMesh->SetCastShadow(false);FootprintMesh->SetVisibility(false);}
     ConfigureParisPhotoEnvironment(GetWorld(),GeoReference.OriginElevationNGF);
+    ApplyEnvironmentPreset();
     CreateParisPhotoCameras(this,Data,GeometryBlob);
     CreateParisPhotoArchitecture(this);
     CreateParisPhotoFrontages(this,Data);
@@ -431,6 +439,57 @@ TSharedPtr<FJsonObject> AParisTwinScene::StreetInstanceSource(UPrimitiveComponen
 }
 void AParisTwinScene::ToggleStreetDetails(){bStreetDetails=!bStreetDetails;ApplyDetailQuality();}
 void AParisTwinScene::CycleDetailQuality(){DetailQuality=(DetailQuality+1)%3;ApplyDetailQuality();}
+FString AParisTwinScene::EnvironmentLabel() const {
+    const TCHAR* Time=TimeOfDayPreset==0?TEXT("Day"):TimeOfDayPreset==1?TEXT("Sunset"):TEXT("Night");
+    return FString::Printf(TEXT("%s | %s"),Time,bRainyWeather?TEXT("Rain"):TEXT("Clear"));
+}
+void AParisTwinScene::CycleTimeOfDay(){TimeOfDayPreset=(TimeOfDayPreset+1)%3;ApplyEnvironmentPreset();}
+void AParisTwinScene::ToggleWeather(){bRainyWeather=!bRainyWeather;RainElapsed=0;ApplyEnvironmentPreset();}
+void AParisTwinScene::ApplyEnvironmentPreset(){
+    const bool Sunset=TimeOfDayPreset==1,Night=TimeOfDayPreset==2,Wet=bRainyWeather;
+    const FRotator Rotation=Night?FRotator(-2.f,-35.f,0):Sunset?FRotator(-8.f,-35.f,0):FRotator(-43.f,-35.f,0);
+    const FLinearColor SunColor=Night?FLinearColor(.42f,.52f,.72f):Sunset?FLinearColor(1.f,.48f,.25f):FLinearColor(1.f,.93f,.82f);
+    const FLinearColor FogColor=Night?FLinearColor(.035f,.055f,.10f):Sunset?FLinearColor(.72f,.36f,.20f):Wet?FLinearColor(.36f,.43f,.49f):FLinearColor(.50f,.62f,.74f);
+    for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
+        It->SetActorRotation(Rotation);auto L=Cast<UDirectionalLightComponent>(It->GetLightComponent());
+        if(L){L->SetUseTemperature(true);L->SetTemperature(Night?8500.f:Sunset?3200.f:Wet?6500.f:5600.f);L->SetLightColor(SunColor);L->SetIntensity(Night?.25f:Sunset?16000.f:Wet?30000.f:50000.f);}
+    }
+    for(TActorIterator<ASkyLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
+        auto L=It->GetLightComponent();if(L){const bool Cube=L->SourceType==SLS_SpecifiedCubemap;L->SetIntensity(Night?(Cube?170.f:.35f):Sunset?(Cube?6500.f:1.25f):Wet?(Cube?7200.f:1.5f):(Cube?12000.f:2.f));if(L->SourceType==SLS_CapturedScene)L->RecaptureSky();}
+    }
+    for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
+        auto F=It->GetComponent();if(F){F->SetFogDensity(Night?.0011f:Sunset?.0009f:Wet?.0018f:.0007f);F->SetFogInscatteringColor(FogColor);F->SetFogMaxOpacity(Night?.32f:Wet?.24f:.14f);}
+    }
+    for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
+        auto& P=It->Settings;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=Night?2.5f:Sunset?.6f:.5f;P.bOverride_CameraISO=true;P.CameraISO=Night?800.f:100.f;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=Night?30.f:125.f;
+    }
+    for(TActorIterator<AStaticMeshActor> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotographicSky")))It->SetActorHiddenInGame(Night||Sunset||Wet);
+    if(RainMesh)RainMesh->SetVisibility(Wet);
+}
+void AParisTwinScene::UpdateRainMesh(){
+    if(!bRainyWeather)return;
+    auto PC=GetWorld()->GetFirstPlayerController();if(!PC)return;
+    FVector CameraLocation;FRotator CameraRotation;PC->GetPlayerViewPoint(CameraLocation,CameraRotation);
+    if(!RainMesh){
+        RainMesh=NewObject<UProceduralMeshComponent>(this,TEXT("ParisRainStreaks"));AddInstanceComponent(RainMesh);RainMesh->SetupAttachment(RootComponent);RainMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);RainMesh->SetCastShadow(false);RainMesh->SetCanEverAffectNavigation(false);RainMesh->RegisterComponent();
+        if(auto M=LoadObject<UMaterialInterface>(nullptr,TEXT("/Engine/EngineDebugMaterials/M_SimpleUnlitTranslucent.M_SimpleUnlitTranslucent"))){auto MID=UMaterialInstanceDynamic::Create(M,RainMesh);MID->SetVectorParameterValue(TEXT("Color"),FLinearColor(.67f,.79f,.88f,.55f));MID->SetScalarParameterValue(TEXT("Opacity"),.42f);RainMesh->SetMaterial(0,MID);}
+    }
+    RainMesh->SetWorldLocationAndRotation(CameraLocation,FRotator(0,CameraRotation.Yaw,0));
+    constexpr int32 Drops=520;constexpr float Radius=2600.f,Height=3600.f,Length=105.f,Width=.9f;
+    TArray<FVector> Vertices;TArray<int32> Indices;TArray<FVector> Normals;TArray<FVector2D> UV;TArray<FLinearColor> Colors;TArray<FProcMeshTangent> Tangents;
+    Vertices.Reserve(Drops*4);Indices.Reserve(Drops*6);Normals.Reserve(Drops*4);UV.Reserve(Drops*4);Colors.Reserve(Drops*4);Tangents.Reserve(Drops*4);
+    FRandomStream Random(61723);const FVector2D Drift(RainElapsed*190.f,RainElapsed*65.f);
+    for(int32 I=0;I<Drops;I++){
+        const float X=Random.FRandRange(-Radius,Radius)+Drift.X;const float Y=Random.FRandRange(-Radius,Radius)+Drift.Y;
+        const float Z=FMath::Fmod(Random.FRandRange(0.f,Height)-RainElapsed*5200.f+Height*4.f,Height)-500.f;
+        const FVector A(X,Y,Z),B=A+FVector(22.f,0.f,-Length),Side(Width*.5f,0,0);const int32 V=Vertices.Num();
+        Vertices.Append({A-Side,B-Side,B+Side,A+Side});Indices.Append({V,V+1,V+2,V,V+2,V+3});
+        for(int32 J=0;J<4;J++){Normals.Add(FVector(0,-1,0));Colors.Add(FLinearColor(.72f,.83f,.9f,.58f));Tangents.Add(FProcMeshTangent(1,0,0));}
+        UV.Append({FVector2D(0,0),FVector2D(0,1),FVector2D(1,1),FVector2D(1,0)});
+    }
+    if(!bRainMeshCreated){RainMesh->CreateMeshSection_LinearColor(0,Vertices,Indices,Normals,UV,Colors,{},false);bRainMeshCreated=true;}
+    else RainMesh->UpdateMeshSection_LinearColor(0,Vertices,Normals,UV,Colors,Tangents,false);
+}
 void AParisTwinScene::TogglePeople(){bPeople=!bPeople;ApplyDetailQuality();}
 void AParisTwinScene::ToggleTraffic(){bTraffic=!bTraffic;ApplyDetailQuality();}
 void AParisTwinScene::ApplyDetailQuality(){
@@ -490,6 +549,7 @@ void AParisTwinScene::ToggleLevels() {
 void AParisTwinScene::Capture(){FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir()/TEXT("Screenshots/paris-twin.png"),true,false);}
 void AParisTwinScene::Tick(float Delta) {
     Super::Tick(Delta);if(!bReady)return;
+    if(bRainyWeather){RainElapsed+=Delta;RainUpdateAccumulator+=Delta;if(RainUpdateAccumulator>=.08){RainUpdateAccumulator=0;UpdateRainMesh();}}
 #if WITH_EDITOR
     // First-run Nanite, SDF, mesh-card, texture and shader preparation is not
     // steady rendering. Restart the CLI warmup until all registered queues
@@ -518,14 +578,14 @@ void AParisTwinScene::Tick(float Delta) {
 }
 struct FParisButton{int32 Action;FString Label;FVector2D Position,Size;};
 static TArray<FParisButton> ParisButtons(float Width,bool Help=false) {
-    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("Help [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Walk [F8]"),TEXT("View [V]"),TEXT("People [P]"),TEXT("Traffic [T]"),TEXT("Cafes [B]"),TEXT("Surfaces [M]"),TEXT("HUD [F10]")};
-    TArray<int32> Order={0,1,10,11,12,8,9,4,5,6,7,16};if(Help){Order.Add(2);Order.Add(3);Order.Add(13);Order.Add(14);Order.Add(15);}
+    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("Help [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Walk [F8]"),TEXT("View [V]"),TEXT("People [P]"),TEXT("Traffic [T]"),TEXT("Cafes [B]"),TEXT("Surfaces [M]"),TEXT("HUD [F10]"),TEXT("Time [G]"),TEXT("Weather [R]")};
+    TArray<int32> Order={0,1,10,11,12,8,9,17,18,4,5,6,7,16};if(Help){Order.Add(2);Order.Add(3);Order.Add(13);Order.Add(14);Order.Add(15);}
     TArray<FParisButton> Result;float X=16,Y=36;
     for(int32 I:Order){const float W=Labels[I].Len()*7.f+18;if(X+W>Width-16&&X>16){X=16;Y+=34;}Result.Add({I,Labels[I],FVector2D(X,Y),FVector2D(W,28)});X+=W+5;}return Result;
 }
 bool AParisTwinHUD::HandleClick(const FVector2D& P) {
     if(!bVisible||!Canvas)return false;auto C=Cast<AParisTwinController>(PlayerOwner);if(!C)return false;
-    for(const auto& B:ParisButtons(Canvas->SizeX,bHelp))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;case 7:C->ToggleHelp();break;case 8:C->ToggleStreetDetails();break;case 9:C->CycleDetailQuality();break;case 10:C->Walk();break;case 11:C->ToggleWalkView();break;case 12:C->TogglePeople();break;case 13:C->ToggleTraffic();break;case 15:C->ToggleSurfaces();break;case 16:C->ToggleHUD();break;default:C->InspectBusiness();break;}return true;}
+    for(const auto& B:ParisButtons(Canvas->SizeX,bHelp))if(P.X>=B.Position.X&&P.X<=B.Position.X+B.Size.X&&P.Y>=B.Position.Y&&P.Y<=B.Position.Y+B.Size.Y){switch(B.Action){case 0:C->Overview();break;case 1:C->Eye();break;case 2:C->ToggleFootprints();break;case 3:C->ToggleIssues();break;case 4:C->LandmarkOne();break;case 5:C->LandmarkTwo();break;case 6:C->LandmarkThree();break;case 7:C->ToggleHelp();break;case 8:C->ToggleStreetDetails();break;case 9:C->CycleDetailQuality();break;case 10:C->Walk();break;case 11:C->ToggleWalkView();break;case 12:C->TogglePeople();break;case 13:C->ToggleTraffic();break;case 15:C->ToggleSurfaces();break;case 16:C->ToggleHUD();break;case 17:C->CycleTimeOfDay();break;case 18:C->ToggleWeather();break;default:C->InspectBusiness();break;}return true;}
     return P.Y<ParisButtons(Canvas->SizeX,bHelp).Last().Position.Y+38;
 }
 void AParisTwinHUD::DrawHUD() {
@@ -533,9 +593,9 @@ void AParisTwinHUD::DrawHUD() {
     auto Text=[this](const FString& Message,float X,float Y,float Scale=1.f){Canvas->SetDrawColor(FColor::White);Canvas->DrawText(GEngine->GetSmallFont(),Message,X,Y,Scale,Scale,FFontRenderInfo());};
     const auto Buttons=ParisButtons(Canvas->SizeX,bHelp);const float Bottom=Buttons.Last().Position.Y+38;
     DrawRect(FLinearColor(.015f,.02f,.03f,.88f),8,8,Canvas->SizeX-16,Bottom-8);
-    Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | %d buildings | %d storefronts + %d terraces | %d people + %d cars (simulated) | %s"),S->BuildingCount,S->BusinessCount,S->TerraceCount,S->Crowd?S->Crowd->People().Num():0,S->Traffic?S->Traffic->Vehicles().Num():0,S->DetailQuality==0?TEXT("LOW"):S->DetailQuality==1?TEXT("MEDIUM"):TEXT("HIGH")),16,15,1.05f);
-    for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp)||(B.Action==8&&S->bStreetDetails)||(B.Action==10&&Cast<AParisWalker>(PlayerOwner->GetPawn()))||(B.Action==12&&S->bPeople)||(B.Action==13&&S->bTraffic)||(B.Action==15&&S->bDetailedSurfaces&&S->DetailQuality>0);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
-    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(720.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("WASD: move | F8: walk with gravity | V: first/third person | Shift: run | F2: overview"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("F1: building accuracy | F4/F5: issues/footprints | F9: shot | F10: hide HUD | P/T: people/cars | C: car view | B: cafes | M: surfaces | N: paths | 4/5/6: photo cameras"),16,Bottom+84);}
+    Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | %d buildings | %d storefronts + %d terraces | %d people + %d cars (simulated) | %s | %s"),S->BuildingCount,S->BusinessCount,S->TerraceCount,S->Crowd?S->Crowd->People().Num():0,S->Traffic?S->Traffic->Vehicles().Num():0,S->DetailQuality==0?TEXT("LOW"):S->DetailQuality==1?TEXT("MEDIUM"):TEXT("HIGH"),*S->EnvironmentLabel()),16,15,1.05f);
+    for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp)||(B.Action==8&&S->bStreetDetails)||(B.Action==10&&Cast<AParisWalker>(PlayerOwner->GetPawn()))||(B.Action==12&&S->bPeople)||(B.Action==13&&S->bTraffic)||(B.Action==15&&S->bDetailedSurfaces&&S->DetailQuality>0)||(B.Action==17&&S->TimeOfDayPreset!=0)||(B.Action==18&&S->bRainyWeather);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
+    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(720.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("WASD: move | F8: walk with gravity | V: first/third person | Shift: run | F2: overview"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("G: cycle day/sunset/night | R: rain | F9: shot | F10: hide HUD | P/T: people/cars | C: car view | B: cafes | M: surfaces | N: paths | 4/5/6: photo cameras"),16,Bottom+84);}
     if(S->bIssues){DrawRect(FLinearColor(.07f,.025f,.01f,.88f),8,Bottom+(bHelp?126:4),FMath::Min(720.f,float(Canvas->SizeX-16)),42);Text(S->IssueSummary,16,Bottom+(bHelp?134:12));Text(TEXT("Red: source overlap | Orange: separate road paths (review; not automatically errors)"),16,Bottom+(bHelp?152:30));}
     const FString Inspector=S->InspectionText();if(!Inspector.IsEmpty()){TArray<FString> Lines;Inspector.ParseIntoArrayLines(Lines);const float Height=Lines.Num()*19+16,Y=Canvas->SizeY-50-Height;DrawRect(FLinearColor(.015f,.02f,.03f,.9f),8,Y,Canvas->SizeX-16,Height);for(int32 I=0;I<Lines.Num();I++)Text(Lines[I],16,Y+8+I*19);}
     DrawRect(FLinearColor(.015f,.02f,.03f,.85f),8,Canvas->SizeY-48,Canvas->SizeX-16,44);

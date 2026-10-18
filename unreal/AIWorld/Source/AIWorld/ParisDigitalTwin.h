@@ -46,6 +46,7 @@ public:
     bool IsLooking() const { return bLooking; }
     void ToggleFootprints();void ToggleIssues();void ToggleHelp();void ToggleHUD();
     void ToggleStreetDetails();void CycleDetailQuality();void ToggleSurfaces();
+    void CycleTimeOfDay();void ToggleWeather();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
     bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();void ToggleTraffic();void InspectTraffic();void InspectBusiness();
     void ReturnToFree();
@@ -73,7 +74,11 @@ public:
     bool FocusBusiness();
     void ToggleStreetDetails();void CycleDetailQuality();void ApplyDetailQuality();
     void ToggleSurfaces();
+    void CycleTimeOfDay();void ToggleWeather();
+    FString EnvironmentLabel() const;
     bool bDetailedSurfaces=true;
+    int32 TimeOfDayPreset=0;
+    bool bRainyWeather=false;
     bool bPhotoScanReady=false;
     UPROPERTY() TObjectPtr<UMaterialInterface> PhotoScanBodyMaterial;
     bool bReady=false,bLevels=false,bFootprints=false,bIssues=false;
@@ -118,6 +123,11 @@ private:
     TArray<TSharedPtr<FJsonObject>> SourceFeatures,Landmarks,Issues;
     TSet<FString> OverlapIDs;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> FootprintMesh;
+    UPROPERTY() TObjectPtr<UProceduralMeshComponent> RainMesh;
+    double RainElapsed=0,RainUpdateAccumulator=0;
+    bool bRainMeshCreated=false;
+    void ApplyEnvironmentPreset();
+    void UpdateRainMesh();
     void RefreshAppearance();
     UMaterialInterface* SurfaceMaterialFor(const TSharedPtr<FJsonObject>& Feature) const;
     double ReadyAt=0;

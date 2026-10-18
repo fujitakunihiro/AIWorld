@@ -17,4 +17,11 @@ foreach($test in @('CoordinateAgreement','SceneCollisionAndDebug','StreetInstanc
     if(-not(Select-String -LiteralPath $log -Pattern ('Result=\{Success\}.*Name=\{'+$test+'\}') -Quiet)){throw "GIS automation test did not succeed: $test"}
 }
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{ObservedFacadeAndFallback\}' -Quiet)){throw 'Observed facade/fallback automation did not succeed'}
+if($Photoreal -and -not $NoScannedFacade){
+    $scan=Get-Content -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-notredame-scan.json') -Raw | ConvertFrom-Json
+    $finish=$scan.material_calibration.detail_finish
+    if($finish -notmatch 'white_plaster_02' -or $finish -notmatch 'normal weight 0\.16' -or $finish -notmatch 'roughness weight 0\.38'){
+        throw 'Photoreal scan is missing the verified CC0 micro-normal/roughness finish'
+    }
+}
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{ScannedVirginAndFallback\}' -Quiet)){throw 'Scanned Virgin/fallback automation did not succeed'}

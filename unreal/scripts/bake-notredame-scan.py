@@ -91,11 +91,36 @@ tint=node(surface,unreal.MaterialExpressionConstant3Vector,constant=unreal.Linea
 matched=node(surface,unreal.MaterialExpressionMultiply);link(colour,'RGB',matched,'A');link(tint,'',matched,'B')
 output(matched,'',unreal.MaterialProperty.MP_BASE_COLOR)
 normal=node(surface,unreal.MaterialExpressionTextureSample,texture=textures['normal'],sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
-worldnormal=custom(surface,f'return normalize(.35*N.x*{xyz(frame["across"])}-.35*N.y*float3(0,0,1)-N.z*{xyz(frame["depth"])});',{'N':(normal,'RGB')},unreal.CustomMaterialOutputType.CMOT_FLOAT3)
-output(worldnormal,'',unreal.MaterialProperty.MP_NORMAL)
-output(node(surface,unreal.MaterialExpressionConstant,r=.82),'',unreal.MaterialProperty.MP_ROUGHNESS)
+# Preserve the real scan colour and its measured macro-relief, then add a
+# subtle, licensed CC0 mineral finish in a stable facade-aligned metre scale.
+# The texture is a fine plaster proxy, not a claim that the cathedral's exact
+# limestone was measured. Using the same source as M_ParisCathedralStone keeps
+# the scan and authored fallback visually coherent at their boundary.
+stone_detail=assets.load_asset('/Game/Textures/T_ParisPhotoStoneNormal')
+stone_orm=assets.load_asset('/Game/Textures/T_ParisPhotoStoneOrm')
+if not stone_detail or not stone_orm:raise RuntimeError('Verified CC0 cathedral stone maps are required')
+position=node(surface,unreal.MaterialExpressionWorldPosition)
+local_uv=custom(surface,
+    f'float3 d=(Position-{xyz(frame["front_cm"])})*.01;float x=dot(d,{xyz(frame["across"])});return float2(x,d.z);',
+    {'Position':(position,'')},unreal.CustomMaterialOutputType.CMOT_FLOAT2)
+# local_uv is already in metres: one UV repeat is one metre.
+detail_sample=node(surface,unreal.MaterialExpressionTextureSample,texture=stone_detail,sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+link(local_uv,'',detail_sample,'UVs')
+output(custom(surface,
+    f'float3 G=normalize(.35*N.x*{xyz(frame["across"])}-.35*N.y*float3(0,0,1)-N.z*{xyz(frame["depth"])});float3 T=normalize({xyz(frame["across"])}-G*dot({xyz(frame["across"])} ,G));float3 B=normalize(cross(G,T));float3 D=normalize(T*Detail.r+B*Detail.g+G*Detail.b);return normalize(lerp(G,D,.16));',
+    {'N':(normal,'RGB'),'Detail':(detail_sample,'RGB')},unreal.CustomMaterialOutputType.CMOT_FLOAT3),
+    '',unreal.MaterialProperty.MP_NORMAL)
+orm_sample=node(surface,unreal.MaterialExpressionTextureSample,texture=stone_orm,sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_MASKS)
+link(local_uv,'',orm_sample,'UVs')
+roughness=node(surface,unreal.MaterialExpressionComponentMask,r=False,g=True,b=False)
+link(orm_sample,'RGB',roughness,'')
+rough_blend=node(surface,unreal.MaterialExpressionLinearInterpolate,const_a=.82,const_alpha=.38)
+link(roughness,'',rough_blend,'B')
+output(rough_blend,'',unreal.MaterialProperty.MP_ROUGHNESS)
 output(node(surface,unreal.MaterialExpressionConstant,r=0.),'',unreal.MaterialProperty.MP_METALLIC)
 save(surface)
+assets.set_metadata_tag(surface,'ParisTwin.DetailFinish','CC0 white_plaster_02 normal and roughness at 1m facade scale; scan colour and source geometry retained; proxy finish, not surveyed cathedral limestone')
+if not assets.save_loaded_asset(surface):raise RuntimeError('Cannot persist scanned facade detail material')
 
 underlays={}
 bases=dict(stone='M_ParisLimestone',wood='M_ParisWood',glass='M_ParisGlass',iron='M_ParisIron',sculpture='M_ParisSculptedStone',stained='M_ParisStainedGlass',body='M_ParisCathedralStone')
@@ -163,7 +188,8 @@ for key,value in dict(SourceURL=source['source']['source_url'],License='CC-BY-4.
 if not assets.save_loaded_asset(mesh):raise RuntimeError('Cannot save the real observed facade mesh')
 runtime=dict(source,asset=mesh_path,underlays=underlays,surface_material=surface.get_path_name(),fallback_triangles=mesh.get_num_triangles(0),bake_recipe_sha256=recipe,
     material_calibration=dict(albedo_multiplier_linear=[.72,.64,.52],normal_strength=.35,estimated_roughness=.82,
-        vertex_normals='Normals and tangents recomputed from actual mesh; fine normals are sampled in world space',
+        vertex_normals='Normals and tangents recomputed from actual mesh; macro scan normals and 1m CC0 plaster detail are blended',
+        detail_finish='CC0 white_plaster_02 normal and ORM roughness; detail normal weight 0.16, roughness weight 0.38; facade-aligned 1m repeat',
         note='Visual matching to existing stone. Original photographed illumination remains; not calibrated survey albedo.'))
 with open(os.path.join(DATA,'paris-notredame-scan.json'),'w',encoding='utf-8') as f:json.dump(runtime,f,indent=2)
 unreal.log_warning('PARIS_SCANNED_FACADE_READY '+str(runtime['triangles']))

@@ -1,9 +1,9 @@
 """Historic facade surface from real colour/depth samples; provisional registration.
 
-Density tiles retain the central portal's sampling while extending to the
-other portals. A sparse upper candidate is evaluated and rejected by the
-support gate. Adopted tiles share one Nanite mesh and a <=4096px atlas.
-Missing observations remain an authored fallback. Original GIS is read only.
+Density tiles retain the supported central relief, western rose and kings
+gallery. Unsupported side portals and freestanding figures keep their complete
+authored 3D geometry. A sparse upper candidate is rejected by the support gate.
+Original GIS is read only.
 """
 import hashlib
 import json
@@ -118,12 +118,14 @@ def allowed_region(gridx,gridz,tile):
     if tile['id']=='lower':
         # Quality comes before area. The sparse upper arcade and outer piers
         # produced unsupported ragged relief in native comparison renders.
-        # Retain v9's dense patches and add the two documented side portals.
-        region=((abs(gridx)<6.8)&(gridz<16.2))|((abs(gridx)<6)&(gridz>22)&(gridz<34.8))|((abs(gridx)<20.7)&(gridz>17)&(gridz<22.2))
-        # Stay above the authored wooden doors (4.87m) and stone lintel
-        # (5.17m). The lower side-door observations are too incomplete to
-        # register coherently; do not clip a wooden panel halfway up.
-        for centre in [-14.,14.]:region|=(abs(gridx-centre)<6.4)&(gridz>=5.2)&(gridz<15.8)
+        # Keep the supported central relief and shallow rose/gallery patches.
+        # A frontal height field cannot represent the recessed portals and
+        # their freestanding figures. Incomplete observations produced lumpy
+        # infill, while the projected coverage cut holes in the sound 3D
+        # jambs and statues behind it. Keep both side portals fully authored
+        # and all three entrances below 5.2m. The dense central upper relief
+        # is retained; the real Virgin remains an independent 3D layer.
+        region=((abs(gridx)<6.8)&(gridz>=5.2)&(gridz<16.2))|((abs(gridx)<6)&(gridz>22)&(gridz<34.8))|((abs(gridx)<20.7)&(gridz>17)&(gridz<22.2))
     if tile['id']=='upper':
         # Preserve the real open sky between the two towers and the authored
         # recessed belfry louvres. Never bridge these voids by interpolation.
@@ -234,7 +236,10 @@ def generate():
         uvs.append(np.column_stack(((local[:,0]+WIDTH/2)/tile['step_m']/(w-1),1-(yy+(local[:,2]-tile['bottom_m'])/tile['step_m'])/(h-1))))
         indices.append(raster['triangles']+offset);offset+=len(local)
     local=np.concatenate(vertices);sampled=np.concatenate(normals);uv=np.concatenate(uvs).astype('<f4');triangles=np.concatenate(indices)
-    if len(triangles)<200000:raise ValueError('Insufficient observed facade surface; do not replace the cathedral')
+    if len(triangles)<80000:raise ValueError('Insufficient observed rose/gallery surface; keep the complete authored facade')
+    low=local[triangles,2]<17.
+    if np.any(local[triangles,2]<5.2) or np.any(low&(abs(local[triangles,0])>=6.8)):
+        raise ValueError('Portal exclusion violated: retain complete side portals, doors and freestanding jamb figures')
     world=(np.array(frame['front_cm'])+100*(local[:,0,None]*frame['across']+local[:,1,None]*frame['depth']+local[:,2,None]*np.array([0,0,1]))).astype('<f4')
     normals=(sampled[:,0,None]*frame['across']-sampled[:,2,None]*frame['depth']-sampled[:,1,None]*np.array([0,0,1])).astype('<f4')
     # Keep only used vertices, removing unsupported observations entirely.
@@ -256,9 +261,11 @@ def generate():
         binary=file.relative_to(ROOT).as_posix(),vertices=len(world),triangles=len(triangles),
         dimensions_reference='https://www.notredamedeparis.fr/comprendre/architecture/plans/',
         registration=registration,
-        surface=dict(revision=10,texture_step_m=STEP,mesh_step_m=STEP*STRIDE,max_fill_distance_m=FILL_DISTANCE,albedo_border_padding_m=STEP*2,
+        surface=dict(revision=14,texture_step_m=STEP,mesh_step_m=STEP*STRIDE,max_fill_distance_m=FILL_DISTANCE,albedo_border_padding_m=STEP*2,
             observed_cells=sum(t['observed_cells'] for t in tiles),filled_cells=sum(t['filled_cells'] for t in tiles),
-            selection='Central portal, side-portal sculpture above 5.2m, western rose and kings gallery; side doors, sparse upper facade and tower candidates retain the authored fallback',side_portal_min_height_m=5.2,
+            selection='Dense central relief above 5.2m, western rose and kings gallery; side portals, doors and jamb sculptures retain complete authored 3D geometry',
+            portal_policy=dict(side_portals_excluded_below_m=17.,all_entrances_excluded_below_m=5.2,central_relief_half_width_m=6.8,
+                reason='Unsupported side-portal depth infill and projected masks destroyed complete 3D jambs; retain only supported central upper relief'),
             depth_filter='3x3 median; inferred completion <=0.4m lower / <=0.2m upper; neighbor depth range <=0.6m',texture_width=w,texture_height=h,
             sparse_smoothing=dict(lower_radius_m=.10,upper_radius_m=.15,fully_preserved_density=.4,
                 note='Confidence-weighted depth regularization in sparse areas; inferred colour interpolation is smoothed, dense observations retained'),

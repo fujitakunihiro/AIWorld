@@ -6,7 +6,10 @@ The same opening descriptions drive geometry and the source-display cutout.
 """
 import math
 
-REVISION = 12
+REVISION = 14
+JAMB_WIDTH_SCALE = .65
+JAMB_SPACING_M = .85
+JAMB_FRONT_M = -2.05
 PORTALS = [(-14., 8.1), (0., 9.5), (14., 8.1)]
 ROSE = dict(x=0., z=28.1, radius=4.85)
 GALLERY = [(-20.9, -9.25), (-7.75, 7.75), (9.25, 20.9)]
@@ -67,15 +70,24 @@ def build(face, box, tube, ellipsoid, ogive, opening, pierced_wall):
             ellipsoid('sculpture',x+r*.8*math.cos(a),y+r*.55*math.sin(a),z-.12,r*.38,r*.38,.22,8,5)
         counts['carved_capitals']+=1
 
-    def person(x,y,z,h,seed=0,royal=False,angel=False,lean=0.):
+    def person(x,y,z,h,seed=0,royal=False,angel=False,lean=0.,width_scale=1.):
         """Carved faces and fluted drapery; no identification of real sculpture."""
         if h>=3:
             from notredame_sculpture import build_figure
             is_virgin_anchor=abs(x-14)<.001 and abs(y+.30)<.001 and abs(h-3.4)<.001
-            def statue_face(kind,*args,**kwargs):
-                return face('virgin_fallback' if is_virgin_anchor else kind,*args,**kwargs)
+            def statue_face(kind,points,normal,**kwargs):
+                # Width changes require inverse-transpose normals as well as
+                # positions, including the analytic per-vertex sculpture normals.
+                def scaled_normal(n):
+                    v=(n[0]/width_scale,n[1],n[2]);length=math.sqrt(sum(c*c for c in v))
+                    return tuple(c/length for c in v)
+                if width_scale!=1.:
+                    points=[(x+(p[0]-x)*width_scale,p[1],p[2]) for p in points]
+                    normal=scaled_normal(normal)
+                    if 'vertex_normals' in kwargs:kwargs['vertex_normals']=[scaled_normal(n) for n in kwargs['vertex_normals']]
+                return face('virgin_fallback' if is_virgin_anchor else kind,points,normal,**kwargs)
             for key,value in build_figure(statue_face,x,y,z,h,seed).items():counts[key]=counts.get(key,0)+value
-            panel('virgin_fallback' if is_virgin_anchor else 'stone',x,y-h*.14,z,h*.38,h*.055,h*.30,.02)
+            panel('virgin_fallback' if is_virgin_anchor else 'stone',x,y-h*.14,z,h*.38*width_scale,h*.055,h*.30,.02)
             return
         # The robe is a closed taper with varied fold directions and a hem.
         rings=[];sides=16
@@ -149,8 +161,8 @@ def build(face, box, tube, ellipsoid, ogive, opening, pierced_wall):
             for i in range(n):person(x+(i-(n-1)/2)*w*.086,.20,zz,h,index*11+i+row,angel=row==2)
         for side in [-1,1]:
             for k in range(3):
-                xx=x+side*(w/2+.38+k*.42)
-                person(xx,-1.14,.62,3.63,k+index)
+                xx=x+side*(w/2+.38+k*JAMB_SPACING_M)
+                person(xx,JAMB_FRONT_M-k*.08,.62,3.63,k+index,width_scale=JAMB_WIDTH_SCALE)
                 capital(xx,-1.14,4.45,.20)
         # Recessed carved medallions on the base of the splays.
         for side in [-1,1]:
