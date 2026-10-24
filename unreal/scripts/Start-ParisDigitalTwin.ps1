@@ -1,5 +1,5 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
+    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
 $ErrorActionPreference='Stop'
 if($EntryDetail){$Photoreal=$true;$PhotoCamera='Street'}
 if($PortalDetail){$Photoreal=$true;$PhotoCamera='Front'}
@@ -85,6 +85,19 @@ if($Photoreal){
     if(-not $ready){& (Join-Path $PSScriptRoot 'Build-ParisPhotoreal.ps1') -EngineRoot $EngineRoot}
 }
 $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor.exe'
+if(($Walk -or $ThirdPerson) -and -not $SimplePeople){
+    $peoplePath=Join-Path (Split-Path $project) 'Content\Data\paris-people.json'
+    $heroReady=$false
+    if(Test-Path -LiteralPath $peoplePath){
+        $people=Get-Content -LiteralPath $peoplePath -Raw | ConvertFrom-Json
+        $hero=@($people.avatars)[0]
+        $heroReady=($people.schema_version -eq 1 -and $hero.mesh -and $hero.animations.idle -and $hero.animations.walk -and $hero.animations.run)
+        foreach($reference in @($hero.mesh,$hero.skeleton,$hero.animations.idle,$hero.animations.walk,$hero.animations.run)){
+            if(-not $reference -or -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+($reference -split '\.')[0].Substring(6)+'.uasset')))){$heroReady=$false}
+        }
+    }
+    if(-not $heroReady){& (Join-Path $PSScriptRoot 'Build-ParisPeople.ps1') -EngineRoot $EngineRoot}
+}
 if(-not(Test-Path -LiteralPath $editor)){throw 'Unreal Engine is not installed at '+$EngineRoot}
 $launchArgs=@( ('"'+$project+'"'),'-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-NoSplash')
 if($Photoreal){$launchArgs=@($launchArgs | Where-Object {$_ -ne '-dx11'});$launchArgs+=@('-dx12','-sm6','-CustomConfig=ParisPhotoreal','-ParisPhotoreal')}
@@ -99,6 +112,7 @@ if($Eye){$launchArgs+='-ParisTwinEye'}
 if($Walk){$launchArgs+='-ParisTwinWalk'}
 if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}
 if($NoPeople){$launchArgs+='-ParisTwinNoPeople'}
+if($SimplePeople){$launchArgs+='-ParisTwinSimplePeople'}
 if($NoTraffic){$launchArgs+='-ParisTwinNoTraffic'}
 if($TrafficView){$launchArgs+='-ParisTwinTrafficView'}
 if($CafeView){$launchArgs+='-ParisTwinCafeView'}

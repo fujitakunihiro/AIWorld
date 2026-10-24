@@ -1,0 +1,8 @@
+test_fill_does_not_wrap_cross_depth_cliffs_or_escape_its_region (test_notredame_scan.BoundedCompletionTests.test_fill_does_not_wrap_cross_depth_cliffs_or_escape_its_region) ... ok
+test_median_filter_does_not_wrap_and_agrees_across_row_chunks (test_notredame_scan.BoundedCompletionTests.test_median_filter_does_not_wrap_and_agrees_across_row_chunks) ... ok
+test_sparse_regularization_preserves_dense_detail_and_does_not_extend_support (test_notredame_scan.BoundedCompletionTests.test_sparse_regularization_preserves_dense_detail_and_does_not_extend_support) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.083s
+
+OK

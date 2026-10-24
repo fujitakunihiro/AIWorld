@@ -1,0 +1,28 @@
+setUpClass (test_notredame_sculpture.NearSculptureTests) ... ERROR
+
+======================================================================
+ERROR: setUpClass (test_notredame_sculpture.NearSculptureTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\tests\test_notredame_sculpture.py", line 24, in setUpClass
+    def setUpClass(cls):cls.faces,cls.counts=generate()
+                                             ^^^^^^^^^^
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\tests\test_notredame_sculpture.py", line 18, in generate
+    counts=build_figure(face,0,0,0,3.4,2)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\notredame_sculpture.py", line 116, in build_figure
+    ellipsoid(sign*.072,.002,.866,.014,.016,.026)
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\notredame_sculpture.py", line 65, in ellipsoid
+    _surface(face,surface,rows,sides,True,True)
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\notredame_sculpture.py", line 35, in _surface
+    nr.append(_unit(_cross(da,dt)))
+              ^^^^^^^^^^^^^^^^^^^^
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\notredame_sculpture.py", line 12, in _unit
+    if length<1e-12:raise ValueError('Singular sculpture normal')
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Singular sculpture normal
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.823s
+
+FAILED (errors=1)

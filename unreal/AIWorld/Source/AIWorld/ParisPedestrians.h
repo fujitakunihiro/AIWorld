@@ -7,6 +7,20 @@ class UInstancedStaticMeshComponent;
 class UStaticMesh;
 class UMaterialInterface;
 class UPrimitiveComponent;
+class USkeletalMesh;
+class USkeletalMeshComponent;
+class UCapsuleComponent;
+class UAnimSequence;
+
+USTRUCT()
+struct FParisHumanVisual {
+    GENERATED_BODY()
+    UPROPERTY() TObjectPtr<USkeletalMesh> Mesh;
+    UPROPERTY() TObjectPtr<UAnimSequence> Idle;
+    UPROPERTY() TObjectPtr<UAnimSequence> Walk;
+    UPROPERTY() TObjectPtr<UAnimSequence> Sit;
+    float YawOffset=0,NominalSpeed=120;
+};
 
 // Six articulated parts. Units are centimetres; Root is the ground underfoot.
 TArray<FTransform> ParisPersonPose(const FVector& Root,double Yaw,double Phase,bool Moving,double Sit=0,double SeatHeight=48,double Gesture=0);
@@ -76,7 +90,17 @@ public:
     int32 SeatedRenderedCount=0,SeatedNearRenderedCount=0,SeatArrivals=0,SocialStarted=0,SocialCompleted=0;
     bool bShowNavigation=false;
     bool bEnabled=true,bReady=false;
+    int32 SkeletalRenderedCount=0;
+    int32 HumanVisualVariants() const { return HumanVisuals.Num(); }
+    int32 HumanVisualBudget() const { return DetailQuality==2?16:DetailQuality==1?8:0; }
 private:
+    void InitializeHumanVisuals();
+    bool RenderHuman(int32 Agent,const TSet<int32>& Wanted,TSet<int32>& Used,double Delta);
+    UPROPERTY() TArray<FParisHumanVisual> HumanVisuals;
+    UPROPERTY() TArray<TObjectPtr<USkeletalMeshComponent>> HumanMeshes;
+    UPROPERTY() TArray<TObjectPtr<UCapsuleComponent>> HumanPickers;
+    TArray<int32> HumanAgents;
+    TMap<UPrimitiveComponent*,int32> HumanAgentByComponent;
     TArray<FParisPedestrianRoute> Routes;
     TArray<FParisPedestrian> Agents;
     TArray<FParisVisitDestination> Visits;

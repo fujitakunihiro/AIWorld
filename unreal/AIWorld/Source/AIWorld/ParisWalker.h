@@ -18,7 +18,12 @@ public:
     void ActivateAt(const FVector& Centre,const FRotator& Look,bool ThirdPerson);
     void Suspend();
     void ToggleView();
+    void Zoom(double Factor);
     void RecoverToSafe();
+    bool HasHumanAppearance() const;
+    bool IsRunning() const { return GetVelocity().Size2D()>200; }
+    static constexpr float WalkSpeedCm=170,RunSpeedCm=420;
+    double DistanceTravelledCm=0;
     bool bThirdPerson=false;
     int32 Recoveries=0;
     FVector LastSafe=FVector::ZeroVector;
@@ -29,4 +34,7 @@ public:
 private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Appearance;
     double Phase=0;
+    FVector PreviousLocation=FVector::ZeroVector;
+    bool LoadHumanAppearance();
+    void UpdateAppearanceVisibility();
 };

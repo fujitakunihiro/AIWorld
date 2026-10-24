@@ -45,3 +45,4 @@ unreal/assets/notre-dame-sculptures/*.jpg
 unreal/AIWorld/Content/Data/paris-notredame-statue-source.json
 # Optional noncommercial content is acquired locally, never silently published with code.
 unreal/AIWorld/Content/ParisPhotoreal/NotreDameStatues/*.uasset
+unreal/assets/paris-people/Raw/

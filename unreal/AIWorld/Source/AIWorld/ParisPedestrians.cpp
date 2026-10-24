@@ -1,14 +1,23 @@
 #include "ParisPedestrians.h"
 #include "ParisStreetMeshes.h"
 #include "ParisWalker.h"
+#include "ParisHumanAnimation.h"
 #include "Camera/PlayerCameraManager.h"
 #include "WorldProtocol.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "Animation/AnimSequence.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/Material.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonSerializer.h"
 #include "GameFramework/PlayerController.h"
 using namespace AIWorld;
 
@@ -75,7 +84,71 @@ bool AParisPedestrianCrowd::Initialize(const TSharedPtr<FJsonObject>& Data){
         FParisPedestrian A;A.ID=String(J,TEXT("id"));A.Route=*Route;A.Variant=FMath::Clamp(int32(Number(J,TEXT("variant"))),0,2);A.Direction=Number(J,TEXT("direction"),1)>0?1:-1;A.Speed=Number(J,TEXT("speed_mps"),1.2)*100;A.Distance=FMath::Clamp(Number(J,TEXT("progress_m"))*100,0.,Routes[*Route].Length);A.Phase=Agents.Num()*.8;A.Position=Routes[*Route].Sample(A.Distance,A.Direction,&A.Yaw);Agents.Add(A);
     }
     for(auto& Pair:ModelByName){auto ISM=NewObject<UInstancedStaticMeshComponent>(this);AddInstanceComponent(ISM);ISM->SetupAttachment(RootComponent);ISM->SetStaticMesh(Pair.Value);ISM->SetMobility(EComponentMobility::Movable);ISM->SetCanEverAffectNavigation(false);ISM->SetCollisionEnabled(ECollisionEnabled::QueryOnly);ISM->SetCollisionResponseToAllChannels(ECR_Ignore);ISM->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);ISM->SetCastShadow(!Pair.Key.StartsWith(TEXT("person_far_"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));ISM->RegisterComponent();Instances.Add(ISM);InstanceByName.Add(Pair.Key,ISM);}
+    InitializeHumanVisuals();
     bReady=true;SetDisplay(true,1);return true;
+}
+void AParisPedestrianCrowd::InitializeHumanVisuals(){
+    if(!FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSimplePeople")))return;
+    FString Text;TSharedPtr<FJsonObject> Data;
+    if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Data/paris-people.json")))||
+        !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Data)||!Data.IsValid()||Number(Data,TEXT("schema_version"))!=1)return;
+    TArray<FParisHumanVisual> Loaded;
+    for(const auto& V:Array(Data,TEXT("avatars"))){auto J=V->AsObject();auto Clips=Object(J,TEXT("animations"));FParisHumanVisual Visual;
+        Visual.Mesh=LoadObject<USkeletalMesh>(nullptr,*String(J,TEXT("mesh")));
+        Visual.Idle=LoadObject<UAnimSequence>(nullptr,*String(Clips,TEXT("idle")));
+        Visual.Walk=LoadObject<UAnimSequence>(nullptr,*String(Clips,TEXT("walk")));
+        Visual.Sit=LoadObject<UAnimSequence>(nullptr,*String(Clips,TEXT("sit")));
+        Visual.YawOffset=Number(J,TEXT("yaw_offset_degrees"));
+        if(!Visual.Mesh||!Visual.Idle||!Visual.Walk||!Visual.Sit||Visual.Mesh->GetRefSkeleton().GetNum()<20||
+            Visual.Idle->GetSkeleton()!=Visual.Mesh->GetSkeleton()||Visual.Walk->GetSkeleton()!=Visual.Mesh->GetSkeleton()||Visual.Sit->GetSkeleton()!=Visual.Mesh->GetSkeleton()){
+            UE_LOG(LogTemp,Warning,TEXT("PARIS_PEOPLE_FALLBACK: incomplete skeletal set; keeping articulated crowd"));return;
+        }
+        for(const auto& Slot:Visual.Mesh->GetMaterials())if(!Slot.MaterialInterface||!Slot.MaterialInterface->GetMaterial()->GetUsageByFlag(MATUSAGE_SkeletalMesh)){
+            UE_LOG(LogTemp,Warning,TEXT("PARIS_PEOPLE_FALLBACK: human surface was not saved; keeping articulated crowd"));return;
+        }
+        const float Length=Visual.Walk->GetPlayLength();
+        const float Speed=Length>.1f?Visual.Walk->ExtractRootMotionFromRange(0,Length,FAnimExtractContext(0,true)).GetTranslation().Size2D()/Length:0;
+        Visual.NominalSpeed=Speed>40&&Speed<220?Speed:120;
+        Loaded.Add(Visual);
+    }
+    if(Loaded.Num()!=2)return;
+    HumanVisuals=MoveTemp(Loaded);
+    for(int32 I=0;I<16;I++){
+        const auto& Visual=HumanVisuals[I%HumanVisuals.Num()];
+        auto Mesh=NewObject<USkeletalMeshComponent>(this);AddInstanceComponent(Mesh);Mesh->SetupAttachment(RootComponent);
+        Mesh->SetSkeletalMeshAsset(Visual.Mesh);Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mesh->SetCanEverAffectNavigation(false);
+        Mesh->SetCastShadow(!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));Mesh->bCastDynamicShadow=true;
+        Mesh->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+        Mesh->bEnableUpdateRateOptimizations=true;Mesh->SetVisibility(false);Mesh->RegisterComponent();
+        Mesh->SetAnimInstanceClass(UParisHumanAnimation::StaticClass());
+        if(auto Anim=Cast<UParisHumanAnimation>(Mesh->GetAnimInstance())){Anim->Idle=Visual.Idle;Anim->Walk=Visual.Walk;Anim->Sit=Visual.Sit;Anim->NominalSpeedCm=Visual.NominalSpeed;}
+        Mesh->SetComponentTickEnabled(false);HumanMeshes.Add(Mesh);HumanAgents.Add(INDEX_NONE);
+        // Picking uses a separate capsule; optional human meshes need no heavy
+        // physics asset and do not change navigation or player collision.
+        auto Picker=NewObject<UCapsuleComponent>(this);AddInstanceComponent(Picker);Picker->SetupAttachment(RootComponent);
+        Picker->SetCapsuleSize(31,86);Picker->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        Picker->SetCollisionResponseToAllChannels(ECR_Ignore);Picker->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
+        Picker->SetCanEverAffectNavigation(false);Picker->RegisterComponent();HumanPickers.Add(Picker);
+    }
+    UE_LOG(LogTemp,Display,TEXT("PARIS_PEOPLE_READY variants=%d skeletal_pool=%d"),HumanVisuals.Num(),HumanMeshes.Num());
+}
+bool AParisPedestrianCrowd::RenderHuman(int32 Agent,const TSet<int32>& Wanted,TSet<int32>& Used,double Delta){
+    if(!Wanted.Contains(Agent)||HumanVisuals.IsEmpty())return false;
+    const int32 Type=Agent%HumanVisuals.Num();int32 Slot=HumanAgents.Find(Agent);
+    if(Slot==INDEX_NONE)for(int32 I=Type;I<HumanMeshes.Num();I+=HumanVisuals.Num())
+        if(!Used.Contains(I)&&!Wanted.Contains(HumanAgents[I])){Slot=I;break;}
+    if(Slot==INDEX_NONE||Used.Contains(Slot))return false;
+    auto& A=Agents[Agent];auto Mesh=HumanMeshes[Slot];const auto& Visual=HumanVisuals[Type];
+    const bool Changed=HumanAgents[Slot]!=Agent;HumanAgents[Slot]=Agent;Used.Add(Slot);
+    const FVector Ground=A.Position+FVector(0,0,A.GroundOffset);
+    const FRotator Target(0,A.Yaw+Visual.YawOffset,0);
+    const auto Rotation=Changed?Target:FMath::RInterpTo(Mesh->GetComponentRotation(),Target,FMath::Clamp(Delta,.001,.1),10.);
+    Mesh->SetWorldLocationAndRotation(Ground,Rotation);Mesh->SetVisibility(true);Mesh->SetComponentTickEnabled(true);
+    if(auto Anim=Cast<UParisHumanAnimation>(Mesh->GetAnimInstance())){
+        Anim->SpeedCm=A.Moving?A.Speed:0;Anim->SeatAlpha=A.SeatBlend;Anim->PersonIndex=Agent;
+    }
+    auto Picker=HumanPickers[Slot];Picker->SetWorldLocation(Ground+FVector(0,0,86));Picker->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    HumanAgentByComponent.Add(Picker,Agent);SkeletalRenderedCount++;return true;
 }
 UStaticMesh* AParisPedestrianCrowd::Model(const FString& Name) const {auto Found=ModelByName.Find(Name);return Found?*Found:nullptr;}
 static void VisitAction(FParisPedestrian& A,const FString& Text){A.RecentActions.Add(Text);if(A.RecentActions.Num()>4)A.RecentActions.RemoveAt(0);}
@@ -137,9 +210,14 @@ void AParisPedestrianCrowd::UpdateInstances(bool TraceGround){
     for(int32 I=0;I<Agents.Num();I++)if(FVector::DistSquared2D(Agents[I].Position,View)<=Range*Range)Visible.Add(I);
     Visible.Sort([&](int32 A,int32 B){const double DA=FVector::DistSquared2D(Agents[A].Position,View),DB=FVector::DistSquared2D(Agents[B].Position,View);return DA==DB?A<B:DA<DB;});
     if(Visible.Num()>VisibleCount)Visible.SetNum(VisibleCount);RenderedCount=Visible.Num();
-    NearRenderedCount=0;FarRenderedCount=0;RenderedParts=0;StandingVisitorsRendered=0;SeatedRenderedCount=0;SeatedNearRenderedCount=0;
+    NearRenderedCount=0;FarRenderedCount=0;RenderedParts=0;StandingVisitorsRendered=0;SeatedRenderedCount=0;SeatedNearRenderedCount=0;SkeletalRenderedCount=0;
     const double NearRange=DetailQuality==0?2500:DetailQuality==1?4000:6000;
     const bool FullPeople=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFullPeople"));
+    TSet<int32> WantedHumans,UsedHumanSlots;HumanAgentByComponent.Empty();
+    if(!HumanVisuals.IsEmpty()){
+        int32 ByType[2]={0,0};const int32 PerType=HumanVisualBudget()/2;const double RangeCm=DetailQuality==2?3500:2200;
+        for(int32 I:Visible)if(ByType[I%2]<PerType&&FVector::DistSquared2D(Agents[I].Position,View)<RangeCm*RangeCm){WantedHumans.Add(I);ByType[I%2]++;}
+    }
     for(int32 I:Visible){auto& A=Agents[I];if(A.VisitStage==3)StandingVisitorsRendered++;
         const bool Seated=A.SeatBlend>.001;const auto* Stop=Visits.IsValidIndex(A.Visit)?&Visits[A.Visit]:nullptr;
         const bool PrivateSeat=Stop&&A.Route==Stop->SeatRoute;
@@ -147,11 +225,16 @@ void AParisPedestrianCrowd::UpdateInstances(bool TraceGround){
         if(Seated)SeatedRenderedCount++;
         if(TraceGround&&!PrivateSeat){FHitResult Hit;FCollisionQueryParams Params;Params.AddIgnoredActor(this);if(GetWorld()->LineTraceSingleByChannel(Hit,A.Position+FVector(0,0,80),A.Position-FVector(0,0,120),ECC_Pawn,Params)&&Hit.Normal.Z>.7)A.GroundOffset=Hit.ImpactPoint.Z-A.Position.Z;}
         const double Distance=FVector::Dist2D(A.Position,View);
+        if(RenderHuman(I,WantedHumans,UsedHumanSlots,RenderAccumulator))continue;
         A.bFarPose=!FullPeople&&ModelByName.Contains(TEXT("person_far_0"))&&Distance>NearRange+(A.bFarPose?-200:200);
         if(A.bFarPose&&(!Seated||A.SeatBlend>=.999)){const FString Name=(Seated?FString::Printf(TEXT("person_far_seated_%d"),A.Variant):FString::Printf(TEXT("person_far_%d"),A.Variant));Transforms.FindOrAdd(Name).Add(FTransform(FRotator(0,A.Yaw,0),A.Position+FVector(0,0,A.GroundOffset)));Lookup.FindOrAdd(Name).Add(I);FarRenderedCount++;RenderedParts++;continue;}
         NearRenderedCount++;if(Seated)SeatedNearRenderedCount++;RenderedParts+=Seated?8:6;
         const auto Pose=ParisPersonPose(A.Position+FVector(0,0,A.GroundOffset),A.Yaw,A.Phase,A.Moving,A.SeatBlend,Stop?Stop->SeatHeight:48,A.SocialPartner>=0?.5+.3*FMath::Sin(A.SocialRemaining*5):0);
         for(int32 P=0;P<Pose.Num();P++){const FString Name=ParisPersonPartModel(P,A.Variant,Seated);Transforms.FindOrAdd(Name).Add(Pose[P]);Lookup.FindOrAdd(Name).Add(I);}
+    }
+    for(int32 I=0;I<HumanMeshes.Num();I++)if(!UsedHumanSlots.Contains(I)){
+        HumanMeshes[I]->SetVisibility(false);HumanMeshes[I]->SetComponentTickEnabled(false);
+        HumanPickers[I]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     }
     for(auto& Pair:InstanceByName){const auto Found=Transforms.Find(Pair.Key);auto ISM=Pair.Value;
         const TArray<FTransform> Empty;const auto& Items=Found?*Found:Empty;
@@ -168,6 +251,7 @@ FString AParisPedestrianCrowd::DescribeHit(UPrimitiveComponent* Component,int32 
     return DescribePerson(PersonID(Component,Instance));
 }
 FString AParisPedestrianCrowd::PersonID(UPrimitiveComponent* Component,int32 Instance) const {
+    if(const auto Human=HumanAgentByComponent.Find(Component))return Agents.IsValidIndex(*Human)?Agents[*Human].ID:TEXT("");
     const auto Lookup=AgentByInstance.Find(Component);if(!Lookup||!Lookup->IsValidIndex(Instance)||!Agents.IsValidIndex((*Lookup)[Instance]))return TEXT("");return Agents[(*Lookup)[Instance]].ID;
 }
 FString AParisPedestrianCrowd::DescribePerson(const FString& ID) const {

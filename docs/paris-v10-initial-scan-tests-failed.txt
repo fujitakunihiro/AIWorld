@@ -1,0 +1,30 @@
+test_fill_does_not_wrap_cross_depth_cliffs_or_escape_its_region (test_notredame_scan.BoundedCompletionTests.test_fill_does_not_wrap_cross_depth_cliffs_or_escape_its_region) ... ok
+test_median_filter_does_not_wrap_and_agrees_across_row_chunks (test_notredame_scan.BoundedCompletionTests.test_median_filter_does_not_wrap_and_agrees_across_row_chunks) ... ok
+test_atlas_preserves_portal_resolution_and_matches_world_mapping (test_notredame_scan.ScannedFacadeTests.test_atlas_preserves_portal_resolution_and_matches_world_mapping) ... FAIL
+test_geographic_frame_license_and_provisional_registration (test_notredame_scan.ScannedFacadeTests.test_geographic_frame_license_and_provisional_registration) ... ok
+test_lateral_portals_and_tower_stone_are_supported_without_sealing_belfries (test_notredame_scan.ScannedFacadeTests.test_lateral_portals_and_tower_stone_are_supported_without_sealing_belfries) ... FAIL
+test_non_degenerate_surface_and_outward_normals (test_notredame_scan.ScannedFacadeTests.test_non_degenerate_surface_and_outward_normals) ... ok
+{"vertices": 341339, "triangles": 659752, "registration": {"method": "Provisional independent width/height calibration to official 43.5m / 69m; depth uses vertical scale. Not survey georegistration.", "source_ground": 536.4406127929688, "source_crown": 15575.0498046875, "source_across_limits": [-4082.439606914561, 6313.894207500614], "source_wall_depth": -798.4792464430273, "horizontal_scale_m": 0.004184167301331215, "vertical_scale_m": 0.004588190245490882, "depth_scale_m": 0.004588190245490882}, "surface": {"texture_step_m": 0.0125, "mesh_step_m": 0.07500000000000001, "max_fill_distance_m": 0.4, "albedo_border_padding_m": 0.025, "observed_cells": 2773201, "filled_cells": 9255963, "selection": "Observed west facade including side portals and tower stone; open belfry windows and unsupported areas keep the authored fallback", "depth_filter": "3x3 median; inferred completion <=0.4m lower / <=0.2m upper; neighbor depth range <=0.6m", "texture_width": 3481, "texture_height": 4090, "mesh_coverage_fraction": 0.6668318965517244, "depth_jump_limit_m": 1.2, "lower_height_m": 45, "full_height_m": 69, "width_m": 43.5, "atlas": {"width": 3481, "height": 4090, "gutter_pixels": 8, "tiles": [{"id": "lower", "bottom_m": 0.0, "top_m": 45.0, "step_m": 0.0125, "stride": 6, "fill_distance_m": 0.4, "row": 0, "width": 3481, "height": 3601, "observed_cells": 2724022, "filled_cells": 9216895, "triangles": 642455, "projected_area_m2": 1806.9046875000006}, {"id": "upper", "bottom_m": 45.0, "top_m": 69.0, "step_m": 0.05, "stride": 3, "fill_distance_m": 0.2, "row": 3609, "width": 871, "height": 481, "observed_cells": 49179, "filled_cells": 39068, "triangles": 17297, "projected_area_m2": 194.59125000000006}]}}}
+test_regeneration_is_deterministic_and_does_not_modify_gis (test_notredame_scan.ScannedFacadeTests.test_regeneration_is_deterministic_and_does_not_modify_gis) ... ok
+test_underlay_coverage_agrees_with_actual_mesh (test_notredame_scan.ScannedFacadeTests.test_underlay_coverage_agrees_with_actual_mesh) ... ok
+
+======================================================================
+FAIL: test_atlas_preserves_portal_resolution_and_matches_world_mapping (test_notredame_scan.ScannedFacadeTests.test_atlas_preserves_portal_resolution_and_matches_world_mapping)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\tests\test_notredame_scan.py", line 84, in test_atlas_preserves_portal_resolution_and_matches_world_mapping
+    self.assertTrue(np.allclose(self.uv[i],atlas_uv(float(x[i]),float(z[i]),surface),atol=2e-5))
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_lateral_portals_and_tower_stone_are_supported_without_sealing_belfries (test_notredame_scan.ScannedFacadeTests.test_lateral_portals_and_tower_stone_are_supported_without_sealing_belfries)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\work\develop\21_�}�C���N���t�g��AI�X\unreal\scripts\tests\test_notredame_scan.py", line 97, in test_lateral_portals_and_tower_stone_are_supported_without_sealing_belfries
+    self.assertTrue(allowed_region(upper[:,0],upper[:,2],{'id':'upper'}).all())
+AssertionError: np.False_ is not true
+
+----------------------------------------------------------------------
+Ran 8 tests in 73.403s
+
+FAILED (failures=2)

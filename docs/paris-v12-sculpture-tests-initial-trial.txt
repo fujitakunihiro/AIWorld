@@ -1,0 +1,10 @@
+test_closed_surfaces_have_no_latitude_or_sweep_gaps (test_notredame_sculpture.NearSculptureTests.test_closed_surfaces_have_no_latitude_or_sweep_gaps) ... ok
+test_curves_interpolate_normals_without_flattening_caps (test_notredame_sculpture.NearSculptureTests.test_curves_interpolate_normals_without_flattening_caps) ... ok
+test_finite_unit_normals_and_existing_envelope (test_notredame_sculpture.NearSculptureTests.test_finite_unit_normals_and_existing_envelope) ... ok
+test_no_degenerate_faces_or_inverted_smooth_normals (test_notredame_sculpture.NearSculptureTests.test_no_degenerate_faces_or_inverted_smooth_normals) ... ok
+test_reproducible_original_geometry (test_notredame_sculpture.NearSculptureTests.test_reproducible_original_geometry) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 10.490s
+
+OK

@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "license": "MIT",
+  "source_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+  "source_url": "https://github.com/microsoft/Microsoft-Rocketbox",
+  "inferred_population": true,
+  "avatars": [
+    {
+      "name": "Male_Adult_01",
+      "mesh": "/Game/ParisPhotoreal/People/Male_Adult_01/SK_Male_Adult_01.SK_Male_Adult_01",
+      "skeleton": "/Game/ParisPhotoreal/People/Male_Adult_01/SK_Male_Adult_01_Skeleton.SK_Male_Adult_01_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Male_Adult_01/A_Male_Adult_01_walk.A_Male_Adult_01_walk",
+        "run": "/Game/ParisPhotoreal/People/Male_Adult_01/A_Male_Adult_01_run.A_Male_Adult_01_run",
+        "idle": "/Game/ParisPhotoreal/People/Male_Adult_01/A_Male_Adult_01_idle.A_Male_Adult_01_idle",
+        "sit": "/Game/ParisPhotoreal/People/Male_Adult_01/A_Male_Adult_01_sit.A_Male_Adult_01_sit"
+      },
+      "material_slots": [
+        {
+          "name": "m002_body",
+          "surface": "body"
+        },
+        {
+          "name": "m002_head",
+          "surface": "head"
+        },
+        {
+          "name": "m002_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 182.36785292625427,
+      "lod_vertices": [
+        4647,
+        1494,
+        860
+      ]
+    },
+    {
+      "name": "Female_Adult_01",
+      "mesh": "/Game/ParisPhotoreal/People/Female_Adult_01/SK_Female_Adult_01.SK_Female_Adult_01",
+      "skeleton": "/Game/ParisPhotoreal/People/Female_Adult_01/SK_Female_Adult_01_Skeleton.SK_Female_Adult_01_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Female_Adult_01/A_Female_Adult_01_walk.A_Female_Adult_01_walk",
+        "run": "/Game/ParisPhotoreal/People/Female_Adult_01/A_Female_Adult_01_run.A_Female_Adult_01_run",
+        "idle": "/Game/ParisPhotoreal/People/Female_Adult_01/A_Female_Adult_01_idle.A_Female_Adult_01_idle",
+        "sit": "/Game/ParisPhotoreal/People/Female_Adult_01/A_Female_Adult_01_sit.A_Female_Adult_01_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f001_body",
+          "surface": "body"
+        },
+        {
+          "name": "f001_head",
+          "surface": "head"
+        },
+        {
+          "name": "f001_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 174.33473587036133,
+      "lod_vertices": [
+        5472,
+        1637,
+        931
+      ]
+    }
+  ]
+}

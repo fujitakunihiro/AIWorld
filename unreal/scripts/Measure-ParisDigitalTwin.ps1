@@ -7,6 +7,9 @@ param(
     [ValidateRange(1,120)][int]$CaptureAfter=8,
     [switch]$LegacyJSON,
     [switch]$FullPeople,
+    [switch]$SimplePeople,
+    [switch]$PeopleView,
+    [ValidateRange(0,159)][int]$PeopleIndex=0,
     [switch]$FlatMaterials,
     [switch]$ProceduralSurfaces,
     [switch]$NoShadows,
@@ -65,6 +68,8 @@ if($NoNCStatues){$arguments+='-ParisTwinNoNCStatues'}
 if($View -eq 'EntryDetail'){$arguments+='-ParisTwinEntryDetail'}
 if($LegacyJSON){$arguments+='-ParisTwinLegacyJSON'}
 if($FullPeople){$arguments+='-ParisTwinFullPeople'}
+if($SimplePeople){$arguments+='-ParisTwinSimplePeople'}
+if($PeopleView){$arguments+=@('-ParisTwinPeopleView',('-ParisTwinPeopleIndex='+$PeopleIndex))}
 if($FlatMaterials){$arguments+='-ParisTwinFlatMaterials'}
 if($ProceduralSurfaces){$arguments+='-ParisTwinProceduralSurfaces'}
 if($NoShadows){$arguments+='-ParisTwinNoShadows'}
@@ -135,6 +140,9 @@ if($result.photographic_surfaces -ne (-not $ProceduralSurfaces -and -not $FlatMa
 if($View -in @('Traffic','Cafe','Routes','Seating','Materials','Realism') -and -not $result.camera_eye){throw 'Inspection did not find an unobstructed eye-level camera'}
 if($View -in @('WalkFirst','WalkThird') -and -not $result.walking){throw 'Requested walking view did not become active'}
 $result | Add-Member -NotePropertyName 'render_offscreen' -NotePropertyValue $true
+$result | Add-Member -NotePropertyName 'people_inspection' -NotePropertyValue ([bool]$PeopleView)
+$result | Add-Member -NotePropertyName 'people_inspection_index' -NotePropertyValue $PeopleIndex
+$result | Add-Member -NotePropertyName 'simple_people_requested' -NotePropertyValue ([bool]$SimplePeople)
 $result | Add-Member -NotePropertyName 'clean_frame' -NotePropertyValue ([bool]$CleanFrame)
 $coarseValue=Select-String -LiteralPath $log -Pattern 'r\.Shadow\.Virtual\.NonNanite\.IncludeInCoarsePages = "([01])"' | Select-Object -Last 1
 if($coarseValue){$result | Add-Member -NotePropertyName 'non_nanite_coarse_pages' -NotePropertyValue ([int]$coarseValue.Matches[0].Groups[1].Value)}
