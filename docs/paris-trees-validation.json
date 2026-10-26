@@ -1,0 +1,72 @@
+{
+  "format": "paris_trees_validation_v1",
+  "native_build_succeeded": true,
+  "native_build_actions": 6,
+  "native_build_seconds": 76.63,
+  "automation_passed": [
+    "BusinessesAndTerraces",
+    "CafeSeatingLifecycle",
+    "CafeVisitLifecycle",
+    "CoordinateAgreement",
+    "CoveredTerrainDisplayAndCollision",
+    "FrontageGeometryAndFallback",
+    "LocalSocialInteraction",
+    "ObservedFacadeAndFallback",
+    "PhotoBridgeDeckHeight",
+    "PhotoDetailAssetsAndFallback",
+    "PhotoEnvironmentAndCameraSwitching",
+    "PhotographicSurfaceBindings",
+    "ProtagonistWalkRun",
+    "RealisticPedestrianVisuals",
+    "RealisticTreesAndSourceTransforms",
+    "RenderCacheParityAndModes",
+    "RoadFinishAndCollision",
+    "RuntimePacketSafety",
+    "ScannedVirginAndFallback",
+    "SceneCollisionAndDebug",
+    "StreetInstancesAndQuality",
+    "SurfaceMaterialsAndDetails",
+    "TrafficAndMappedProps",
+    "WalkingAndPedestrians",
+    "WalkingGraphRouting"
+  ],
+  "source_geometry_unchanged": {
+    "paris-digital-twin.json": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+    "paris-digital-twin-meshes.bin": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8"
+  },
+  "nature_recipe": {
+    "asset": "/Game/ParisPhotoreal/Nature/SM_ParisBroadleaf",
+    "source_triangles": 1599403,
+    "height_cm": 999.9999999703604,
+    "materials": 3,
+    "source_url": "https://polyhaven.com/a/island_tree_01",
+    "license": "CC0-1.0",
+    "recipe": "paris_tree_foliage_v2",
+    "recipe_sha256": "92c1f45be26039d9daea2681ab6d5b414235453ce399b1e66a9663cb2b9dd995",
+    "wind_disable_distance_cm": 6000,
+    "appearance_provenance": "Broadleaf appearance proxy; not identification of actual Paris tree species; mapped OSM locations retained",
+    "texture_resolution": 2048
+  },
+  "render_validation": {
+    "medium": {
+      "fps": 28.56687411879022,
+      "frame_p95_ms": 37.60470077395439,
+      "photo_tree_instances": 1108,
+      "photo_tree_nanite_instances": 1108,
+      "photo_tree_batches": 2,
+      "photo_tree_far_instances": 907,
+      "run_utc": "2026-10-26T14:14:40.8869941Z"
+    },
+    "high": {
+      "fps": 26.13772180617464,
+      "frame_p95_ms": 42.603999376297,
+      "photo_tree_instances": 1108,
+      "photo_tree_nanite_instances": 1108,
+      "photo_tree_batches": 2,
+      "photo_tree_far_instances": 907,
+      "run_utc": "2026-10-26T14:16:45.1308727Z"
+    }
+  },
+  "material_compilation_failure_in_final_render": false,
+  "scope": "Windows UE 5.8.3; GPU render at a fixed street camera; no packaged or mobile validation"
+}

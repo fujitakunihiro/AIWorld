@@ -93,6 +93,13 @@ if($Photoreal){
 }
 $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor.exe'
 if($Photoreal){
+    $naturePath=Join-Path (Split-Path $project) 'Content\Data\paris-nature.json'
+    $natureReady=$false
+    if(Test-Path -LiteralPath $naturePath){
+        $nature=Get-Content -LiteralPath $naturePath -Raw | ConvertFrom-Json
+        $natureReady=($nature.recipe -eq 'paris_tree_foliage_v2')
+    }
+    if(-not $natureReady){& (Join-Path $PSScriptRoot 'Build-ParisNature.ps1') -EngineRoot $EngineRoot}
     $waterPath=Join-Path (Split-Path $project) 'Content\Data\paris-water.json'
     $waterReady=$false
     if(Test-Path -LiteralPath $waterPath){

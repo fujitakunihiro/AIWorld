@@ -373,10 +373,16 @@ void AParisTwinScene::BeginPlay() {
         }
         auto AddGroup=[&](const TArray<FTransform>& Transforms,const TArray<FString>& IDs,bool Detailed){
             if(Transforms.IsEmpty())return;
-            auto HISM=NewObject<UHierarchicalInstancedStaticMeshComponent>(this);AddInstanceComponent(HISM);HISM->SetupAttachment(RootComponent);HISM->SetStaticMesh(Detailed&&Name==TEXT("tree_crown")?PhotoTreeModel.Get():*Model);HISM->SetCanEverAffectNavigation(false);HISM->RegisterComponent();HISM->AddInstances(Transforms,false,false,false);
+            auto HISM=NewObject<UHierarchicalInstancedStaticMeshComponent>(this);AddInstanceComponent(HISM);HISM->SetupAttachment(RootComponent);
+            // Share one Nanite tree across every mapped location. The near/far
+            // partition controls shadows rather than changing distant crowns
+            // into solid blobs. Fixed seeds keep appearance reproducible.
+            HISM->SetStaticMesh(Tree&&Name==TEXT("tree_crown")?PhotoTreeModel.Get():*Model);
+            if(Tree){HISM->InstancingRandomSeed=Detailed?17117:93199;HISM->SetWorldPositionOffsetDisableDistance(6000);}
+            HISM->SetCanEverAffectNavigation(false);HISM->RegisterComponent();HISM->AddInstances(Transforms,false,false,false);
             HISM->SetCollisionEnabled(Name==TEXT("tree_crown")?ECollisionEnabled::QueryOnly:ECollisionEnabled::QueryAndPhysics);HISM->SetCollisionResponseToAllChannels(Name==TEXT("tree_crown")?ECR_Ignore:ECR_Block);HISM->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
             HISM->SetCastShadow((Name==TEXT("tree_crown")||Name.StartsWith(TEXT("awning_")))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));
-            if(Detailed&&Tree)HISM->ComponentTags.Add(Name==TEXT("tree_crown")?TEXT("ParisPhotoTree"):TEXT("ParisPhotoTreeTrunkProxy"));
+            if(Tree){HISM->ComponentTags.Add(Name==TEXT("tree_crown")?TEXT("ParisPhotoTree"):TEXT("ParisPhotoTreeTrunkProxy"));if(!Detailed)HISM->ComponentTags.Add(TEXT("ParisPhotoTreeFar"));}
             if(Detailed&&Lamp){
                 HISM->ComponentTags.Add(TEXT("ParisPhotoLampProxy"));
                 HISM->ComponentTags.Add(Name==TEXT("lamp_metal")?TEXT("ParisPhotoLampMetalProxy"):TEXT("ParisPhotoLampGlassProxy"));
@@ -512,7 +518,10 @@ void AParisTwinScene::ApplyDetailQuality(){
     for(auto& Pair:Features){const FString Kind=String(Pair.Value,TEXT("kind"));if(Kind.StartsWith(TEXT("facade_"))){const auto Props=Object(Pair.Value,TEXT("properties"));const double Base=Number(Props,TEXT("render_distance_m"),300);Pair.Key->SetCullDistance(Base*(DetailQuality==0?.5:DetailQuality==2?1.7:1.)*100);bool QualityOnly=false;Props->TryGetBoolField(TEXT("quality_only"),QualityOnly);if(QualityOnly){const bool Visible=!bFootprints&&DetailQuality>0;Pair.Key->SetVisibility(Visible);Pair.Key->SetCollisionEnabled(Visible?ECollisionEnabled::QueryOnly:ECollisionEnabled::NoCollision);}}}
     for(auto HISM:StreetMeshes){const bool Tree=StreetModelNames[HISM].StartsWith(TEXT("tree_"));const int32 Distance=Tree?(DetailQuality==0?90000:DetailQuality==1?120000:180000):(DetailQuality==0?12000:DetailQuality==1?25000:45000);HISM->SetCullDistances(Distance*.8,Distance);HISM->SetVisibility(bStreetDetails&&!bFootprints);HISM->SetCollisionEnabled(bStreetDetails&&!bFootprints?(StreetModelNames[HISM]==TEXT("tree_crown")?ECollisionEnabled::QueryOnly:ECollisionEnabled::QueryAndPhysics):ECollisionEnabled::NoCollision);}
     for(auto HISM:StreetMeshes){
-        if(HISM->ComponentHasTag(TEXT("ParisPhotoTree")))HISM->SetStaticMesh(DetailQuality>0?PhotoTreeModel.Get():ProxyTreeCrownModel.Get());
+        if(HISM->ComponentHasTag(TEXT("ParisPhotoTree"))){
+            HISM->SetStaticMesh(DetailQuality>0?PhotoTreeModel.Get():ProxyTreeCrownModel.Get());
+            HISM->SetCastShadow(!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows"))&&(DetailQuality!=1||!HISM->ComponentHasTag(TEXT("ParisPhotoTreeFar"))));
+        }
         if(HISM->ComponentHasTag(TEXT("ParisPhotoTreeTrunkProxy"))){HISM->SetRenderInMainPass(DetailQuality==0);HISM->SetRenderInDepthPass(DetailQuality==0);}
     }
     if(Crowd)Crowd->SetDisplay(bPeople&&!bFootprints,DetailQuality);

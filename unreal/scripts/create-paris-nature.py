@@ -2,7 +2,10 @@
 import hashlib
 import json
 import os
+import sys
 import unreal
+sys.path.insert(0,os.path.dirname(__file__))
+from paris_foliage import RECIPE, WIND_DISABLE_DISTANCE_CM, finish_tree_material
 
 def main():
     root=os.path.normpath(os.path.join(os.path.dirname(__file__),'..','assets','paris-nature'))
@@ -20,9 +23,10 @@ def main():
     with open(canonical,'w',encoding='utf-8') as f:json.dump(source,f)
     assets=unreal.EditorAssetLibrary;tools=unreal.AssetToolsHelpers.get_asset_tools();lib=unreal.MaterialEditingLibrary
     folder='/Game/ParisPhotoreal/Nature';package=folder+'/SM_ParisBroadleaf'
-    with open(__file__,'rb') as f:signature=hashlib.sha256(f.read().replace(b'\r\n',b'\n')+json.dumps(manifest,sort_keys=True).encode()).hexdigest()
+    recipe_bytes=b''.join(open(os.path.join(os.path.dirname(__file__),name),'rb').read().replace(b'\r\n',b'\n') for name in ('create-paris-nature.py','paris_foliage.py'))
+    signature=hashlib.sha256(recipe_bytes+json.dumps(manifest,sort_keys=True).encode()).hexdigest()
     cached=assets.load_asset(package) if assets.does_asset_exist(package) else None
-    if cached and assets.get_metadata_tag(cached,'ParisTwin.NatureRecipe')==signature:
+    if cached and assets.get_metadata_tag(cached,'ParisTwin.NatureRecipe')==signature and os.path.isfile(os.path.join(unreal.Paths.project_content_dir(),'Data','paris-nature.json')):
         unreal.log_warning('PARIS_PHOTO_NATURE_CACHED');return
     for sub in ('Materials','Textures','paris_broadleaf/StaticMeshes','paris_broadleaf/Materials','paris_broadleaf/Textures'):
         assets.make_directory(folder+'/'+sub)
@@ -65,10 +69,11 @@ def main():
 
 
     for index,material in enumerate(source['materials']):
-        leaf='leaves' in material['name'];name='M_ParisBroadleaf_'+str(index);path=folder+'/Materials/'+name
+        leaf='leaves' in material['name'];branch='branches' in material['name'];name='M_ParisBroadleaf_'+str(index);path=folder+'/Materials/'+name
         mat=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,folder+'/Materials',unreal.Material,unreal.MaterialFactoryNew())
         lib.delete_all_material_expressions(mat);mat.set_editor_property('two_sided',True)
         lib.set_material_usage(mat,unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
+        lib.set_material_usage(mat,unreal.MaterialUsage.MATUSAGE_NANITE)
         if leaf:
             mat.set_editor_property('blend_mode',unreal.BlendMode.BLEND_MASKED)
             mat.set_editor_property('shading_model',unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
@@ -83,12 +88,10 @@ def main():
             t=texture(filename,role);n=node(mat,unreal.MaterialExpressionTextureSample,texture=t,sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL if role=='normal' else unreal.MaterialSamplerType.SAMPLERTYPE_COLOR if role=='diff' else unreal.MaterialSamplerType.SAMPLERTYPE_MASKS);link(uv,'',n,'UVs');return n
         base=sample(material['pbrMetallicRoughness']['baseColorTexture'],'diff')
         normal=sample(normal_info,'normal');arm=sample(material['pbrMetallicRoughness']['metallicRoughnessTexture'],'arm')
-        for n,out,prop in [(base,'RGB',unreal.MaterialProperty.MP_BASE_COLOR),(normal,'RGB',unreal.MaterialProperty.MP_NORMAL),(arm,'R',unreal.MaterialProperty.MP_AMBIENT_OCCLUSION),(arm,'G',unreal.MaterialProperty.MP_ROUGHNESS)]:
-            if not lib.connect_material_property(n,out,prop):raise RuntimeError('Nature PBR output')
+        finish_tree_material(mat,base,normal,arm,leaf=leaf,branch=branch,normal_scale=normal_info.get('scale',1.))
         if leaf:
             alpha=texture('textures/'+manifest['asset']+'_leaves_alpha_2k.png','alpha')
             a=node(mat,unreal.MaterialExpressionTextureSample,texture=alpha,sampler_type=unreal.MaterialSamplerType.SAMPLERTYPE_MASKS);link(uv,'',a,'UVs');lib.connect_material_property(a,'R',unreal.MaterialProperty.MP_OPACITY_MASK)
-            scatter=node(mat,unreal.MaterialExpressionMultiply,const_b=.18);link(base,'RGB',scatter,'A');lib.connect_material_property(scatter,'',unreal.MaterialProperty.MP_SUBSURFACE_COLOR)
         lib.recompile_material(mat)
         if not assets.save_loaded_asset(mat):raise RuntimeError('Nature PBR material save failed')
         mesh.set_material(index,mat)
@@ -99,7 +102,9 @@ def main():
     if not assets.save_loaded_asset(mesh):raise RuntimeError('Could not save photo tree')
     box=mesh.get_bounding_box()
     if abs((box.max.z-box.min.z)-1000)>1:raise RuntimeError('Imported tree did not preserve canonical 10m height')
-    report=dict(asset=package,source_triangles=sum(source['accessors'][p['indices']]['count']//3 for m in source['meshes'] for p in m['primitives']),height_cm=box.max.z-box.min.z,materials=len(source['materials']),source_url=manifest['source_url'],license=manifest['license'],recipe=signature)
+    report=dict(asset=package,source_triangles=sum(source['accessors'][p['indices']]['count']//3 for m in source['meshes'] for p in m['primitives']),height_cm=box.max.z-box.min.z,materials=len(source['materials']),source_url=manifest['source_url'],license=manifest['license'],recipe=RECIPE,recipe_sha256=signature,wind_disable_distance_cm=WIND_DISABLE_DISTANCE_CM,
+        appearance_provenance=manifest['appearance_provenance'],texture_resolution=manifest['maps_resolution'])
+    with open(os.path.join(unreal.Paths.project_content_dir(),'Data','paris-nature.json'),'w',encoding='utf-8') as f:json.dump(report,f,indent=2)
     with open(os.path.join(unreal.Paths.project_dir(),'Saved','paris-v3-nature-import.json'),'w',encoding='utf-8') as f:json.dump(report,f,indent=2)
     unreal.log_warning('PARIS_PHOTO_NATURE_READY')
 

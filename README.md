@@ -10,6 +10,8 @@
 
 道路を見る場合は `Paris-Roads.cmd`。写真由来の舗装、細いひび・補修跡、道路端の汚れ、立体の縁石と排水グレーチングを、地上170cmの視点で確認できます。`F10`でHUDを隠せます。[道路の描画・再生成](docs/paris-realistic-roads.md)。
 
+樹木を見る場合は `Paris-Trees.cmd`。中・高品質で街路樹1,108本に写真由来の樹皮と葉を使い、葉の透過光、木ごとの色の違い、近景の風による揺れを表示します。`F7`の低品質で軽い樹木に戻り、`F10`でHUDを隠せます。[樹木の描画・再生成](docs/paris-realistic-trees.md)。
+
 **主人公で街を散策する場合は `Paris-Explore.cmd` をダブルクリック。** 三人称から開始し、`WASD`で歩く、`Shift`を押しながら走る、右ドラッグでカメラ、ホイールで距離、`V`で一人称／三人称を切り替えます。`H`でメニュー、`F10`でHUD表示、`F2`で全景、`F8`で主人公に戻ります。[主人公の操作・検証](docs/paris-protagonist.md)。
 
 扉の近景は Paris-Cathedral-Doors.cmd で表示します。聖母子像の実物スキャンは、必要な個人・非商用素材をローカルで取得済みの場合のみ Paris-Cathedral-Virgin.cmd で表示できます。素材がない場合は従来の像に戻ります。NC素材本体はGitHubには含めていません。作者情報は unreal/assets/notre-dame-sculptures/CREDITS.md を確認してください。

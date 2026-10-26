@@ -1,0 +1,13 @@
+{
+  "asset": "/Game/ParisPhotoreal/Nature/SM_ParisBroadleaf",
+  "source_triangles": 1599403,
+  "height_cm": 999.9999999703604,
+  "materials": 3,
+  "source_url": "https://polyhaven.com/a/island_tree_01",
+  "license": "CC0-1.0",
+  "recipe": "paris_tree_foliage_v2",
+  "recipe_sha256": "92c1f45be26039d9daea2681ab6d5b414235453ce399b1e66a9663cb2b9dd995",
+  "wind_disable_distance_cm": 6000,
+  "appearance_provenance": "Broadleaf appearance proxy; not identification of actual Paris tree species; mapped OSM locations retained",
+  "texture_resolution": 2048
+}

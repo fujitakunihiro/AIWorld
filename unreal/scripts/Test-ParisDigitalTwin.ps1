@@ -29,3 +29,4 @@ if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{Sca
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RealisticPedestrianVisuals\}' -Quiet)){throw 'Realistic pedestrian/fallback automation did not succeed'}
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{ProtagonistWalkRun\}' -Quiet)){throw 'Protagonist walking/running automation did not succeed'}
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RoadFinishAndCollision\}' -Quiet)){throw 'Road finish/collision automation did not succeed'}
+if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RealisticTreesAndSourceTransforms\}' -Quiet)){throw 'Tree appearance/source-transform automation did not succeed'}

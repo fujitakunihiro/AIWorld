@@ -119,13 +119,22 @@ void AddParisPhotoDetailStats(const AParisTwinScene* Scene,const TSharedPtr<FJso
     AddParisFrontageStats(Scene,Report);
     AddParisScannedStatueStats(Scene,Report);
     int32 Architecture=0,Trees=0,TreeCandidates=0,VisibleArchitecture=0,NaniteTrees=0,Lamps=0,LampParts=0,VisibleLamps=0,Ground=0,GroundVisible=0,GroundTriangles=0;int64 Triangles=0,TreeFallbackTriangles=0,LampTriangles=0;
+    int32 TreeBatches=0,FarTrees=0,WindLimitedTrees=0;
     TArray<UStaticMeshComponent*> Parts;Scene->GetComponents(Parts);
     int32 ScanCount=0,ScanVisible=0,ScanNanite=0,ScanTriangles=0;
     for(auto Part:Parts){
         auto Mesh=Part->GetStaticMesh();if(!Mesh)continue;
         if(Part->ComponentHasTag(TEXT("ParisScannedFacade"))){ScanCount++;ScanVisible+=Part->IsVisible()?1:0;ScanNanite+=Mesh->HasValidNaniteData()?1:0;ScanTriangles+=Mesh->GetNumTriangles(0);}
         if(Part->ComponentHasTag(TEXT("ParisPhotoArchitecture"))){Architecture++;VisibleArchitecture+=Part->IsVisible()?1:0;Triangles+=Mesh->GetNumTriangles(0);}
-        if(Part->ComponentHasTag(TEXT("ParisPhotoTree")))if(auto HISM=Cast<UHierarchicalInstancedStaticMeshComponent>(Part)){TreeCandidates+=HISM->GetInstanceCount();if(Mesh->GetName()==TEXT("SM_ParisBroadleaf")){Trees+=HISM->GetInstanceCount();TreeFallbackTriangles+=int64(HISM->GetInstanceCount())*Mesh->GetNumTriangles(0);if(Mesh->HasValidNaniteData())NaniteTrees+=HISM->GetInstanceCount();}}
+        if(Part->ComponentHasTag(TEXT("ParisPhotoTree")))if(auto HISM=Cast<UHierarchicalInstancedStaticMeshComponent>(Part)){
+            TreeCandidates+=HISM->GetInstanceCount();TreeBatches++;
+            if(Mesh->GetName()==TEXT("SM_ParisBroadleaf")){
+                Trees+=HISM->GetInstanceCount();TreeFallbackTriangles+=int64(HISM->GetInstanceCount())*Mesh->GetNumTriangles(0);
+                if(Mesh->HasValidNaniteData())NaniteTrees+=HISM->GetInstanceCount();
+                if(Part->ComponentHasTag(TEXT("ParisPhotoTreeFar")))FarTrees+=HISM->GetInstanceCount();
+                if(HISM->GetWorldPositionOffsetDisableDistance()==6000)WindLimitedTrees+=HISM->GetInstanceCount();
+            }
+        }
         if(Part->ComponentHasTag(TEXT("ParisPhotoStreetLamp")))if(auto ISM=Cast<UInstancedStaticMeshComponent>(Part)){LampParts++;LampTriangles+=int64(ISM->GetInstanceCount())*Mesh->GetNumTriangles(0);if(Part->ComponentHasTag(TEXT("ParisPhotoLampMetal"))){Lamps+=ISM->GetInstanceCount();if(ISM->IsVisible())VisibleLamps+=ISM->GetInstanceCount();}}
         if(Part->ComponentHasTag(TEXT("ParisGroundDisplay"))){Ground++;GroundVisible+=Part->IsVisible()?1:0;GroundTriangles+=Mesh->GetNumTriangles(0);}
     }
@@ -135,6 +144,9 @@ void AddParisPhotoDetailStats(const AParisTwinScene* Scene,const TSharedPtr<FJso
     Report->SetStringField(TEXT("authored_west_facade_provenance"),TEXT("Inferred original architectural study; not a surveyed full cathedral model"));
     Report->SetNumberField(TEXT("photo_tree_instances"),Trees);Report->SetNumberField(TEXT("photo_tree_nanite_instances"),NaniteTrees);Report->SetNumberField(TEXT("tree_fallback_triangles_before_culling"),double(TreeFallbackTriangles));
     Report->SetNumberField(TEXT("photo_tree_candidate_instances"),TreeCandidates);
+    Report->SetNumberField(TEXT("photo_tree_batches"),TreeBatches);Report->SetNumberField(TEXT("photo_tree_far_instances"),FarTrees);
+    Report->SetNumberField(TEXT("photo_tree_distance_limited_wind_instances"),WindLimitedTrees);
+    Report->SetStringField(TEXT("tree_surface_recipe"),TEXT("paris_tree_foliage_v2"));
     Report->SetNumberField(TEXT("photo_lantern_instances"),Lamps);Report->SetNumberField(TEXT("photo_lantern_visible"),VisibleLamps);Report->SetNumberField(TEXT("photo_lantern_batches"),LampParts);
     Report->SetNumberField(TEXT("photo_lantern_fallback_triangles_before_culling"),double(LampTriangles));
     Report->SetStringField(TEXT("photo_lantern_provenance"),TEXT("Original inferred Paris-style fixture; original mapped transform and collider retained; actual design unverified"));
