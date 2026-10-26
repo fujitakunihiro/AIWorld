@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "recipe": "seine_single_layer_v1",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "source_id": "osm/relation/2191006",
+  "source_attribution": "OpenStreetMap contributors / Ville de Paris (ODbL); IGN BD TOPO + RGE ALTI (Etalab 2.0)",
+  "world_bounds_cm": [
+    -40000.0,
+    -40000.0,
+    40000.0,
+    40000.0
+  ],
+  "water_level_cm": -850.0000000000003,
+  "shore_distance_range_cm": 6400,
+  "texture_size": 1024,
+  "appearance_provenance": "Original inferred river optics, flow and ripples; not measured bathymetry or hydrodynamics.",
+  "preview_camera": {
+    "position_cm": [
+      20736.25543406862,
+      29554.090454252815,
+      -150.00000000000034
+    ],
+    "target_cm": [
+      27364.76634053436,
+      31804.166711374946,
+      -835.0000000000003
+    ]
+  },
+  "files": {
+    "seine-ripple-normal.png": "e802358f5d6930fda01b05baac35cb0988d95991e5a33cd3e7974e6ebb900222",
+    "seine-shore-distance.png": "13637de1154991165f38979d86329519e9572d6dd5f8540c740186cce47b3e4e"
+  }
+}

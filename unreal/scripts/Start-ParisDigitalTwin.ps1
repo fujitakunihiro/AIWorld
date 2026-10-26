@@ -1,6 +1,7 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
+    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$RiverView,[switch]$LegacyWater,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
 $ErrorActionPreference='Stop'
+if($RiverView){$Photoreal=$true;$PhotoCamera='Riverside'}
 if($EntryDetail){$Photoreal=$true;$PhotoCamera='Street'}
 if($PortalDetail){$Photoreal=$true;$PhotoCamera='Front'}
 if($DoorDetail){$Photoreal=$true;$PhotoCamera='Front'}
@@ -85,6 +86,18 @@ if($Photoreal){
     if(-not $ready){& (Join-Path $PSScriptRoot 'Build-ParisPhotoreal.ps1') -EngineRoot $EngineRoot}
 }
 $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor.exe'
+if($Photoreal){
+    $waterPath=Join-Path (Split-Path $project) 'Content\Data\paris-water.json'
+    $waterReady=$false
+    if(Test-Path -LiteralPath $waterPath){
+        $water=Get-Content -LiteralPath $waterPath -Raw | ConvertFrom-Json
+        $waterReady=($water.source_scene_sha256 -eq $packet.source_scene_sha256 -and $water.recipe -eq 'seine_single_layer_v1')
+        foreach($asset in @('Materials\M_SeineRiver.uasset','Materials\M_ParisQuayWet.uasset','Textures\T_SeineRippleNormal.uasset','Textures\T_SeineShoreDistance.uasset')){
+            if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset)))){$waterReady=$false}
+        }
+    }
+    if(-not $waterReady){& (Join-Path $PSScriptRoot 'Build-ParisWater.ps1') -EngineRoot $EngineRoot}
+}
 if(($Walk -or $ThirdPerson) -and -not $SimplePeople){
     $peoplePath=Join-Path (Split-Path $project) 'Content\Data\paris-people.json'
     $heroReady=$false
@@ -109,6 +122,8 @@ if($NoNCStatues){$launchArgs+="-ParisTwinNoNCStatues"}
 if($EntryDetail){$launchArgs+='-ParisTwinEntryDetail'}
 if($PhotoCamera){$launchArgs+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';Street='Camera_Paris_Street'}[$PhotoCamera])}
 if($Eye){$launchArgs+='-ParisTwinEye'}
+if($RiverView){$launchArgs+='-ParisTwinRiverView'}
+if($LegacyWater){$launchArgs+='-ParisTwinLegacyWater'}
 if($Walk){$launchArgs+='-ParisTwinWalk'}
 if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}
 if($NoPeople){$launchArgs+='-ParisTwinNoPeople'}

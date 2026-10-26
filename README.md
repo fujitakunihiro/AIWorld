@@ -6,6 +6,8 @@
 
 通常の全景は、プロジェクトルートの Paris-Cathedral.cmd をダブルクリックします。
 
+セーヌ川を見る場合は `Paris-River.cmd`。水専用の光の散乱・吸収・反射、3層の流れるさざ波、実際の河岸に沿う色の変化と濡れた護岸を表示します。`F7`の低品質や`M`の簡易表示では従来の軽い水面に戻ります。[川の描画・再生成](docs/paris-realistic-river.md)。
+
 **主人公で街を散策する場合は `Paris-Explore.cmd` をダブルクリック。** 三人称から開始し、`WASD`で歩く、`Shift`を押しながら走る、右ドラッグでカメラ、ホイールで距離、`V`で一人称／三人称を切り替えます。`H`でメニュー、`F10`でHUD表示、`F2`で全景、`F8`で主人公に戻ります。[主人公の操作・検証](docs/paris-protagonist.md)。
 
 扉の近景は Paris-Cathedral-Doors.cmd で表示します。聖母子像の実物スキャンは、必要な個人・非商用素材をローカルで取得済みの場合のみ Paris-Cathedral-Virgin.cmd で表示できます。素材がない場合は従来の像に戻ります。NC素材本体はGitHubには含めていません。作者情報は unreal/assets/notre-dame-sculptures/CREDITS.md を確認してください。

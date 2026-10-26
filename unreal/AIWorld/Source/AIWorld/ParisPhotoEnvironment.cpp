@@ -141,6 +141,14 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
         Camera->SetActorLabel(Name.ToString());
 #endif
         FVector Position(P[0]->AsNumber(),P[1]->AsNumber(),P[2]->AsNumber());FVector Aim(Target[0]->AsNumber(),Target[1]->AsNumber(),Target[2]->AsNumber());
+        bool RiverPreview=false;
+        if(Name==TEXT("Camera_NotreDame_Riverside")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinRiverView"))){
+            FString RiverText;TSharedPtr<FJsonObject> River;
+            if(FFileHelper::LoadFileToString(RiverText,*(FPaths::ProjectContentDir()/TEXT("Data/paris-water.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(RiverText),River)&&River.IsValid()&&String(River,TEXT("source_scene_sha256"))==String(Data,TEXT("source_scene_sha256"))){
+                auto Preview=Object(River,TEXT("preview_camera"));const auto& RP=Array(Preview,TEXT("position_cm"));const auto& RT=Array(Preview,TEXT("target_cm"));
+                if(RP.Num()==3&&RT.Num()==3){Position=FVector(RP[0]->AsNumber(),RP[1]->AsNumber(),RP[2]->AsNumber());Aim=FVector(RT[0]->AsNumber(),RT[1]->AsNumber(),RT[2]->AsNumber());RiverPreview=true;}
+            }
+        }
         double DetailLens=0;
         const bool DoorDetail=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinDoorDetail"));
         const bool VirginDetail=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinVirginDetail"));
@@ -166,7 +174,7 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
             }
         }
         FHitResult Ground;FCollisionQueryParams Query;Query.bTraceComplex=true;
-        if(!OnBridge&&Scene->GetWorld()->LineTraceSingleByChannel(Ground,Position+FVector(0,0,20000),Position-FVector(0,0,20000),ECC_Pawn,Query)&&Ground.ImpactNormal.Z>.4)
+        if(!RiverPreview&&!OnBridge&&Scene->GetWorld()->LineTraceSingleByChannel(Ground,Position+FVector(0,0,20000),Position-FVector(0,0,20000),ECC_Pawn,Query)&&Ground.ImpactNormal.Z>.4)
             Position.Z=Ground.ImpactPoint.Z+170;
         Camera->SetActorLocationAndRotation(Position,(Aim-Position).Rotation());auto C=Camera->GetCameraComponent();
         const double Lens=FMath::Clamp(DetailLens>0?DetailLens:Number(J,TEXT("focal_length_mm"),35),24.,85.);

@@ -17,7 +17,12 @@ void AParisTwinScene::ToggleSurfaces() {
 
 UMaterialInterface* AParisTwinScene::SurfaceMaterialFor(const TSharedPtr<FJsonObject>& Feature) const {
     const FString Kind=String(Feature,TEXT("kind"));
-    if(Kind==TEXT("water"))return WaterMaterial.Get();
+    const bool RiverDetail=bDetailedSurfaces&&DetailQuality>0&&FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinLegacyWater"));
+    if(Kind==TEXT("water")){
+        if(RiverDetail&&String(Feature,TEXT("id"))==TEXT("seine"))
+            if(auto River=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_SeineRiver")))return River;
+        return WaterMaterial.Get();
+    }
     if(!bDetailedSurfaces||DetailQuality==0)return VertexMaterial.Get();
     if(Kind==TEXT("park")&&FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces")))
         if(auto Grass=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisGrassPhotographic")))return Grass;
@@ -29,6 +34,8 @@ UMaterialInterface* AParisTwinScene::SurfaceMaterialFor(const TSharedPtr<FJsonOb
             if(bPhotoScanReady&&PhotoScanBodyMaterial&&!bFootprints)return PhotoScanBodyMaterial;
             if(auto Cathedral=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisCathedralStone")))return Cathedral;
         }
+    if(Kind==TEXT("quay")&&RiverDetail)
+        if(auto Quay=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisQuayWet")))return Quay;
     if(Kind==TEXT("building")||Kind==TEXT("quay"))return StoneMaterial.Get();
     if(Kind==TEXT("roof"))return String(Object(Feature,TEXT("properties")),TEXT("roof_material"))==TEXT("zinc")&&ZincMaterial?ZincMaterial.Get():SlateMaterial.Get();
     if(Kind==TEXT("facade_roof"))return ZincMaterial?ZincMaterial.Get():SlateMaterial.Get();

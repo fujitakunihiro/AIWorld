@@ -45,3 +45,4 @@ if($ImportCandidate){
 if(-not $SkipScannedFacade -and (Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-notredame-scan.json'))){
     & (Join-Path $PSScriptRoot 'Build-NotreDameScan.ps1') -EngineRoot $EngineRoot
 }
+& (Join-Path $PSScriptRoot 'Build-ParisWater.ps1') -EngineRoot $EngineRoot

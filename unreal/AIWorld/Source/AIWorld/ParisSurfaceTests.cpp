@@ -81,7 +81,7 @@ bool FParisSurfaceWait::Update() {
         for(auto Mesh:Meshes)if(auto Material=Mesh->GetMaterial(0)){
             if(Material->GetMaterial()->GetName()==TEXT("M_ParisLimestone"))Wall=Mesh;
             if(Material->GetMaterial()->GetName()==TEXT("M_ParisPaving"))Paving++;
-            if(Mesh->GetCollisionEnabled()==ECollisionEnabled::QueryOnly&&Mesh->GetCollisionResponseToChannel(ECC_Pawn)==ECR_Ignore&&Material->GetMaterial()->GetName()!=TEXT("M_Water"))Details.Add(Mesh);
+            if(Mesh->GetCollisionEnabled()==ECollisionEnabled::QueryOnly&&Mesh->GetCollisionResponseToChannel(ECC_Pawn)==ECR_Ignore&&Material->GetMaterial()->GetName()!=TEXT("M_Water")&&!Material->GetMaterial()->GetShadingModels().HasShadingModel(MSM_SingleLayerWater))Details.Add(Mesh);
         }
         Test->TestTrue(TEXT("Paving and walls use authored surfaces"),Wall&&Paving>0);
         Test->TestTrue(TEXT("Quality-zone window reliefs loaded"),Details.Num()>0);

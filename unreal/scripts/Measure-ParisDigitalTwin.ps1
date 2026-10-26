@@ -9,6 +9,8 @@ param(
     [switch]$FullPeople,
     [switch]$SimplePeople,
     [switch]$PeopleView,
+    [switch]$RiverView,
+    [switch]$LegacyWater,
     [ValidateRange(0,159)][int]$PeopleIndex=0,
     [switch]$FlatMaterials,
     [switch]$ProceduralSurfaces,
@@ -70,6 +72,8 @@ if($LegacyJSON){$arguments+='-ParisTwinLegacyJSON'}
 if($FullPeople){$arguments+='-ParisTwinFullPeople'}
 if($SimplePeople){$arguments+='-ParisTwinSimplePeople'}
 if($PeopleView){$arguments+=@('-ParisTwinPeopleView',('-ParisTwinPeopleIndex='+$PeopleIndex))}
+if($RiverView){$arguments+='-ParisTwinRiverView'}
+if($LegacyWater){$arguments+='-ParisTwinLegacyWater'}
 if($FlatMaterials){$arguments+='-ParisTwinFlatMaterials'}
 if($ProceduralSurfaces){$arguments+='-ParisTwinProceduralSurfaces'}
 if($NoShadows){$arguments+='-ParisTwinNoShadows'}
