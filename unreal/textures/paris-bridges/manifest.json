@@ -1,0 +1,32 @@
+{
+  "asset": "sandstone_blocks_05",
+  "source_url": "https://polyhaven.com/a/sandstone_blocks_05",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "tile_cm": 300,
+  "resolution": 2048,
+  "normal_convention": "DirectX",
+  "maps": {
+    "albedo": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandstone_blocks_05/sandstone_blocks_05_diff_2k.jpg",
+      "md5": "486e2b51beffc6c050d1e2b25fa47cbd",
+      "file": "sandstone_blocks_05_albedo.jpg",
+      "sha256": "46c0be03ddf94e2eee4cc4ce3aa5526dedfcb85f41e78ea95017640164596602",
+      "bytes": 2302231
+    },
+    "normal": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandstone_blocks_05/sandstone_blocks_05_nor_dx_2k.jpg",
+      "md5": "2e3ffed2891f0fc09a0497deabb0c0c8",
+      "file": "sandstone_blocks_05_normal.jpg",
+      "sha256": "5d018fb8e5356540cd8e610a86661d686b8fe1e4ced1756240fed65e3c4a519d",
+      "bytes": 4302974
+    },
+    "orm": {
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandstone_blocks_05/sandstone_blocks_05_arm_2k.jpg",
+      "md5": "887ad0057682f01bf2705d4d1134c866",
+      "file": "sandstone_blocks_05_orm.jpg",
+      "sha256": "ce5206714ea29d9719fe478659b4373568ed28193e74795c99411a931ef4c320",
+      "bytes": 562341
+    }
+  }
+}

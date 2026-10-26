@@ -1,0 +1,68 @@
+{
+  "format": "paris_bridges_validation_v1",
+  "native_build_succeeded": true,
+  "geometry_tests_passed": 4,
+  "automation_tests_passed": [
+    "BusinessesAndTerraces",
+    "CafeSeatingLifecycle",
+    "CafeVisitLifecycle",
+    "CoordinateAgreement",
+    "CoveredTerrainDisplayAndCollision",
+    "FrontageGeometryAndFallback",
+    "LocalSocialInteraction",
+    "ObservedFacadeAndFallback",
+    "PhotoBridgeDeckHeight",
+    "PhotoDetailAssetsAndFallback",
+    "PhotoEnvironmentAndCameraSwitching",
+    "PhotographicSurfaceBindings",
+    "ProtagonistWalkRun",
+    "RealisticBridgesAndContinuousWalking",
+    "RealisticPedestrianVisuals",
+    "RealisticTreesAndSourceTransforms",
+    "RenderCacheParityAndModes",
+    "RoadFinishAndCollision",
+    "RuntimePacketSafety",
+    "ScannedVirginAndFallback",
+    "SceneCollisionAndDebug",
+    "StreetInstancesAndQuality",
+    "SurfaceMaterialsAndDetails",
+    "TrafficAndMappedProps",
+    "WalkingAndPedestrians",
+    "WalkingGraphRouting"
+  ],
+  "walking_floor_samples": 175,
+  "parapet_capsule_checks": 7,
+  "profiles": 7,
+  "visual_assets": 30,
+  "nanite_assets_verified_at_runtime": 30,
+  "unused_generated_asset_versions_removed": 99,
+  "source_triangles": 218258,
+  "source_geometry_unchanged": {
+    "paris-digital-twin.json": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+    "paris-digital-twin-meshes.bin": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8"
+  },
+  "final_render_material_errors": false,
+  "performance_before": {
+    "fps": 46.478650425595625,
+    "frame_p95_ms": 24.36770126223564,
+    "run_utc": "2026-10-26T15:13:31.0723600Z"
+  },
+  "performance_after": {
+    "fps": 40.20797996481725,
+    "frame_p95_ms": 27.50910073518753,
+    "run_utc": "2026-10-26T15:30:53.1759705Z",
+    "bridge_reconstructions": 7,
+    "bridge_nanite_batches": 30,
+    "bridge_continuous_colliders": 7
+  },
+  "camera_ue_cm": [
+    -17526.731212261577,
+    12365.942973586514,
+    131.01504944490415
+  ],
+  "boundary_clipped_meshes_unchanged": [
+    "bridge-deck/3",
+    "bridge-deck/4",
+    "bridge-deck/13"
+  ]
+}

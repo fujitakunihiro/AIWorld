@@ -94,6 +94,8 @@ public:
     int32 StreetCount=0,InstanceCount=0,InstanceTriangles=0,DetailQuality=1;
     bool bStreetDetails=true;
     TSharedPtr<FJsonObject> StreetInstanceSource(UPrimitiveComponent* Component,int32 Instance) const;
+    TSharedPtr<FJsonObject> SourceFeatureByID(const FString& ID) const;
+    TSharedPtr<FJsonObject> BridgeData;
     bool FindWalkingSpawn(const FVector& Desired,FVector& Centre) const;
     void TogglePeople();
     void ToggleTraffic();

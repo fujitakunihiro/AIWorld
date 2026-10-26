@@ -10,6 +10,7 @@
 #include "ParisPhotoArchitecture.h"
 #include "ParisGroundDisplay.h"
 #include "ParisRoadDetail.h"
+#include "ParisBridgeDetail.h"
 #include "ParisPhotoFrontages.h"
 #if WITH_EDITOR
 #include "AssetCompilingManager.h"
@@ -344,6 +345,7 @@ void AParisTwinScene::BeginPlay() {
         Mesh->SetCastShadow((Kind==TEXT("building")||Kind==TEXT("roof")||Kind==TEXT("facade_relief")||Kind==TEXT("facade_planter")||Kind==TEXT("facade_railing"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));
         Mesh->SetMaterial(0,SurfaceMaterialFor(J));
         if(Kind==TEXT("ground"))Mesh->ComponentTags.Add(TEXT("ParisSourceTerrain"));
+        if(Kind==TEXT("bridge")){Mesh->ComponentTags.Add(TEXT("ParisSourceBridge"));Mesh->ComponentTags.Add(FName(*String(J,TEXT("id"))));}
         bool Cosmetic=false;Object(J,TEXT("properties"))->TryGetBoolField(TEXT("cosmetic_only"),Cosmetic);
         if(Cosmetic){Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);Mesh->SetCollisionResponseToChannel(ECC_Pawn,ECR_Ignore);}
         const double Distance=Number(Object(J,TEXT("properties")),TEXT("render_distance_m"));if(Distance>0)Mesh->SetCullDistance(Distance*100);
@@ -354,6 +356,7 @@ void AParisTwinScene::BeginPlay() {
             if(!BuildParisRenderCache(Mesh,Baked))UE_LOG(LogTemp,Warning,TEXT("Paris render cache failed for %s; keeping procedural drawing"),*String(J,TEXT("id")));
         }
     }
+    CreateParisBridgeDetail(this,Data);
     TMap<FString,UStaticMesh*> Models;TMap<FString,int32> ModelTriangles;
     auto CrownMaterial=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisFoliage.M_ParisFoliage"));
     for(const auto& Value:Array(Data,TEXT("instance_models"))){auto Model=Value->AsObject();const FString Name=String(Model,TEXT("id"));
@@ -369,6 +372,7 @@ void AParisTwinScene::BeginPlay() {
         const bool Lamp=PhotoLamps.Contains(Name);
         for(const auto& Entry:Array(Batch,TEXT("instances"))){auto Item=Entry->AsObject();FVector Position,Scale;if(!Vector(Item->TryGetField(TEXT("position_cm")),Position)||!Vector(Item->TryGetField(TEXT("scale")),Scale)||Scale.GetMin()<=0){Status=TEXT("街路設備の座標が不正です");return;}
             const bool Detailed=(Tree||Lamp)&&FVector::DistSquared2D(Position,QualityCentre)<FMath::Square(17000.);
+            double BridgeZ;if(!Name.StartsWith(TEXT("tree_"))&&ParisBridgeVisualHeight(GetWorld(),Position,BridgeZ))Position.Z=BridgeZ;
             (Detailed?Near:Far).Add(FTransform(FRotator(0,Number(Item,TEXT("yaw_degrees")),0),Position,Scale));(Detailed?NearIDs:FarIDs).Add(String(Item,TEXT("source_id")));
         }
         auto AddGroup=[&](const TArray<FTransform>& Transforms,const TArray<FString>& IDs,bool Detailed){
@@ -441,10 +445,12 @@ TSharedPtr<FJsonObject> AParisTwinScene::SourceAt(const FVector& Point,const FSt
         Score+=K==TEXT("building")?0.:Road?100000.:200000.;if(Score<BestScore){BestScore=Score;Best=Feature;}}
     return Best;
 }
+TSharedPtr<FJsonObject> AParisTwinScene::SourceFeatureByID(const FString& ID) const {for(const auto& Feature:SourceFeatures)if(String(Feature,TEXT("id"))==ID)return Feature;return nullptr;}
 void AParisTwinScene::SelectHit(const FHitResult& Hit) {
     ClearInspection();
     auto Found=Features.Find(Hit.GetComponent());TSharedPtr<FJsonObject> Source;
     if(bFootprints)Source=SourceAt(Hit.ImpactPoint);
+    else if(!ParisBridgeHitSource(Hit.GetComponent()).IsEmpty())Source=SourceFeatureByID(ParisBridgeHitSource(Hit.GetComponent()));
     else if(StreetInstanceIDs.Contains(Hit.GetComponent()))Source=StreetInstanceSource(Hit.GetComponent(),Hit.Item);
     else if(Found){const auto J=*Found;auto P=Object(J,TEXT("properties"));const FString Kind=String(J,TEXT("kind"));const FString SourceKind=Kind==TEXT("roof")||Kind.StartsWith(TEXT("facade_"))?TEXT("building"):Kind==TEXT("quay")?TEXT("water"):Kind;if(!String(P,TEXT("source_id")).IsEmpty())Source=J;else Source=SourceAt(Hit.ImpactPoint,SourceKind,Array(P,TEXT("source_ids")));if(!Source&&Kind.StartsWith(TEXT("facade_")))Source=SourceAt(Hit.ImpactPoint-Hit.ImpactNormal*15,TEXT("building"),Array(P,TEXT("source_ids")));}
     const FString Person=Crowd&&Hit.GetActor()==Crowd?Crowd->DescribeHit(Hit.GetComponent(),Hit.Item):TEXT("");
@@ -557,6 +563,7 @@ void AParisTwinScene::RefreshAppearance() {
     SyncParisPhotoFrontages(this);
     SyncParisGroundDisplay(this);
     SyncParisRoadDetail(this);
+    SyncParisBridgeDetail(this);
     for(auto& Pair:Features)if(String(Pair.Value,TEXT("kind"))==TEXT("building")) {
         auto C=Cast<UProceduralMeshComponent>(Pair.Key);
         if(auto Section=C->GetProcMeshSection(0)){for(const auto& Value:Array(Pair.Value,TEXT("appearance_ranges"))){auto Range=Value->AsObject();const bool Overlap=bIssues&&OverlapIDs.Contains(String(Range,TEXT("source_id")));const FColor Color=Overlap?FColor(235,65,92):bLevels?(String(Range,TEXT("body_level"))==TEXT("L2")?FColor(78,174,148):FColor(239,156,66)):FLinearColor(FColor::FromHex(String(Range,TEXT("color")))).ToFColor(false);const int32 Start=Number(Range,TEXT("start")),End=Start+Number(Range,TEXT("count"));for(int32 I=Start;I<End&&Section->ProcVertexBuffer.IsValidIndex(I);I++)Section->ProcVertexBuffer[I].Color=Color;}C->MarkRenderStateDirty();}C->SetMaterial(0,bLevels||bIssues?VertexMaterial.Get():StoneMaterial.Get());

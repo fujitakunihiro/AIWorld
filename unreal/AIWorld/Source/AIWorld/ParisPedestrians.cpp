@@ -1,6 +1,7 @@
 #include "ParisPedestrians.h"
 #include "ParisStreetMeshes.h"
 #include "ParisWalker.h"
+#include "ParisBridgeDetail.h"
 #include "ParisHumanAnimation.h"
 #include "Camera/PlayerCameraManager.h"
 #include "WorldProtocol.h"
@@ -223,7 +224,9 @@ void AParisPedestrianCrowd::UpdateInstances(bool TraceGround){
         const bool PrivateSeat=Stop&&A.Route==Stop->SeatRoute;
         if(PrivateSeat)A.GroundOffset=0;
         if(Seated)SeatedRenderedCount++;
-        if(TraceGround&&!PrivateSeat){FHitResult Hit;FCollisionQueryParams Params;Params.AddIgnoredActor(this);if(GetWorld()->LineTraceSingleByChannel(Hit,A.Position+FVector(0,0,80),A.Position-FVector(0,0,120),ECC_Pawn,Params)&&Hit.Normal.Z>.7)A.GroundOffset=Hit.ImpactPoint.Z-A.Position.Z;}
+        double BridgeZ=0;const bool OnBridge=!PrivateSeat&&ParisBridgeVisualHeight(GetWorld(),A.Position,BridgeZ);
+        if(OnBridge)A.GroundOffset=BridgeZ-A.Position.Z;
+        else if(TraceGround&&!PrivateSeat){FHitResult Hit;FCollisionQueryParams Params;Params.AddIgnoredActor(this);if(GetWorld()->LineTraceSingleByChannel(Hit,A.Position+FVector(0,0,80),A.Position-FVector(0,0,120),ECC_Pawn,Params)&&Hit.Normal.Z>.7)A.GroundOffset=Hit.ImpactPoint.Z-A.Position.Z;}
         const double Distance=FVector::Dist2D(A.Position,View);
         if(RenderHuman(I,WantedHumans,UsedHumanSlots,RenderAccumulator))continue;
         A.bFarPose=!FullPeople&&ModelByName.Contains(TEXT("person_far_0"))&&Distance>NearRange+(A.bFarPose?-200:200);

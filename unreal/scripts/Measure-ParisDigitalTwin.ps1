@@ -13,6 +13,8 @@ param(
     [switch]$LegacyWater,
     [switch]$RoadView,
     [switch]$LegacyRoads,
+    [switch]$BridgeView,
+    [switch]$LegacyBridges,
     [ValidateRange(0,159)][int]$PeopleIndex=0,
     [switch]$FlatMaterials,
     [switch]$ProceduralSurfaces,
@@ -77,6 +79,8 @@ if($PeopleView){$arguments+=@('-ParisTwinPeopleView',('-ParisTwinPeopleIndex='+$
 if($RiverView){$arguments+='-ParisTwinRiverView'}
 if($LegacyWater){$arguments+='-ParisTwinLegacyWater'}
 if($RoadView){$arguments+='-ParisTwinRoadView'}
+if($BridgeView){$arguments+='-ParisTwinBridgeView'}
+if($LegacyBridges){$arguments+='-ParisTwinLegacyBridges'}
 if($LegacyRoads){$arguments+='-ParisTwinLegacyRoads'}
 if($FlatMaterials){$arguments+='-ParisTwinFlatMaterials'}
 if($ProceduralSurfaces){$arguments+='-ParisTwinProceduralSurfaces'}

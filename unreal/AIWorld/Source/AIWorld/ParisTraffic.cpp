@@ -1,4 +1,5 @@
 #include "ParisTraffic.h"
+#include "ParisBridgeDetail.h"
 #include "ParisStreetMeshes.h"
 #include "ParisWalker.h"
 #include "Camera/PlayerCameraManager.h"
@@ -63,7 +64,9 @@ void AParisTraffic::UpdateInstances(){
     Visible.Sort([&](int32 A,int32 B){const double DA=FVector::DistSquared2D(Cars[A].Position,View),DB=FVector::DistSquared2D(Cars[B].Position,View);return DA==DB?A<B:DA<DB;});
     if(Visible.Num()>VisibleBudget)Visible.SetNum(VisibleBudget);RenderedCount=Visible.Num();
     for(int32 I:Visible){const auto& A=Cars[I];const auto& R=Routes[A.Route];
-        const FVector Slope=R.Sample(A.Distance+50,1)-R.Sample(A.Distance-50,1);const FTransform T(FRotator(Slope.Rotation().Pitch,A.Yaw,0),A.Position);
+        FVector Ground=A.Position,Before=R.Sample(A.Distance-50,1),After=R.Sample(A.Distance+50,1);double Z=0;
+        if(ParisBridgeVisualHeight(GetWorld(),Ground,Z))Ground.Z=Z;if(ParisBridgeVisualHeight(GetWorld(),Before,Z))Before.Z=Z;if(ParisBridgeVisualHeight(GetWorld(),After,Z))After.Z=Z;
+        const FVector Slope=After-Before;const FTransform T(FRotator(Slope.Rotation().Pitch,A.Yaw,0),Ground);
         for(const FString& Name:{FString::Printf(TEXT("car_body_%d"),A.Variant),FString(TEXT("car_glass")),FString(TEXT("car_rubber")),FString(TEXT("car_metal"))}){Items.FindOrAdd(Name).Add(T);Lookup.FindOrAdd(Name).Add(I);}
     }
     for(auto& Pair:MeshByName){auto ISM=Pair.Value;const auto& Transforms=Items.FindOrAdd(Pair.Key);if(ISM->GetInstanceCount()!=Transforms.Num()){ISM->ClearInstances();ISM->AddInstances(Transforms,false,false,false);}else if(!Transforms.IsEmpty())ISM->BatchUpdateInstancesTransforms(0,Transforms,false,true,true);CarByInstance.Add(ISM,Lookup.FindRef(Pair.Key));}

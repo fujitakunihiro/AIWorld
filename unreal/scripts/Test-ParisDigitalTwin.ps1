@@ -30,3 +30,4 @@ if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{Rea
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{ProtagonistWalkRun\}' -Quiet)){throw 'Protagonist walking/running automation did not succeed'}
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RoadFinishAndCollision\}' -Quiet)){throw 'Road finish/collision automation did not succeed'}
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RealisticTreesAndSourceTransforms\}' -Quiet)){throw 'Tree appearance/source-transform automation did not succeed'}
+if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RealisticBridgesAndContinuousWalking\}' -Quiet)){throw 'Bridge continuous-walking/source-picking automation did not succeed'}

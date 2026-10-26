@@ -1,6 +1,7 @@
 #include "ParisPhotoEnvironment.h"
 #include "ParisDigitalTwin.h"
 #include "ParisRuntimeMesh.h"
+#include "ParisBridgeDetail.h"
 #include "WorldProtocol.h"
 #include "EngineUtils.h"
 #include "Engine/DirectionalLight.h"
@@ -150,6 +151,13 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
             }
         }
         bool RiverPreview=false;
+        if(Name==TEXT("Camera_NotreDame_Riverside")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinBridgeView"))){
+            FString BridgeText;TSharedPtr<FJsonObject> Bridges;
+            if(FFileHelper::LoadFileToString(BridgeText,*(FPaths::ProjectContentDir()/TEXT("Data/paris-bridges.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(BridgeText),Bridges)&&Bridges&&String(Bridges,TEXT("source_scene_sha256"))==String(Data,TEXT("source_scene_sha256"))){
+                auto Preview=Object(Bridges,TEXT("preview_camera"));const auto& BP=Array(Preview,TEXT("position_cm"));const auto& BT=Array(Preview,TEXT("target_cm"));
+                if(BP.Num()==3&&BT.Num()==3){Position=FVector(BP[0]->AsNumber(),BP[1]->AsNumber(),BP[2]->AsNumber());Aim=FVector(BT[0]->AsNumber(),BT[1]->AsNumber(),BT[2]->AsNumber());RoadLens=Number(Preview,TEXT("focal_length_mm"),28);RiverPreview=true;Camera->Tags.AddUnique(TEXT("ParisBridgeInspectionCamera"));}
+            }
+        }
         if(Name==TEXT("Camera_NotreDame_Riverside")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinRiverView"))){
             FString RiverText;TSharedPtr<FJsonObject> River;
             if(FFileHelper::LoadFileToString(RiverText,*(FPaths::ProjectContentDir()/TEXT("Data/paris-water.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(RiverText),River)&&River.IsValid()&&String(River,TEXT("source_scene_sha256"))==String(Data,TEXT("source_scene_sha256"))){
@@ -173,8 +181,9 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
         // Road decks / triangulated terrain can differ from the DEM sample
         // at an embankment. Stand 170cm above the actual walkable surface,
         // retaining the geographic XY anchor and all original source data.
-        bool OnBridge=false;const FString BridgeID=String(J,TEXT("position_source_id"));
-        if(!BridgeID.IsEmpty())for(const auto& Value:Array(Data,TEXT("objects"))){auto ObjectData=Value->AsObject();if(String(ObjectData,TEXT("kind"))!=TEXT("bridge"))continue;
+        bool OnBridge=false;const FString BridgeID=String(J,TEXT("position_source_id"));double RebuiltZ;
+        if(!RiverPreview&&ParisBridgeSurfaceHeight(Scene,Position,RebuiltZ)){Position.Z=RebuiltZ+170;OnBridge=true;Camera->Tags.AddUnique(TEXT("ParisPhotoBridgeDeck"));}
+        if(!OnBridge&&!RiverPreview&&!BridgeID.IsEmpty())for(const auto& Value:Array(Data,TEXT("objects"))){auto ObjectData=Value->AsObject();if(String(ObjectData,TEXT("kind"))!=TEXT("bridge"))continue;
             bool Matches=false;for(const auto& ID:Array(Object(ObjectData,TEXT("properties")),TEXT("source_ids")))Matches|=ID->AsString()==BridgeID;if(!Matches)continue;
             FParisMeshArrays Mesh;FString Error;double Z;
             if(ReadParisMeshArrays(ObjectData,GeometryBlob,Mesh,Error)&&ParisBridgeDeckHeight(Mesh,FVector2D(Position.X,Position.Y),Z)){
@@ -182,8 +191,8 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
             }
         }
         FHitResult Ground;FCollisionQueryParams Query;Query.bTraceComplex=true;
-        if(!RiverPreview&&!OnBridge&&Scene->GetWorld()->LineTraceSingleByChannel(Ground,Position+FVector(0,0,20000),Position-FVector(0,0,20000),ECC_Pawn,Query)&&Ground.ImpactNormal.Z>.4)
-            Position.Z=Ground.ImpactPoint.Z+170;
+        if(((!RiverPreview&&!OnBridge)||Camera->ActorHasTag(TEXT("ParisBridgeInspectionCamera")))&&Scene->GetWorld()->LineTraceSingleByChannel(Ground,Position+FVector(0,0,20000),Position-FVector(0,0,20000),ECC_Pawn,Query)&&Ground.ImpactNormal.Z>.4)
+            Position.Z=Camera->ActorHasTag(TEXT("ParisBridgeInspectionCamera"))?FMath::Max(Position.Z,Ground.ImpactPoint.Z+170):Ground.ImpactPoint.Z+170;
         Camera->SetActorLocationAndRotation(Position,(Aim-Position).Rotation());auto C=Camera->GetCameraComponent();
         const double Lens=FMath::Clamp(DetailLens>0?DetailLens:Number(J,TEXT("focal_length_mm"),35),24.,85.);
         C->SetFieldOfView(FMath::RadiansToDegrees(2.*FMath::Atan(36./(2.*Lens))));C->PostProcessBlendWeight=1;

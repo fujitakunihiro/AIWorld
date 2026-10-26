@@ -1,8 +1,9 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
+    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
 $ErrorActionPreference='Stop'
 if($RiverView){$Photoreal=$true;$PhotoCamera='Riverside'}
 if($RoadView){$Photoreal=$true;$PhotoCamera='Street'}
+if($BridgeView){$Photoreal=$true;$PhotoCamera='Riverside'}
 if($EntryDetail){$Photoreal=$true;$PhotoCamera='Street'}
 if($PortalDetail){$Photoreal=$true;$PhotoCamera='Front'}
 if($DoorDetail){$Photoreal=$true;$PhotoCamera='Front'}
@@ -100,6 +101,14 @@ if($Photoreal){
         $natureReady=($nature.recipe -eq 'paris_tree_foliage_v2')
     }
     if(-not $natureReady){& (Join-Path $PSScriptRoot 'Build-ParisNature.ps1') -EngineRoot $EngineRoot}
+    $bridgePath=Join-Path (Split-Path $project) 'Content\Data\paris-bridges.json'
+    $bridgeReady=$false
+    if(Test-Path -LiteralPath $bridgePath){
+        $bridges=Get-Content -LiteralPath $bridgePath -Raw | ConvertFrom-Json
+        $bridgeReady=($bridges.recipe -eq 'paris_bridge_structure_v1' -and $bridges.source_scene_sha256 -eq $packet.source_scene_sha256)
+        foreach($part in $bridges.objects){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$part.asset.Substring(6)+'.uasset')))){$bridgeReady=$false}}
+    }
+    if(-not $bridgeReady){& (Join-Path $PSScriptRoot 'Build-ParisBridges.ps1') -EngineRoot $EngineRoot}
     $waterPath=Join-Path (Split-Path $project) 'Content\Data\paris-water.json'
     $waterReady=$false
     if(Test-Path -LiteralPath $waterPath){
@@ -149,6 +158,8 @@ if($Eye){$launchArgs+='-ParisTwinEye'}
 if($RiverView){$launchArgs+='-ParisTwinRiverView'}
 if($LegacyWater){$launchArgs+='-ParisTwinLegacyWater'}
 if($RoadView){$launchArgs+='-ParisTwinRoadView'}
+if($BridgeView){$launchArgs+='-ParisTwinBridgeView'}
+if($LegacyBridges){$launchArgs+='-ParisTwinLegacyBridges'}
 if($LegacyRoads){$launchArgs+='-ParisTwinLegacyRoads'}
 if($Walk){$launchArgs+='-ParisTwinWalk'}
 if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}
