@@ -141,6 +141,14 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
         Camera->SetActorLabel(Name.ToString());
 #endif
         FVector Position(P[0]->AsNumber(),P[1]->AsNumber(),P[2]->AsNumber());FVector Aim(Target[0]->AsNumber(),Target[1]->AsNumber(),Target[2]->AsNumber());
+        double RoadLens=0;
+        if(Name==TEXT("Camera_Paris_Street")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinRoadView"))){
+            FString RoadText;TSharedPtr<FJsonObject> Road;
+            if(FFileHelper::LoadFileToString(RoadText,*(FPaths::ProjectContentDir()/TEXT("Data/paris-road-detail.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(RoadText),Road)&&Road.IsValid()&&String(Road,TEXT("source_scene_sha256"))==String(Data,TEXT("source_scene_sha256"))){
+                auto Preview=Object(Road,TEXT("preview_camera"));const auto& RP=Array(Preview,TEXT("position_cm"));const auto& RT=Array(Preview,TEXT("target_cm"));
+                if(RP.Num()==3&&RT.Num()==3){Position=FVector(RP[0]->AsNumber(),RP[1]->AsNumber(),RP[2]->AsNumber());Aim=FVector(RT[0]->AsNumber(),RT[1]->AsNumber(),RT[2]->AsNumber());RoadLens=Number(Preview,TEXT("focal_length_mm"),30);Camera->Tags.AddUnique(TEXT("ParisRoadCamera"));}
+            }
+        }
         bool RiverPreview=false;
         if(Name==TEXT("Camera_NotreDame_Riverside")&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinRiverView"))){
             FString RiverText;TSharedPtr<FJsonObject> River;
@@ -149,7 +157,7 @@ void CreateParisPhotoCameras(AParisTwinScene* Scene,const TSharedPtr<FJsonObject
                 if(RP.Num()==3&&RT.Num()==3){Position=FVector(RP[0]->AsNumber(),RP[1]->AsNumber(),RP[2]->AsNumber());Aim=FVector(RT[0]->AsNumber(),RT[1]->AsNumber(),RT[2]->AsNumber());RiverPreview=true;}
             }
         }
-        double DetailLens=0;
+        double DetailLens=RoadLens;
         const bool DoorDetail=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinDoorDetail"));
         const bool VirginDetail=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinVirginDetail"));
         if(Name==TEXT("Camera_NotreDame_Front")&&(VirginDetail||DoorDetail||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPortalDetail")))){

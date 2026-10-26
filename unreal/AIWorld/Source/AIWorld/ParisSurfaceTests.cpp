@@ -80,7 +80,7 @@ bool FParisSurfaceWait::Update() {
         UProceduralMeshComponent* Wall=nullptr;TArray<UProceduralMeshComponent*> Details;int32 Paving=0;
         for(auto Mesh:Meshes)if(auto Material=Mesh->GetMaterial(0)){
             if(Material->GetMaterial()->GetName()==TEXT("M_ParisLimestone"))Wall=Mesh;
-            if(Material->GetMaterial()->GetName()==TEXT("M_ParisPaving"))Paving++;
+            if(Material->GetMaterial()->GetName()==TEXT("M_ParisPaving")||Material->GetMaterial()->GetName()==TEXT("M_ParisRoadPaving"))Paving++;
             if(Mesh->GetCollisionEnabled()==ECollisionEnabled::QueryOnly&&Mesh->GetCollisionResponseToChannel(ECC_Pawn)==ECR_Ignore&&Material->GetMaterial()->GetName()!=TEXT("M_Water")&&!Material->GetMaterial()->GetShadingModels().HasShadingModel(MSM_SingleLayerWater))Details.Add(Mesh);
         }
         Test->TestTrue(TEXT("Paving and walls use authored surfaces"),Wall&&Paving>0);

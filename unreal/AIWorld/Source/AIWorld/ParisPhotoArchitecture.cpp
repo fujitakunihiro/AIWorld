@@ -1,6 +1,7 @@
 #include "ParisPhotoArchitecture.h"
 #include "ParisPhotoFrontages.h"
 #include "ParisScannedStatue.h"
+#include "ParisRoadDetail.h"
 #include "ParisDigitalTwin.h"
 #include "WorldProtocol.h"
 #include "Components/StaticMeshComponent.h"
@@ -114,6 +115,7 @@ void SyncParisPhotoArchitecture(AParisTwinScene* Scene){
 }
 
 void AddParisPhotoDetailStats(const AParisTwinScene* Scene,const TSharedPtr<FJsonObject>& Report){
+    AddParisRoadDetailStats(Scene,Report);
     AddParisFrontageStats(Scene,Report);
     AddParisScannedStatueStats(Scene,Report);
     int32 Architecture=0,Trees=0,TreeCandidates=0,VisibleArchitecture=0,NaniteTrees=0,Lamps=0,LampParts=0,VisibleLamps=0,Ground=0,GroundVisible=0,GroundTriangles=0;int64 Triangles=0,TreeFallbackTriangles=0,LampTriangles=0;

@@ -43,6 +43,11 @@ UMaterialInterface* AParisTwinScene::SurfaceMaterialFor(const TSharedPtr<FJsonOb
     if(Kind==TEXT("facade_iron")||Kind==TEXT("facade_railing")||Kind==TEXT("facade_planter"))return IronMaterial?IronMaterial.Get():VertexMaterial.Get();
     if(Kind==TEXT("facade_wood")||Kind==TEXT("facade_joinery"))return WoodMaterial?WoodMaterial.Get():VertexMaterial.Get();
     if(Kind==TEXT("bridge"))return StoneMaterial.Get();
+    const bool RoadDetail=FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinLegacyRoads"));
+    if(RoadDetail&&(Kind==TEXT("road")||Kind==TEXT("sidewalk")||Kind==TEXT("path"))){
+        const TCHAR* Path=Kind==TEXT("road")?TEXT("/Game/Materials/M_ParisRoadAsphalt"):Kind==TEXT("sidewalk")?TEXT("/Game/Materials/M_ParisRoadSidewalk"):TEXT("/Game/Materials/M_ParisRoadPaving");
+        if(auto Material=LoadObject<UMaterialInterface>(nullptr,Path))return Material;
+    }
     if(Kind==TEXT("path")||Kind==TEXT("sidewalk"))return PavingMaterial?PavingMaterial.Get():VertexMaterial.Get();
     if(Kind==TEXT("road")){
         if(FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces")))

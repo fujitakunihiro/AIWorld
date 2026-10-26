@@ -46,3 +46,4 @@ if(-not $SkipScannedFacade -and (Test-Path -LiteralPath (Join-Path (Split-Path $
     & (Join-Path $PSScriptRoot 'Build-NotreDameScan.ps1') -EngineRoot $EngineRoot
 }
 & (Join-Path $PSScriptRoot 'Build-ParisWater.ps1') -EngineRoot $EngineRoot
+& (Join-Path $PSScriptRoot 'Build-ParisRoads.ps1') -EngineRoot $EngineRoot

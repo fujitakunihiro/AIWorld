@@ -9,6 +9,7 @@
 #include "ParisPhotoEnvironment.h"
 #include "ParisPhotoArchitecture.h"
 #include "ParisGroundDisplay.h"
+#include "ParisRoadDetail.h"
 #include "ParisPhotoFrontages.h"
 #if WITH_EDITOR
 #include "AssetCompilingManager.h"
@@ -403,6 +404,7 @@ void AParisTwinScene::BeginPlay() {
     CreateParisPhotoArchitecture(this);
     CreateParisPhotoFrontages(this,Data);
     CreateParisGroundDisplay(this,Data);
+    CreateParisRoadDetail(this,Data);
     if(auto C=Cast<AParisTwinCamera>(GetWorld()->GetFirstPlayerController()->GetPawn())){if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinWalk"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinThirdPerson")))C->Eye(QualityCentre);else C->Overview(Extent,SceneCentre);}
     int32 Landmark=0;if(FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),Landmark)&&Landmark>=1&&Landmark<=3)FocusLandmark(Landmark-1);
     if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFootprints")))ToggleFootprints();
@@ -545,6 +547,7 @@ void AParisTwinScene::RefreshAppearance() {
     SyncParisPhotoStreetDetails(this);
     SyncParisPhotoFrontages(this);
     SyncParisGroundDisplay(this);
+    SyncParisRoadDetail(this);
     for(auto& Pair:Features)if(String(Pair.Value,TEXT("kind"))==TEXT("building")) {
         auto C=Cast<UProceduralMeshComponent>(Pair.Key);
         if(auto Section=C->GetProcMeshSection(0)){for(const auto& Value:Array(Pair.Value,TEXT("appearance_ranges"))){auto Range=Value->AsObject();const bool Overlap=bIssues&&OverlapIDs.Contains(String(Range,TEXT("source_id")));const FColor Color=Overlap?FColor(235,65,92):bLevels?(String(Range,TEXT("body_level"))==TEXT("L2")?FColor(78,174,148):FColor(239,156,66)):FLinearColor(FColor::FromHex(String(Range,TEXT("color")))).ToFColor(false);const int32 Start=Number(Range,TEXT("start")),End=Start+Number(Range,TEXT("count"));for(int32 I=Start;I<End&&Section->ProcVertexBuffer.IsValidIndex(I);I++)Section->ProcVertexBuffer[I].Color=Color;}C->MarkRenderStateDirty();}C->SetMaterial(0,bLevels||bIssues?VertexMaterial.Get():StoneMaterial.Get());

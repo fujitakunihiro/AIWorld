@@ -1,7 +1,8 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$RiverView,[switch]$LegacyWater,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
+    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
 $ErrorActionPreference='Stop'
 if($RiverView){$Photoreal=$true;$PhotoCamera='Riverside'}
+if($RoadView){$Photoreal=$true;$PhotoCamera='Street'}
 if($EntryDetail){$Photoreal=$true;$PhotoCamera='Street'}
 if($PortalDetail){$Photoreal=$true;$PhotoCamera='Front'}
 if($DoorDetail){$Photoreal=$true;$PhotoCamera='Front'}
@@ -33,7 +34,12 @@ $newestSource=Get-ChildItem -LiteralPath (Join-Path $repo 'unreal\AIWorld\Source
 if($Build -or -not(Test-Path -LiteralPath $dll) -or $newestSource.LastWriteTime -gt (Get-Item -LiteralPath $dll).LastWriteTime){& (Join-Path $PSScriptRoot 'Build-AIWorldUE.ps1') -EngineRoot $EngineRoot;if($LASTEXITCODE -ne 0){throw 'Native build failed'}}
 $project=& (Join-Path $PSScriptRoot 'Get-AIWorldProject.ps1')
 if($Photoreal){
-    $packet=Get-Content -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-digital-twin-runtime.json') -Raw | ConvertFrom-Json
+    # Windows PowerShell 5.1 is very slow expanding millions of mesh numbers.
+    # The launcher only needs the small readiness manifest from this packet.
+    $packetPath=Join-Path (Split-Path $project) 'Content\Data\paris-digital-twin-runtime.json'
+    $packetText=& $python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8-sig')); print(json.dumps({k:d[k] for k in ('source_scene_sha256','baked_visuals')}))" $packetPath
+    if($LASTEXITCODE -ne 0){throw 'Could not read the prepared GIS render manifest'}
+    $packet=$packetText | ConvertFrom-Json
     $bakePath=Join-Path (Split-Path $project) 'Saved\paris-v2-bake-report.json'
     $ready=$false
     if(Test-Path -LiteralPath $bakePath){$bake=Get-Content -LiteralPath $bakePath -Raw | ConvertFrom-Json;$ready=($bake.source_scene_sha256 -eq $packet.source_scene_sha256 -and $bake.bake_recipe -eq 'static_gis_sdf_nanite_v3')}
@@ -97,6 +103,17 @@ if($Photoreal){
         }
     }
     if(-not $waterReady){& (Join-Path $PSScriptRoot 'Build-ParisWater.ps1') -EngineRoot $EngineRoot}
+    $roadPath=Join-Path (Split-Path $project) 'Content\Data\paris-road-detail.json'
+    $roadReady=$false
+    if(Test-Path -LiteralPath $roadPath){
+        $road=Get-Content -LiteralPath $roadPath -Raw | ConvertFrom-Json
+        $roadReady=($road.source_scene_sha256 -eq $packet.source_scene_sha256 -and $road.recipe -eq 'paris_road_finish_v1')
+        foreach($asset in @('Materials\M_ParisRoadAsphalt.uasset','Materials\M_ParisRoadSidewalk.uasset','Materials\M_ParisRoadPaving.uasset','Materials\M_ParisRoadKerb.uasset','Materials\M_ParisRoadIron.uasset','Textures\T_ParisRoadEdge.uasset','Textures\T_ParisRoadAge.uasset')){
+            if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset)))){$roadReady=$false}
+        }
+        foreach($part in $road.objects){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$part.asset.Substring(6)+'.uasset')))){$roadReady=$false}}
+    }
+    if(-not $roadReady){& (Join-Path $PSScriptRoot 'Build-ParisRoads.ps1') -EngineRoot $EngineRoot}
 }
 if(($Walk -or $ThirdPerson) -and -not $SimplePeople){
     $peoplePath=Join-Path (Split-Path $project) 'Content\Data\paris-people.json'
@@ -124,6 +141,8 @@ if($PhotoCamera){$launchArgs+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDam
 if($Eye){$launchArgs+='-ParisTwinEye'}
 if($RiverView){$launchArgs+='-ParisTwinRiverView'}
 if($LegacyWater){$launchArgs+='-ParisTwinLegacyWater'}
+if($RoadView){$launchArgs+='-ParisTwinRoadView'}
+if($LegacyRoads){$launchArgs+='-ParisTwinLegacyRoads'}
 if($Walk){$launchArgs+='-ParisTwinWalk'}
 if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}
 if($NoPeople){$launchArgs+='-ParisTwinNoPeople'}
