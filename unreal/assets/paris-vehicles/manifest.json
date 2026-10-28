@@ -1,0 +1,31 @@
+{
+  "source_url": "https://casual-effects.com/g3d/data10/index.html",
+  "metadata_url": "https://casual-effects.com/g3d/data10/research/model/bmw/info.js",
+  "download_url": "https://casual-effects.com/g3d/data10/research/model/bmw/bmw.zip",
+  "authors": [
+    "Mike Pan",
+    "Morgan McGuire"
+  ],
+  "source_revision": "2019-04-17",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "license_evidence": "info = {\n    title: \"BMW\",\n    downloadFilename: \"bmw.zip\",\n    downloadSize: \"6.7 MB\",\n    triangles: 385079,\n    vertices: 249772,\n    copyright: \"Mike Pan and Morgan McGuire\",\n    updatedDate: \"2019-04-17\",\n    license: \"CC0/Public Domain\",\n    description: `<p>Mike Pan created this model for a <a href=\"https://www.blender.org/download/demo-files/\">Blender 2.7 demo</a>.\n         Morgan McGuire corrected exposed backfaces, most holes, mesh interpenetration, and materials in 3DS Max and exported to OBJ\n         format. The original had two cars with angled wheels. This version has a single car with wheels in a default pose that \n         for easier run-time animation.</p>`,\n};\n",
+  "files": {
+    "bmw.zip": {
+      "sha256": "644d48ad8381c4e1e96be34a9900574b4df08d348e35a3394870e23c3baeffa6",
+      "bytes": 6935956
+    },
+    "bmw.obj": {
+      "sha256": "3804f593e0c172610de92b395f0f79d3a0a3c877b4b5ed9480c3d1cf1736f2c3",
+      "bytes": 31261750
+    },
+    "bmw.mtl": {
+      "sha256": "952dc413974191c5e5e80e22a094f25845cb424e545dfcadc1b986d501d13b08",
+      "bytes": 4463
+    },
+    "info.js": {
+      "sha256": "17b0d7fcc5a587a3dd03f259f6fdcb37f4eb01033efdd05dcfd28f4559891b64",
+      "bytes": 701
+    }
+  }
+}

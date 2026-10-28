@@ -1,0 +1,37 @@
+{
+  "format": "paris_metro_prototype_v1",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "data_source": "https://api.openstreetmap.org/api/0.6/map?bbox=2.343,48.8498,2.35,48.8566",
+  "license": "ODbL 1.0, © OpenStreetMap contributors",
+  "line": "4",
+  "track_geometry": "inferred straight connection, not surveyed",
+  "interior": "fictional representation, not measured",
+  "stations": [
+    {
+      "name": "Cite",
+      "source_id": "osm/node/264514896",
+      "wgs84": [
+        2.347542,
+        48.8553245
+      ],
+      "entrance_source_id": "osm/node/677104485",
+      "entrance_wgs84": [
+        2.3471346,
+        48.8551928
+      ]
+    },
+    {
+      "name": "Saint-Michel",
+      "source_id": "osm/node/264515098",
+      "wgs84": [
+        2.3435081,
+        48.8532864
+      ],
+      "entrance_source_id": "osm/node/257628954",
+      "entrance_wgs84": [
+        2.3436351,
+        48.8532876
+      ]
+    }
+  ]
+}

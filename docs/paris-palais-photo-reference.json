@@ -1,0 +1,17 @@
+{
+  "description": "Nearby ground-level 360-degree photo used only as a reference, not projected onto the 3D scene",
+  "picture_id": "cc263a92-e5e2-468e-9dfa-fb5fe41c14a8",
+  "viewer": "https://api.panoramax.xyz/#focus=pic&pic=cc263a92-e5e2-468e-9dfa-fb5fe41c14a8",
+  "image_source": "https://panoramax.openstreetmap.fr/images/cc/26/3a/92/e5e2-468e-9dfa-fb5fe41c14a8.jpg",
+  "producer": "overflorian",
+  "license": "CC-BY-SA-4.0",
+  "capture_utc": "2025-10-25T06:38:53Z",
+  "camera_lon_lat": [2.3456426, 48.8551277],
+  "photo_view_azimuth_degrees": 39,
+  "photo_pitch_degrees": -12.5,
+  "photo_roll_degrees": -0.5,
+  "photo_field_of_view_degrees": 360,
+  "horizontal_accuracy_m": 4.0,
+  "distance_to_current_target_m_approx": 12.7,
+  "limitations": "Nearby viewpoint; registration to the specific simulated facade, lens calibration and line of sight remain unverified. Do not use as a measured facade texture or claim the full scene was reconstructed from it."
+}

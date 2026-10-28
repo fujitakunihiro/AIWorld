@@ -1,6 +1,10 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
+    [switch]$PalaisView,[switch]$ChapelleView,[switch]$MetroView,[switch]$CruiseView,[switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$SimpleCars,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
 $ErrorActionPreference='Stop'
+if($PalaisView){$Photoreal=$true}
+if($ChapelleView){$Photoreal=$true}
+if($MetroView){$Photoreal=$true}
+if($CruiseView){$Photoreal=$true}
 if($RiverView){$Photoreal=$true;$PhotoCamera='Riverside'}
 if($RoadView){$Photoreal=$true;$PhotoCamera='Street'}
 if($BridgeView){$Photoreal=$true;$PhotoCamera='Riverside'}
@@ -131,6 +135,16 @@ if($Photoreal){
     }
     if(-not $roadReady){& (Join-Path $PSScriptRoot 'Build-ParisRoads.ps1') -EngineRoot $EngineRoot}
 }
+if($Quality -ne 'Low' -and -not $SimpleCars){
+    $vehiclePath=Join-Path (Split-Path $project) 'Content\Data\paris-vehicles.json'
+    $vehiclesReady=$false
+    if(Test-Path -LiteralPath $vehiclePath){
+        $vehicles=Get-Content -LiteralPath $vehiclePath -Raw | ConvertFrom-Json
+        $vehiclesReady=($vehicles.recipe -eq 'paris_sedan_pbr_v1' -and $vehicles.parts.Count -eq 6)
+        foreach($part in $vehicles.parts){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$part.asset.Substring(6)+'.uasset')))){$vehiclesReady=$false}}
+    }
+    if(-not $vehiclesReady){& (Join-Path $PSScriptRoot 'Build-ParisVehicles.ps1') -EngineRoot $EngineRoot}
+}
 if(($Walk -or $ThirdPerson) -and -not $SimplePeople){
     $peoplePath=Join-Path (Split-Path $project) 'Content\Data\paris-people.json'
     $heroReady=$false
@@ -144,6 +158,20 @@ if(($Walk -or $ThirdPerson) -and -not $SimplePeople){
     }
     if(-not $heroReady){& (Join-Path $PSScriptRoot 'Build-ParisPeople.ps1') -EngineRoot $EngineRoot}
 }
+if($Photoreal -and -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\ParisPhotoreal\SainteChapelle\M_SainteChapelleWindows.uasset'))){
+    & (Join-Path $PSScriptRoot 'Build-ParisChapelle.ps1') -EngineRoot $EngineRoot
+}
+if($Photoreal -and -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\ParisPhotoreal\Palais\M_PalaisReflectiveGlass.uasset'))){
+    & (Join-Path $PSScriptRoot 'Build-ParisPalaisGlass.ps1') -EngineRoot $EngineRoot
+}
+$cruisePath=Join-Path (Split-Path $project) 'Content\Data\paris-cruise.json'
+$cruiseReady=$false
+if(Test-Path -LiteralPath $cruisePath){
+    $cruise=Get-Content -LiteralPath $cruisePath -Raw | ConvertFrom-Json
+    $cruiseReady=($cruise.recipe -eq 'paris_seine_cruise_v1' -and $cruise.parts.Count -eq 2)
+    foreach($part in $cruise.parts){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$part.asset.Substring(6)+'.uasset')))){$cruiseReady=$false}}
+}
+if(-not $cruiseReady){& (Join-Path $PSScriptRoot 'Build-ParisCruise.ps1') -EngineRoot $EngineRoot}
 if(-not(Test-Path -LiteralPath $editor)){throw 'Unreal Engine is not installed at '+$EngineRoot}
 $launchArgs=@( ('"'+$project+'"'),'-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-NoSplash')
 if($Photoreal){$launchArgs=@($launchArgs | Where-Object {$_ -ne '-dx11'});$launchArgs+=@('-dx12','-sm6','-CustomConfig=ParisPhotoreal','-ParisPhotoreal')}
@@ -155,11 +183,16 @@ if($NoNCStatues){$launchArgs+="-ParisTwinNoNCStatues"}
 if($EntryDetail){$launchArgs+='-ParisTwinEntryDetail'}
 if($PhotoCamera){$launchArgs+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';Street='Camera_Paris_Street'}[$PhotoCamera])}
 if($Eye){$launchArgs+='-ParisTwinEye'}
+if($PalaisView){$launchArgs+='-ParisTwinPalaisView'}
+if($ChapelleView){$launchArgs+='-ParisTwinChapelleView'}
+if($MetroView){$launchArgs+='-ParisTwinMetroView'}
+if($CruiseView){$launchArgs+='-ParisTwinCruiseView'}
 if($RiverView){$launchArgs+='-ParisTwinRiverView'}
 if($LegacyWater){$launchArgs+='-ParisTwinLegacyWater'}
 if($RoadView){$launchArgs+='-ParisTwinRoadView'}
 if($BridgeView){$launchArgs+='-ParisTwinBridgeView'}
 if($LegacyBridges){$launchArgs+='-ParisTwinLegacyBridges'}
+if($SimpleCars){$launchArgs+='-ParisTwinSimpleCars'}
 if($LegacyRoads){$launchArgs+='-ParisTwinLegacyRoads'}
 if($Walk){$launchArgs+='-ParisTwinWalk'}
 if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}

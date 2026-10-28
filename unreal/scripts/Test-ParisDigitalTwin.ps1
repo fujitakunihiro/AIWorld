@@ -31,3 +31,9 @@ if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{Pro
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RoadFinishAndCollision\}' -Quiet)){throw 'Road finish/collision automation did not succeed'}
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RealisticTreesAndSourceTransforms\}' -Quiet)){throw 'Tree appearance/source-transform automation did not succeed'}
 if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RealisticBridgesAndContinuousWalking\}' -Quiet)){throw 'Bridge continuous-walking/source-picking automation did not succeed'}
+if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{RealisticVehicleVisuals\}' -Quiet)){throw 'Detailed vehicle/source-route/wheel automation did not succeed'}
+
+if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{CruiseOnSeine\}' -Quiet)){throw 'Cruise motion and source selection automation did not succeed'}
+if(-not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{MetroTravel\}' -Quiet)){throw 'Metro boarding and travel automation did not succeed'}
+if($Photoreal -and -not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{SainteChapelleDetail\}' -Quiet)){throw 'Sainte-Chapelle detail automation did not succeed'}
+if($Photoreal -and -not(Select-String -LiteralPath $log -Pattern 'Result=\{Success\}.*Name=\{PalaisFrontages\}' -Quiet)){throw 'Palais frontage automation did not succeed'}

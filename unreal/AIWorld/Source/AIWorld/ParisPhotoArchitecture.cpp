@@ -3,6 +3,11 @@
 #include "ParisScannedStatue.h"
 #include "ParisRoadDetail.h"
 #include "ParisBridgeDetail.h"
+#include "ParisTraffic.h"
+#include "ParisCruise.h"
+#include "ParisChapelle.h"
+#include "ParisPalaisDetail.h"
+#include "EngineUtils.h"
 #include "ParisDigitalTwin.h"
 #include "WorldProtocol.h"
 #include "Components/StaticMeshComponent.h"
@@ -116,8 +121,14 @@ void SyncParisPhotoArchitecture(AParisTwinScene* Scene){
 }
 
 void AddParisPhotoDetailStats(const AParisTwinScene* Scene,const TSharedPtr<FJsonObject>& Report){
+    Report->SetStringField(TEXT("selected_business_id"),Scene->SelectedBusinessID);
+    Report->SetStringField(TEXT("selected_business_category"),String(Object(Scene->SourceFeatureByID(Scene->SelectedBusinessID),TEXT("properties")),TEXT("category")));
     AddParisRoadDetailStats(Scene,Report);
     AddParisBridgeDetailStats(Scene,Report);
+    for(TActorIterator<AParisPalaisDetail> It(Scene->GetWorld());It;++It){auto Detail=*It;Report->SetBoolField(TEXT("palais_detail_ready"),Detail->bReady);Report->SetBoolField(TEXT("palais_detail_enabled"),Detail->bEnabled);Report->SetBoolField(TEXT("palais_photo_glass"),Detail->bPhotorealGlass);Report->SetNumberField(TEXT("palais_window_count"),Detail->WindowCount);Report->SetNumberField(TEXT("palais_instance_batches"),Detail->Groups.Num());int32 Visible=0;for(auto Group:Detail->Groups)if(Group&&Group->IsVisible())Visible++;Report->SetNumberField(TEXT("palais_visible_batches"),Visible);break;}
+    for(TActorIterator<AParisChapelleDetail> It(Scene->GetWorld());It;++It){auto Part=*It;Report->SetBoolField(TEXT("chapelle_detail_ready"),Part->bReady);Report->SetBoolField(TEXT("chapelle_detail_visible"),!Part->IsHidden());Report->SetNumberField(TEXT("chapelle_window_bays"),Part->WindowCount);Report->SetNumberField(TEXT("chapelle_buttresses"),Part->ButtressCount);Report->SetNumberField(TEXT("chapelle_spire_height_m"),Part->SpireHeightCm/100);break;}
+    for(TActorIterator<AParisCruise> It(Scene->GetWorld());It;++It){auto Ship=*It;Report->SetBoolField(TEXT("cruise_ready"),Ship->bReady);Report->SetNumberField(TEXT("cruise_distance_travelled_m"),Ship->Travelled/100);Report->SetNumberField(TEXT("cruise_speed_mps"),Ship->Speed/100);Report->SetNumberField(TEXT("cruise_route_length_m"),Ship->Length/100);Report->SetNumberField(TEXT("cruise_turns"),Ship->Turns);break;}
+    if(Scene->Traffic)Scene->Traffic->AddVisualStats(Report);
     AddParisFrontageStats(Scene,Report);
     AddParisScannedStatueStats(Scene,Report);
     int32 Architecture=0,Trees=0,TreeCandidates=0,VisibleArchitecture=0,NaniteTrees=0,Lamps=0,LampParts=0,VisibleLamps=0,Ground=0,GroundVisible=0,GroundTriangles=0;int64 Triangles=0,TreeFallbackTriangles=0,LampTriangles=0;

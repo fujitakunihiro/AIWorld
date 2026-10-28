@@ -1,0 +1,173 @@
+{
+  "recipe": "paris_sedan_pbr_v1",
+  "source_url": "https://casual-effects.com/g3d/data10/index.html",
+  "license": "CC0-1.0",
+  "authors": [
+    "Mike Pan",
+    "Morgan McGuire"
+  ],
+  "source_geometry_sha256": "3804f593e0c172610de92b395f0f79d3a0a3c877b4b5ed9480c3d1cf1736f2c3",
+  "dimensions_cm": [
+    420.0,
+    183.8644561767578,
+    141.69264221191406
+  ],
+  "swept_radius_cm": 211.31854248046875,
+  "wheel_radius_cm": 33.180091857910156,
+  "wheelbase_cm": 255.85263061523438,
+  "source_triangles": 384829,
+  "removed_zero_area_faces": 333,
+  "provenance": "CC0 archived sedan geometry; uniform 4.2m traffic envelope; authored PBR conversion and fictional plate; simulated vehicles, not observed traffic",
+  "parts": [
+    {
+      "id": "body",
+      "asset": "/Game/ParisPhotoreal/Vehicles/SM_ParisSedan_body_a5a0d89fa7b6",
+      "pivot_cm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "triangles": 220525,
+      "materials": [
+        "alloy",
+        "black",
+        "blue",
+        "brake",
+        "caliper",
+        "chrome",
+        "daylight",
+        "interior",
+        "lamp_reflector",
+        "mirror",
+        "paint",
+        "plastic",
+        "plate",
+        "white"
+      ],
+      "fallback_triangles": 44105
+    },
+    {
+      "id": "wheel_front_left",
+      "asset": "/Game/ParisPhotoreal/Vehicles/SM_ParisSedan_wheel_front_left_27a618e4aa29",
+      "pivot_cm": [
+        136.9219207763672,
+        -70.70455932617188,
+        33.180091857910156
+      ],
+      "triangles": 40454,
+      "materials": [
+        "alloy",
+        "black",
+        "blue",
+        "disc",
+        "rubber",
+        "white"
+      ],
+      "fallback_triangles": 8089
+    },
+    {
+      "id": "wheel_front_right",
+      "asset": "/Game/ParisPhotoreal/Vehicles/SM_ParisSedan_wheel_front_right_ac185569d429",
+      "pivot_cm": [
+        136.9219207763672,
+        70.75865173339844,
+        33.78001022338867
+      ],
+      "triangles": 40454,
+      "materials": [
+        "alloy",
+        "black",
+        "blue",
+        "disc",
+        "rubber",
+        "white"
+      ],
+      "fallback_triangles": 8090
+    },
+    {
+      "id": "wheel_rear_left",
+      "asset": "/Game/ParisPhotoreal/Vehicles/SM_ParisSedan_wheel_rear_left_a9049d7eee87",
+      "pivot_cm": [
+        -118.93070983886719,
+        -70.70455932617188,
+        33.180091857910156
+      ],
+      "triangles": 40454,
+      "materials": [
+        "alloy",
+        "black",
+        "blue",
+        "disc",
+        "rubber",
+        "white"
+      ],
+      "fallback_triangles": 8089
+    },
+    {
+      "id": "wheel_rear_right",
+      "asset": "/Game/ParisPhotoreal/Vehicles/SM_ParisSedan_wheel_rear_right_c0be994d415e",
+      "pivot_cm": [
+        -118.93070983886719,
+        70.75865173339844,
+        33.78001022338867
+      ],
+      "triangles": 40454,
+      "materials": [
+        "alloy",
+        "black",
+        "blue",
+        "disc",
+        "rubber",
+        "white"
+      ],
+      "fallback_triangles": 8089
+    },
+    {
+      "id": "windows",
+      "asset": "/Game/ParisPhotoreal/Vehicles/SM_ParisSedan_windows_c94340dcf7c9",
+      "pivot_cm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "triangles": 2488,
+      "materials": [
+        "glass"
+      ],
+      "fallback_triangles": 2488
+    }
+  ],
+  "paint_colors_linear": [
+    [
+      0.018,
+      0.055,
+      0.12
+    ],
+    [
+      0.36,
+      0.4,
+      0.43
+    ],
+    [
+      0.62,
+      0.61,
+      0.53
+    ],
+    [
+      0.013,
+      0.017,
+      0.022
+    ],
+    [
+      0.16,
+      0.019,
+      0.012
+    ],
+    [
+      0.025,
+      0.085,
+      0.065
+    ]
+  ],
+  "bake_recipe_sha256": "9358b34058a09e5eafb521a1775be2521db411160c08be1ef2e78fcc1dc11f79"
+}

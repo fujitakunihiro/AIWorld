@@ -1,6 +1,6 @@
 param(
     [string]$EngineRoot='D:\Epic Games\UE_5.8',
-    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Routes','Seating','Materials','Realism','Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail','DoorDetail','VirginDetail')][string]$View='Overview',
+    [ValidateSet('Overview','Street','NotreDame','WalkFirst','WalkThird','Traffic','Cafe','Grocery','Restaurant','Florist','Bakery','Bookshop','Routes','Seating','Materials','Realism','Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail','DoorDetail','VirginDetail')][string]$View='Overview',
     [ValidateSet('Low','Medium','High')][string]$Quality='Medium',
     [ValidateRange(10,120)][int]$Duration=20,
     [string]$ReportPath='',
@@ -8,7 +8,15 @@ param(
     [switch]$LegacyJSON,
     [switch]$FullPeople,
     [switch]$SimplePeople,
+    [switch]$SimpleCars,
+    [switch]$FreezeTraffic,
     [switch]$PeopleView,
+    [switch]$PalaisView,
+    [switch]$NoPalaisPhotoGlass,
+    [switch]$NoPalaisDetail,
+    [switch]$ChapelleView,
+    [switch]$MetroView,
+    [switch]$CruiseView,
     [switch]$RiverView,
     [switch]$LegacyWater,
     [switch]$RoadView,
@@ -20,6 +28,7 @@ param(
     [switch]$ProceduralSurfaces,
     [switch]$NoShadows,
     [switch]$NoStreetDetails,
+    [switch]$NoShopSigns,
     [switch]$ProfileGPU,
     [switch]$NoRenderCache,
     [switch]$Unlit,
@@ -75,7 +84,15 @@ if($View -eq 'EntryDetail'){$arguments+='-ParisTwinEntryDetail'}
 if($LegacyJSON){$arguments+='-ParisTwinLegacyJSON'}
 if($FullPeople){$arguments+='-ParisTwinFullPeople'}
 if($SimplePeople){$arguments+='-ParisTwinSimplePeople'}
+if($SimpleCars){$arguments+='-ParisTwinSimpleCars'}
+if($FreezeTraffic){$arguments+='-ParisTwinFreezeTraffic'}
 if($PeopleView){$arguments+=@('-ParisTwinPeopleView',('-ParisTwinPeopleIndex='+$PeopleIndex))}
+if($PalaisView){$arguments+='-ParisTwinPalaisView'}
+if($NoPalaisPhotoGlass){$arguments+='-ParisTwinNoPalaisPhotoGlass'}
+if($NoPalaisDetail){$arguments+='-ParisTwinNoPalaisDetail'}
+if($ChapelleView){$arguments+='-ParisTwinChapelleView'}
+if($MetroView){$arguments+='-ParisTwinMetroView'}
+if($CruiseView){$arguments+='-ParisTwinCruiseView'}
 if($RiverView){$arguments+='-ParisTwinRiverView'}
 if($LegacyWater){$arguments+='-ParisTwinLegacyWater'}
 if($RoadView){$arguments+='-ParisTwinRoadView'}
@@ -86,6 +103,7 @@ if($FlatMaterials){$arguments+='-ParisTwinFlatMaterials'}
 if($ProceduralSurfaces){$arguments+='-ParisTwinProceduralSurfaces'}
 if($NoShadows){$arguments+='-ParisTwinNoShadows'}
 if($NoStreetDetails){$arguments+='-ParisTwinNoStreetDetails'}
+if($NoShopSigns){$arguments+='-ParisTwinNoShopSigns'}
 if($ProfileGPU){$arguments+='-ParisTwinProfileGPU'}
 if($NoRenderCache){$arguments+='-ParisTwinNoRenderCache'}
 if($NoPhotoNature){$arguments+='-ParisTwinNoPhotoNature'}
@@ -98,6 +116,9 @@ if($View -eq 'Materials'){$arguments+='-ParisTwinCafeView';$arguments+='-ParisTw
 if($View -eq 'Realism'){$arguments+=@('-ParisTwinCafeView','-ParisTwinSurfaceView','-ParisTwinStreetPhoto')}
 if($View -eq 'Seating'){$arguments+='-ParisTwinCafeView';$arguments+='-ParisTwinSeatingView'}
 if($View -eq 'Cafe'){$arguments+='-ParisTwinCafeView'}
+if($View -eq 'Grocery'){$arguments+='-ParisTwinGroceryView'}
+if($View -eq 'Restaurant'){$arguments+='-ParisTwinRestaurantView'}
+if($View -in @('Florist','Bakery','Bookshop')){$arguments+='-ParisTwinShopView='+@{Florist='florist';Bakery='bakery';Bookshop='books'}[$View]}
 if($View -eq 'Routes'){$arguments+='-ParisTwinCafeView';$arguments+='-ParisTwinRoutes'}
 if($View -eq 'Traffic'){$arguments+='-ParisTwinTrafficView'}
 if($View -eq 'Street'){$arguments+='-ParisTwinEye'}
@@ -141,15 +162,26 @@ if($Photoreal -and -not $LegacyJSON){
     $visibleFrontages=if($Quality -eq 'Low' -or $FlatMaterials){0}else{$expectedFrontages}
     if($result.frontage_visible -ne $visibleFrontages){throw 'Requested frontage quality/visibility was not applied'}
 }
-if($View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail','DoorDetail','VirginDetail') -and $result.active_photo_camera -notmatch '^Camera_'){throw 'Named photo camera did not activate'}
+if(-not $CruiseView -and $View -in @('Front','Riverside','PhotoStreet','WindowDetail','EntryDetail','PortalDetail','DoorDetail','VirginDetail') -and $result.active_photo_camera -notmatch '^Camera_'){throw 'Named photo camera did not activate'}
+if($PalaisView -and $result.palais_photo_glass -ne (-not $NoPalaisPhotoGlass)){throw 'Requested Palais glass material not applied'}
+if($PalaisView -and ($result.active_photo_camera -notmatch '^ParisPalaisDetail' -or -not $result.palais_detail_ready -or $result.palais_window_count -lt 20 -or $result.palais_instance_batches -ne 4 -or $result.palais_visible_batches -ne $(if($NoPalaisDetail){0}else{4}))){throw 'Palais detail or requested view was not ready'}
+if($ChapelleView -and ($result.active_photo_camera -notmatch '^ParisChapelleDetail' -or -not $result.chapelle_detail_ready -or -not $result.chapelle_detail_visible -or $result.chapelle_window_bays -ne 15 -or $result.chapelle_spire_height_m -ne 75)){throw 'Chapel detail or requested view was not ready'}
+if($MetroView -and -not $result.walking){throw 'Metro platform view did not start'}
+if($CruiseView -and (-not $result.cruise_ready -or $result.cruise_distance_travelled_m -lt 1)){throw 'Cruise missing or did not move during measurement'}
 if($result.virgin_detail_view -ne ($View -eq 'VirginDetail')){throw 'Requested Virgin inspection camera was not applied'}
 if($result.door_detail_view -ne ($View -eq 'DoorDetail')){throw 'Requested door inspection camera was not applied'}
 if($result.window_detail_view -ne ($View -eq 'WindowDetail')){throw 'Requested window inspection camera was not applied'}
 if($result.shadows_disabled -ne [bool]$NoShadows -or $result.street_details -ne (-not $NoStreetDetails)){throw 'Requested rendering diagnostic options were not applied'}
+if($result.traffic_frozen_for_inspection -ne [bool]$FreezeTraffic){throw 'Requested traffic inspection timing was not applied'}
+if($SimpleCars -and $result.detailed_vehicle_mode){throw 'Legacy car comparison did not activate'}
+if(-not $SimpleCars -and $Quality -ne 'Low' -and (-not $result.detailed_vehicle_mode -or $result.detailed_vehicle_batches -ne 6 -or $result.vehicle_nanite_batches -ne 5)){throw 'Detailed sedan assets or actual Nanite data were not applied'}
 if($null -eq $result.render_cache_components -or ($NoRenderCache -and $result.render_cache_components -ne 0) -or (-not $NoRenderCache -and $result.render_cache_components -lt 1)){throw 'Requested render cache mode was not applied; check the native build'}
 if($result.detailed_surfaces -ne (-not $FlatMaterials -and $Quality -ne 'Low')){throw 'Requested surface mode was not applied'}
 if($result.photographic_surfaces -ne (-not $ProceduralSurfaces -and -not $FlatMaterials -and $Quality -ne 'Low')){throw 'Requested photographic material mode was not applied'}
-if($View -in @('Traffic','Cafe','Routes','Seating','Materials','Realism') -and -not $result.camera_eye){throw 'Inspection did not find an unobstructed eye-level camera'}
+if($View -in @('Traffic','Cafe','Grocery','Restaurant','Florist','Bakery','Bookshop','Routes','Seating','Materials','Realism') -and -not $result.camera_eye){throw 'Inspection did not find an unobstructed eye-level camera'}
+if($View -eq 'Grocery' -and $result.selected_business_category -notin @('supermarket','convenience')){throw 'Grocery inspection did not select a grocery store'}
+if($View -eq 'Restaurant' -and $result.selected_business_category -ne 'restaurant'){throw 'Restaurant inspection did not select a restaurant'}
+if($View -in @('Florist','Bakery','Bookshop') -and $result.selected_business_category -ne @{Florist='florist';Bakery='bakery';Bookshop='books'}[$View]){throw 'Shop inspection did not select the requested category'}
 if($View -in @('WalkFirst','WalkThird') -and -not $result.walking){throw 'Requested walking view did not become active'}
 $result | Add-Member -NotePropertyName 'render_offscreen' -NotePropertyValue $true
 $result | Add-Member -NotePropertyName 'people_inspection' -NotePropertyValue ([bool]$PeopleView)

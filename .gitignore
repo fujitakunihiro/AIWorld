@@ -48,3 +48,10 @@ unreal/AIWorld/Content/Data/paris-notredame-statue-source.json
 # Optional noncommercial content is acquired locally, never silently published with code.
 unreal/AIWorld/Content/ParisPhotoreal/NotreDameStatues/*.uasset
 unreal/assets/paris-people/Raw/
+unreal/assets/paris-vehicles/Raw/
+unreal/assets/paris-vehicles/Generated/
+unreal/assets/paris-cruise/Raw/
+unreal/assets/paris-cruise/Generated/
+
+# Sainte-Chapelle CC0 source image is fetched and hash-verified by the bake script.
+unreal/assets/sainte-chapelle/Raw/

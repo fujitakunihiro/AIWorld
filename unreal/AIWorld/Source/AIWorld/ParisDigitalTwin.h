@@ -71,7 +71,7 @@ public:
     void ToggleLevels();
     void ToggleFootprints();void ToggleIssues();void FocusLandmark(int32 Index);
     void Capture();
-    bool FocusBusiness();
+    bool FocusBusiness(const FString& CategoryFilter=TEXT(""));
     void ToggleStreetDetails();void CycleDetailQuality();void ApplyDetailQuality();
     void ToggleSurfaces();
     void CycleTimeOfDay();void ToggleWeather();

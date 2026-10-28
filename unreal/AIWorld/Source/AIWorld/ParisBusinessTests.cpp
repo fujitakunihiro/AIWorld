@@ -1,4 +1,6 @@
 #include "ParisDigitalTwin.h"
+#include "ParisShopfrontSigns.h"
+#include "Components/TextRenderComponent.h"
 #include "ParisRuntimeMesh.h"
 #include "WorldProtocol.h"
 #include "Misc/AutomationTest.h"
@@ -47,6 +49,13 @@ bool FParisBusinessWait::Update(){
             Test->TestTrue(TEXT("Business inspection retains POI and distinguishes inferred facade"),Scene->Selection.Contains(String(Source,TEXT("id")))&&Scene->Selection.Contains(TEXT("Inferred storefront"))&&Scene->Selection.Contains(TEXT("WGS84 source anchor")));Selected=true;break;
         }
         Test->TestTrue(TEXT("Business instances are individually traceable"),Selected);
+        TArray<UHierarchicalInstancedStaticMeshComponent*> ShopParts;for(TActorIterator<AParisShopfrontSigns> ShopIt(Context.World());ShopIt;++ShopIt){ShopIt->GetComponents(ShopParts);break;}
+        for(const FName Tag:{FName(TEXT("ParisShopFlorist")),FName(TEXT("ParisShopBakery")),FName(TEXT("ParisShopBookshop"))}){int32 Count=0;for(auto Part:ShopParts)if(Part->ComponentHasTag(Tag)){Count+=Part->GetInstanceCount();Test->TestEqual(TEXT("Shop displays do not obstruct walking"),Part->GetCollisionEnabled(),ECollisionEnabled::NoCollision);}Test->TestTrue(FString::Printf(TEXT("%s shop displays are generated"),*Tag.ToString()),Count>0);}
+        if(!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShopSigns"))){
+            AParisShopfrontSigns* Signs=nullptr;for(TActorIterator<AParisShopfrontSigns> ShopIt(Context.World());ShopIt;++ShopIt){Signs=*ShopIt;break;}
+            Test->TestTrue(TEXT("Mapped shops have bounded, shared signs"),Signs&&Signs->ShopCount()>20&&Signs->ShopCount()<=Scene->BusinessCount&&Signs->Panels&&Signs->Panels->GetInstanceCount()==Signs->ShopCount()&&Signs->Names.Num()==24&&Signs->Categories.Num()==24);
+            if(Signs){Test->TestEqual(TEXT("Sign panels do not obstruct walking"),Signs->Panels->GetCollisionEnabled(),ECollisionEnabled::NoCollision);Test->TestTrue(TEXT("Restaurant menus and grocery produce share bounded visual meshes"),Signs->MenuBoards&&Signs->MenuBoards->GetInstanceCount()>20&&Signs->ProduceCrates&&Signs->ProduceCrates->GetInstanceCount()>=3&&Signs->Produce&&Signs->Produce->GetInstanceCount()==Signs->ProduceCrates->GetInstanceCount()*6&&Signs->Menus.Num()==24);Test->TestEqual(TEXT("Grocery displays cannot block pedestrian paths"),Signs->ProduceCrates->GetCollisionEnabled(),ECollisionEnabled::NoCollision);const bool WasEnabled=Scene->bStreetDetails;Scene->bStreetDetails=false;Signs->UpdateSigns();Test->TestFalse(TEXT("Signs respect street details setting"),Signs->Panels->IsVisible());Test->TestFalse(TEXT("Grocery displays respect street details setting"),Signs->Produce->IsVisible());Scene->bStreetDetails=WasEnabled;Signs->UpdateSigns();}
+        }
         if(!Scene->FocusBusiness()){if(FPlatformTime::Seconds()-Started<25)return false;Test->AddError(TEXT("No clear cafe camera position"));}
         if(auto PC=Cast<AParisTwinController>(Context.World()->GetFirstPlayerController())){auto C=Cast<AParisTwinCamera>(PC->GetPawn());Test->TestTrue(TEXT("Cafe view is outside a building at eye level"),C&&C->bEye&&!Scene->SourceAt(C->Target,TEXT("building")).IsValid());PC->Overview();}
         Started=0;return true;

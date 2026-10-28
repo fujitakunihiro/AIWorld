@@ -1,0 +1,12 @@
+{
+  "title": "Small passenger ferry, 25 m",
+  "author": "Innerscene",
+  "source_url": "https://www.innerscene.com/tools/library/3d-parts/small-passenger-ferry-25-m-bb6ba356",
+  "download_url": "https://www.innerscene.com/api/library/small-passenger-ferry-25-m-bb6ba356/download",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "sha256": "b96dd250fc61cb6ac69fb4f8962a4b6894e298c83f1d4228f2612092b4d9209a",
+  "file": "passenger-ferry.glb",
+  "source_dimensions_m": [25.091, 7.574, 8.161],
+  "source_description": "Original unbranded passenger ferry with upper deck, glazing, deck fittings and authored material textures."
+}

@@ -1,0 +1,327 @@
+{
+  "recipe": "paris_seine_cruise_v1",
+  "source": {
+    "title": "Small passenger ferry, 25 m",
+    "author": "Innerscene",
+    "source_url": "https://www.innerscene.com/tools/library/3d-parts/small-passenger-ferry-25-m-bb6ba356",
+    "download_url": "https://www.innerscene.com/api/library/small-passenger-ferry-25-m-bb6ba356/download",
+    "license": "CC0-1.0",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sha256": "b96dd250fc61cb6ac69fb4f8962a4b6894e298c83f1d4228f2612092b4d9209a",
+    "file": "passenger-ferry.glb",
+    "source_dimensions_m": [
+      25.091,
+      7.574,
+      8.161
+    ],
+    "source_description": "Original unbranded passenger ferry with upper deck, glazing, deck fittings and authored material textures."
+  },
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "source_geometry_sha256": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8",
+  "water_level_cm": -850.0000000000003,
+  "water_bounds_cm": [
+    -40000.0,
+    -40000.0,
+    40000.0,
+    40000.0
+  ],
+  "waterline_source_m": 1.18,
+  "model_radius_cm": 1310.4615188932487,
+  "route": {
+    "start_cm": [
+      11885.320689482929,
+      24508.918738606062
+    ],
+    "end_cm": [
+      25281.08367444814,
+      32242.966103976152
+    ],
+    "length_cm": 15468.094730740177,
+    "clearance_radius_cm": 1460.4615188932487,
+    "water_source_id": "osm/relation/2191006",
+    "inferred": true,
+    "bridge_policy": "Turn before all mapped bridge footprints; no bridge clearance is claimed",
+    "provenance": "Straight inferred sightseeing reach selected inside the OSM Seine polygon and outside mapped bridge footprints, using a rotation-safe vessel envelope"
+  },
+  "materials": [
+    {
+      "id": 0,
+      "name": "Original polished steel",
+      "texture": 0,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.9399999976158142,
+      "roughness": 0.23000000417232513
+    },
+    {
+      "id": 1,
+      "name": "Original black finished iron",
+      "texture": 1,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.6499999761581421,
+      "roughness": 0.47999998927116394
+    },
+    {
+      "id": 2,
+      "name": "Original navy marine gelcoat",
+      "texture": 2,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.2800000011920929
+    },
+    {
+      "id": 3,
+      "name": "Original red outdoor paint",
+      "texture": 3,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.029999999329447746,
+      "roughness": 0.3700000047683716
+    },
+    {
+      "id": 4,
+      "name": "Original white marine gelcoat",
+      "texture": 4,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.25999999046325684
+    },
+    {
+      "id": 5,
+      "name": "Original warm white outdoor paint",
+      "texture": 5,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.029999999329447746,
+      "roughness": 0.3700000047683716
+    },
+    {
+      "id": 6,
+      "name": "Original clear glazing",
+      "texture": 6,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.03999999910593033
+    },
+    {
+      "id": 7,
+      "name": "Original granular non-slip marine deck",
+      "texture": 7,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.8700000047683716
+    },
+    {
+      "id": 8,
+      "name": "Original brushed aluminium",
+      "texture": 8,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.9200000166893005,
+      "roughness": 0.3100000023841858
+    },
+    {
+      "id": 9,
+      "name": "Original fine-grained teak decking",
+      "texture": 9,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.5400000214576721
+    },
+    {
+      "id": 10,
+      "name": "Original red optical lens",
+      "texture": 10,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.08500000089406967
+    },
+    {
+      "id": 11,
+      "name": "Original green navigation lens",
+      "texture": 11,
+      "base_color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.08500000089406967
+    }
+  ],
+  "textures": [
+    {
+      "file": "source_00.png",
+      "sha256": "37ba21a5ca35de279802242ea9b690e544cf86047e5965ba2571f10bc3021b31",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "polished_steel_boat_2k"
+    },
+    {
+      "file": "source_01.png",
+      "sha256": "d318402747c036331d5d2ec3cf0f68db840cb0e918f7630b973b8474761ffde6",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "black_iron_boat_2k"
+    },
+    {
+      "file": "source_02.png",
+      "sha256": "abbdad38a746804061bcaf9dbced572b95c08591a5c0edf127146e804d516b73",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "gelcoat_navy_boat_2k"
+    },
+    {
+      "file": "source_03.png",
+      "sha256": "136d7bfeb93b64405c424e8c5068b1404992e97d8fa4056a2091432b77965e39",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "red_paint_boat_2k"
+    },
+    {
+      "file": "source_04.png",
+      "sha256": "49fe72f305a12ac5cb6309e8cb1100142a27b9cc270624452fb107c0dd591916",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "gelcoat_white_boat_2k"
+    },
+    {
+      "file": "source_05.png",
+      "sha256": "2d6a5a60d241cd8e95f8a5d2e0577c5aba5c72a299d0add462303cb74191dee0",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "white_paint_boat_2k"
+    },
+    {
+      "file": "source_06.png",
+      "sha256": "8161cfc07ecff3d81690e0b9290ac3e1e07fe388e33f96c511414119dc77f0cd",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "glass_boat_2k"
+    },
+    {
+      "file": "source_07.png",
+      "sha256": "234830e8ea5762d8689cb36c8faafdd0984d0d2c8a085a0771f862ab7fdb8675",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "deck_nonslip_boat_2k"
+    },
+    {
+      "file": "source_08.png",
+      "sha256": "fd844bf4662d78bb132ddc3dcf2862f7c48acd9996b2d632040feb4f6a08b97e",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "aluminium_boat_2k"
+    },
+    {
+      "file": "source_09.png",
+      "sha256": "d0aa783a15d11b93b473fd0fa616f9d0058e776847529037a5be49a9a983436d",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "deck_teak_boat_2k"
+    },
+    {
+      "file": "source_10.png",
+      "sha256": "b2fa88c6fac650a5935dcac52b015b15642ad17837445799c4908f41a7edfc0b",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "lamp_red_boat_2k"
+    },
+    {
+      "file": "source_11.png",
+      "sha256": "7a45d0337e248166da27ff72caf4d5d500c56d9b400dee97d70be8d92f79b3d8",
+      "resolution": [
+        2048,
+        2048
+      ],
+      "name": "lamp_green_boat_2k"
+    }
+  ],
+  "source_triangles": 147852,
+  "parts": [
+    {
+      "id": "body",
+      "asset": "/Game/ParisPhotoreal/Cruise/SM_ParisCruise_body_b47a1d05f8b3",
+      "triangles": 144396
+    },
+    {
+      "id": "glass",
+      "asset": "/Game/ParisPhotoreal/Cruise/SM_ParisCruise_glass_daa9487f1a7a",
+      "triangles": 3456
+    }
+  ]
+}

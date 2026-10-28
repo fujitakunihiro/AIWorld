@@ -41,6 +41,12 @@ bool FParisTwinSceneWait::Update() {
         Test->TestTrue(TEXT("Building selection keeps original OSM ID"),Scene->Selection.Contains(TEXT("osm/")));Test->TestTrue(TEXT("Building selection displays WGS84 and height evidence"),Scene->Selection.Contains(TEXT("WGS84 source anchor"))&&Scene->Selection.Contains(TEXT("height")));
         auto Mesh=Cast<UProceduralMeshComponent>(Hit.GetComponent());const FColor Before=Mesh->GetProcMeshSection(0)->ProcVertexBuffer[0].Color;
         Scene->ToggleLevels();Test->TestTrue(TEXT("L1 debug mode toggles on"),Scene->bLevels);Scene->ToggleLevels();Test->TestFalse(TEXT("Debug mode restores appearance"),Scene->bLevels);Test->TestTrue(TEXT("Debug mode preserves original vertex colour"),Mesh->GetProcMeshSection(0)->ProcVertexBuffer[0].Color==Before);
+        if(auto Controller=Cast<AParisTwinController>(Context.World()->GetFirstPlayerController())){
+            const int32 Quality=Scene->DetailQuality;const int32 Time=Scene->TimeOfDayPreset;const bool Wet=Scene->bRainyWeather;
+            Scene->ToggleLevels();Scene->ToggleIssues();Scene->ToggleFootprints();Controller->Overview();
+            Test->TestTrue(TEXT("Overview restores normal colours and three-dimensional buildings"),!Scene->bLevels&&!Scene->bIssues&&!Scene->bFootprints&&Mesh->IsVisible()&&Mesh->GetCollisionEnabled()==ECollisionEnabled::QueryAndPhysics&&Mesh->GetProcMeshSection(0)->ProcVertexBuffer[0].Color==Before);
+            Test->TestTrue(TEXT("Overview preserves quality and time/weather choices"),Scene->DetailQuality==Quality&&Scene->TimeOfDayPreset==Time&&Scene->bRainyWeather==Wet);
+        }else Test->AddError(TEXT("Overview controller was unavailable"));
         Test->TestTrue(TEXT("Footprint picker resolves the real source polygon"),Scene->SourceAt(Hit.ImpactPoint,TEXT("building")).IsValid());
         if(auto Source=Scene->SourceAt(Hit.ImpactPoint,TEXT("building"))){const auto& Polygons=Array(Source,TEXT("polygons_cm"));if(!Polygons.IsEmpty()){const auto& Boundary=Polygons[0]->AsArray()[0]->AsArray()[0]->AsArray();const FVector Vertex(Boundary[0]->AsNumber(),Boundary[1]->AsNumber(),0);Test->TestTrue(TEXT("Batched wall boundary retains an individual source selection"),Scene->SourceAt(Vertex,TEXT("building")).IsValid());}}
         Scene->SelectHit(Hit);Test->TestTrue(TEXT("Actual hit geographic coordinates are separate from the source anchor"),Scene->Selection.Contains(TEXT("CLICK WGS84 lon"))&&Scene->Selection.Contains(TEXT("EPSG:2154")));
