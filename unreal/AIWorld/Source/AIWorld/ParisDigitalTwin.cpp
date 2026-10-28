@@ -681,10 +681,10 @@ void AParisTwinScene::Tick(float Delta) {
 }
 struct FParisButton{int32 Action;FString Label;FVector2D Position,Size;};
 static TArray<FParisButton> ParisButtons(float Width,bool Help=false) {
-    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("Help [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Explore [F8]"),TEXT("View [V]"),TEXT("People [P]"),TEXT("Traffic [T]"),TEXT("Cafes [B]"),TEXT("Surfaces [M]"),TEXT("HUD [F10]"),TEXT("Time [G]"),TEXT("Weather [R]")};
+    const TArray<FString> Labels={TEXT("Overview [F2]"),TEXT("Fly [F3]"),TEXT("Footprints [F5]"),TEXT("Issues [F4]"),TEXT("Notre-Dame [1]"),TEXT("Chapelle [2]"),TEXT("St-Michel [3]"),TEXT("操作ヘルプ [H]"),TEXT("Props [F6]"),TEXT("Quality [F7]"),TEXT("Explore [F8]"),TEXT("View [V]"),TEXT("People [P]"),TEXT("Traffic [T]"),TEXT("Cafes [B]"),TEXT("Surfaces [M]"),TEXT("HUD [F10]"),TEXT("Time [G]"),TEXT("Weather [R]")};
     TArray<int32> Order={0,1,10,11,12,8,9,17,18,4,5,6,7,16};if(Help){Order.Add(2);Order.Add(3);Order.Add(13);Order.Add(14);Order.Add(15);}
     TArray<FParisButton> Result;float X=16,Y=36;
-    for(int32 I:Order){const float W=Labels[I].Len()*7.f+18;if(X+W>Width-16&&X>16){X=16;Y+=34;}Result.Add({I,Labels[I],FVector2D(X,Y),FVector2D(W,28)});X+=W+5;}return Result;
+    for(int32 I:Order){const float W=I==7?126.f:Labels[I].Len()*7.f+18;if(X+W>Width-16&&X>16){X=16;Y+=34;}Result.Add({I,Labels[I],FVector2D(X,Y),FVector2D(W,28)});X+=W+5;}return Result;
 }
 bool AParisTwinHUD::HandleClick(const FVector2D& P) {
     if(!bVisible||!Canvas)return false;auto C=Cast<AParisTwinController>(PlayerOwner);if(!C)return false;
@@ -702,8 +702,21 @@ void AParisTwinHUD::DrawHUD() {
     Text(FString::Printf(TEXT("PARIS DIGITAL TWIN | %d buildings | %d storefronts + %d terraces | %d people + %d cars (simulated) | %s | %s"),S->BuildingCount,S->BusinessCount,S->TerraceCount,S->Crowd?S->Crowd->People().Num():0,S->Traffic?S->Traffic->Vehicles().Num():0,S->DetailQuality==0?TEXT("LOW"):S->DetailQuality==1?TEXT("MEDIUM"):TEXT("HIGH"),*S->EnvironmentLabel()),16,15,1.05f);
     for(const auto& B:Buttons){const bool Active=(B.Action==2&&S->bFootprints)||(B.Action==3&&S->bIssues)||(B.Action==7&&bHelp)||(B.Action==8&&S->bStreetDetails)||(B.Action==10&&Cast<AParisWalker>(PlayerOwner->GetPawn()))||(B.Action==12&&S->bPeople)||(B.Action==13&&S->bTraffic)||(B.Action==15&&S->bDetailedSurfaces&&S->DetailQuality>0)||(B.Action==17&&S->TimeOfDayPreset!=0)||(B.Action==18&&S->bRainyWeather);DrawRect(Active?FLinearColor(.04f,.35f,.4f,1):FLinearColor(.12f,.17f,.23f,1),B.Position.X,B.Position.Y,B.Size.X,B.Size.Y);Text(B.Label,B.Position.X+10,B.Position.Y+7);}
     }
-    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.93f),8,Bottom+4,FMath::Min(950.f,float(Canvas->SizeX-16)),116);Text(TEXT("Hold RIGHT mouse button and move the mouse to rotate. Release to show cursor."),16,Bottom+12);Text(TEXT("WASD: walk | Shift: run | F8: protagonist | V: first/third person | Wheel: camera distance | F2: overview"),16,Bottom+36);Text(TEXT("Click a building, road or river for its source ID and the actual clicked coordinates."),16,Bottom+60);Text(TEXT("B: cafes | I: grocery | Y: restaurant | Z: florist | X: bakery | Q: bookshop | G: time | R: rain | F10: HUD"),16,Bottom+84);}
-    if(S->bIssues){DrawRect(FLinearColor(.07f,.025f,.01f,.88f),8,Bottom+(bHelp?126:4),FMath::Min(720.f,float(Canvas->SizeX-16)),42);Text(S->IssueSummary,16,Bottom+(bHelp?134:12));Text(TEXT("Red: source overlap | Orange: separate road paths (review; not automatically errors)"),16,Bottom+(bHelp?152:30));}
+    const TArray<FString> HelpLines={
+        TEXT("操作ヘルプ  H:閉じる | F10:画面表示を隠す/戻す"),
+        TEXT("マウス 右ボタンを押したまま移動:視点回転 | 左クリック:ボタン・建物・道路・住民を選択 | ホイール:ズーム"),
+        TEXT("移動 WASD:カメラ移動/歩行 | F3:地上目線の自由カメラ | F8:主人公で探索 | Shift:走る"),
+        TEXT("視点 V:一人称/三人称を切替 | 矢印キー:自由カメラの向き | F2:全景へ戻る"),
+        TEXT("表示 F1:建物の再現レベル | F4:問題箇所 | F5:建物輪郭 | F6:街路小物 | F7:画質切替 | M:表面表示"),
+        TEXT("ランドマーク 1:ノートルダム | 2:サント・シャペル | 3:サン・ミシェル | J:シャペル視点 | O:旧司法宮視点"),
+        TEXT("街 P:歩行者 | T:車 | C:車を確認 | B:カフェ | I:スーパー | Y:レストラン | Z:花屋 | X:パン屋 | Q:本屋"),
+        TEXT("乗り物 U:クルーズ船を追従 | K:最寄り駅で乗降/地上へ | L:列車に乗る/停車後に降りる"),
+        TEXT("環境 G:昼→夕→夜 | R:雨/晴れ | N:歩行者ルート | 4/5/6:写真視点 | F9:画面保存"),
+        TEXT("上部ボタンもクリックできます。F10で隠した後はF10をもう一度押してHUDを表示してください。")
+    };
+    const float HelpHeight=28.f+HelpLines.Num()*22.f;
+    if(bHelp){DrawRect(FLinearColor(.015f,.02f,.03f,.95f),8,Bottom+4,FMath::Min(1240.f,float(Canvas->SizeX-16)),HelpHeight);for(int32 I=0;I<HelpLines.Num();I++)Text(HelpLines[I],16,Bottom+12+I*22,.95f);}
+    if(S->bIssues){const float IssueOffset=bHelp?HelpHeight+10:4;DrawRect(FLinearColor(.07f,.025f,.01f,.88f),8,Bottom+IssueOffset,FMath::Min(720.f,float(Canvas->SizeX-16)),42);Text(S->IssueSummary,16,Bottom+IssueOffset+8);Text(TEXT("赤:元データの重複 | 橙:別々の道路経路(必ずしもエラーではありません)"),16,Bottom+IssueOffset+26);}
     const FString Inspector=S->InspectionText();if(!Inspector.IsEmpty()){TArray<FString> Lines;Inspector.ParseIntoArrayLines(Lines);const float Height=Lines.Num()*19+16,Y=Canvas->SizeY-50-Height;DrawRect(FLinearColor(.015f,.02f,.03f,.9f),8,Y,Canvas->SizeX-16,Height);for(int32 I=0;I<Lines.Num();I++)Text(Lines[I],16,Y+8+I*19);}
     DrawRect(FLinearColor(.015f,.02f,.03f,.85f),8,Canvas->SizeY-48,Canvas->SizeX-16,44);
     const FString Movement=Walker?FString::Printf(TEXT("%s | %.1f km/h | WASD walk | Shift run | Right-drag look | V view | Wheel zoom | H menu | F10 HUD"),Walker->GetVelocity().Size2D()<5?TEXT("IDLE"):Walker->IsRunning()?TEXT("RUNNING"):TEXT("WALKING"),Walker->GetVelocity().Size2D()*.036):TEXT("Right-drag: look | WASD: fly | F8: protagonist | V: third person | P/T: people/cars | C: car | U: cruise | J: chapel | O: palace | K/L: metro | B: cafes");

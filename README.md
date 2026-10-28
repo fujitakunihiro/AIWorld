@@ -18,6 +18,8 @@
 
 **主人公で街を散策する場合は `Paris-Explore.cmd` をダブルクリック。** 三人称から開始し、`WASD`で歩く、`Shift`を押しながら走る、右ドラッグでカメラ、ホイールで距離、`V`で一人称／三人称を切り替えます。`H`でメニュー、`F10`でHUD表示、`F2`で全景、`F8`で主人公に戻ります。[主人公の操作・検証](docs/paris-protagonist.md)。
 
+キーと画面上部ボタンの一覧はゲーム内の **H（操作ヘルプ）** で確認できます。詳しい説明は[パリ散策 操作ガイド](docs/paris-controls.md)を参照してください。
+
 扉の近景は Paris-Cathedral-Doors.cmd で表示します。聖母子像の実物スキャンは、必要な個人・非商用素材をローカルで取得済みの場合のみ Paris-Cathedral-Virgin.cmd で表示できます。素材がない場合は従来の像に戻ります。NC素材本体はGitHubには含めていません。作者情報は unreal/assets/notre-dame-sculptures/CREDITS.md を確認してください。
 
 ソースから起動する場合は unreal/scripts/Start-AIWorldUE.ps1 を使います。UE 5.8、Windows向けC++ビルドツール、Node.js 22以上、Docker Desktopが必要です。[UEへの移行と操作方法](docs/unreal-migration.md)。
