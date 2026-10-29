@@ -52,6 +52,9 @@ unreal/assets/paris-vehicles/Raw/
 unreal/assets/paris-vehicles/Generated/
 unreal/assets/paris-cruise/Raw/
 unreal/assets/paris-cruise/Generated/
+unreal/assets/paris-weather/Generated/
+unreal/assets/paris-soundscape/Raw/
+unreal/assets/paris-soundscape/Generated/
 
 # Sainte-Chapelle CC0 source image is fetched and hash-verified by the bake script.
 unreal/assets/sainte-chapelle/Raw/

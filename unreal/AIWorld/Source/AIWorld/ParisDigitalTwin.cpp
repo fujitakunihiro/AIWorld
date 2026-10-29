@@ -17,6 +17,9 @@
 #include "ParisRoadDetail.h"
 #include "ParisBridgeDetail.h"
 #include "ParisPhotoFrontages.h"
+#include "ParisRainWeather.h"
+#include "ParisNightLighting.h"
+#include "ParisSoundscape.h"
 #if WITH_EDITOR
 #include "AssetCompilingManager.h"
 #endif
@@ -166,6 +169,8 @@ void AParisTwinController::SetupInputComponent() {
     InputComponent->BindKey(EKeys::M,IE_Pressed,this,&AParisTwinController::ToggleSurfaces);
     InputComponent->BindKey(EKeys::G,IE_Pressed,this,&AParisTwinController::CycleTimeOfDay);
     InputComponent->BindKey(EKeys::R,IE_Pressed,this,&AParisTwinController::ToggleWeather);
+    InputComponent->BindKey(EKeys::F11,IE_Pressed,this,&AParisTwinController::ToggleSound);
+    {FInputKeyBinding Binding(FInputChord(EKeys::F12),IE_Pressed);Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this,[this](){AuditionParisSoundscape(GetWorld());});InputComponent->KeyBindings.Add(Binding);}
     InputComponent->BindKey(EKeys::One,IE_Pressed,this,&AParisTwinController::LandmarkOne);
     InputComponent->BindKey(EKeys::Two,IE_Pressed,this,&AParisTwinController::LandmarkTwo);
     InputComponent->BindKey(EKeys::Three,IE_Pressed,this,&AParisTwinController::LandmarkThree);
@@ -206,6 +211,7 @@ void AParisTwinController::ToggleStreetDetails(){if(auto S=Twin(GetWorld()))S->T
 void AParisTwinController::CycleDetailQuality(){if(auto S=Twin(GetWorld()))S->CycleDetailQuality();}
 void AParisTwinController::CycleTimeOfDay(){if(auto S=Twin(GetWorld()))S->CycleTimeOfDay();}
 void AParisTwinController::ToggleWeather(){if(auto S=Twin(GetWorld()))S->ToggleWeather();}
+void AParisTwinController::ToggleSound(){if(auto S=Twin(GetWorld()))if(S->RainWeather){S->RainWeather->ToggleSound();SetParisSoundscapeMuted(GetWorld(),S->RainWeather->bMuted);}}
 void AParisTwinController::ToggleHelp(){if(auto H=Cast<AParisTwinHUD>(GetHUD()))H->bHelp=!H->bHelp;}
 void AParisTwinController::ToggleHUD(){if(auto H=Cast<AParisTwinHUD>(GetHUD()))H->bVisible=!H->bVisible;}
 void AParisTwinController::LandmarkOne(){ReturnToFree();if(auto S=Twin(GetWorld()))S->FocusLandmark(0);}
@@ -330,7 +336,7 @@ bool AParisTwinScene::FocusBusiness(const FString& CategoryFilter){
     }return false;
 }
 
-AParisTwinScene::AParisTwinScene(){PrimaryActorTick.bCanEverTick=true;RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("GISRoot"));}
+AParisTwinScene::AParisTwinScene(){PrimaryActorTick.bCanEverTick=true;RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("GISRoot"));RainWeather=CreateDefaultSubobject<UParisRainWeather>(TEXT("RainWeather"));}
 void AParisTwinScene::BeginPlay() {
     Super::BeginPlay();const double LoadStarted=FPlatformTime::Seconds();FString Text;TArray<uint8> GeometryBlob;
     const FString DataDir=FPaths::ProjectContentDir()/TEXT("Data");
@@ -422,6 +428,7 @@ void AParisTwinScene::BeginPlay() {
             // partition controls shadows rather than changing distant crowns
             // into solid blobs. Fixed seeds keep appearance reproducible.
             HISM->SetStaticMesh(Tree&&Name==TEXT("tree_crown")?PhotoTreeModel.Get():*Model);
+            if(Name==TEXT("lamp_glass"))HISM->ComponentTags.Add(TEXT("ParisStreetLampGlass"));
             if(Tree){HISM->InstancingRandomSeed=Detailed?17117:93199;HISM->SetWorldPositionOffsetDisableDistance(6000);}
             HISM->SetCanEverAffectNavigation(false);HISM->RegisterComponent();HISM->AddInstances(Transforms,false,false,false);
             HISM->SetCollisionEnabled(Name==TEXT("tree_crown")?ECollisionEnabled::QueryOnly:ECollisionEnabled::QueryAndPhysics);HISM->SetCollisionResponseToAllChannels(Name==TEXT("tree_crown")?ECR_Ignore:ECR_Block);HISM->SetCollisionResponseToChannel(ECC_Visibility,ECR_Block);
@@ -433,6 +440,7 @@ void AParisTwinScene::BeginPlay() {
                 auto Visual=NewObject<UInstancedStaticMeshComponent>(this);AddInstanceComponent(Visual);Visual->SetupAttachment(RootComponent);
                 Visual->SetCollisionProfileName(TEXT("NoCollision"));Visual->SetCollisionEnabled(ECollisionEnabled::NoCollision);Visual->SetCanEverAffectNavigation(false);
                 Visual->SetStaticMesh(PhotoLamps[Name]);Visual->ComponentTags.Add(TEXT("ParisPhotoStreetLamp"));if(Name==TEXT("lamp_metal"))Visual->ComponentTags.Add(TEXT("ParisPhotoLampMetal"));
+                if(Name==TEXT("lamp_glass"))Visual->ComponentTags.Add(TEXT("ParisStreetLampGlass"));
                 Visual->SetCastShadow(Name==TEXT("lamp_metal")&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));
                 Visual->RegisterComponent();Visual->AddInstances(Transforms,false,false,false);
             }
@@ -450,6 +458,8 @@ void AParisTwinScene::BeginPlay() {
     bStreetDetails=!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoStreetDetails"));ApplyDetailQuality();
     if(auto J=Object(Data,TEXT("footprint_mesh"))){FParisMeshArrays A;FString Error;if(!ReadParisMeshArrays(J,GeometryBlob,A,Error)){Status=TEXT("輪郭メッシュが不正です: ")+Error;return;}FootprintMesh=NewObject<UProceduralMeshComponent>(this);AddInstanceComponent(FootprintMesh);FootprintMesh->SetupAttachment(RootComponent);FootprintMesh->RegisterComponent();FootprintMesh->CreateMeshSection_LinearColor(0,A.Positions,A.Indices,A.Normals,{},A.Colors,{},false);FootprintMesh->SetMaterial(0,VertexMaterial);FootprintMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);FootprintMesh->SetCastShadow(false);FootprintMesh->SetVisibility(false);}
     ConfigureParisPhotoEnvironment(GetWorld(),GeoReference.OriginElevationNGF);
+    FString LaunchTime;if(FParse::Value(FCommandLine::Get(),TEXT("ParisTwinTime="),LaunchTime))TimeOfDayPreset=LaunchTime.Equals(TEXT("Night"),ESearchCase::IgnoreCase)?2:LaunchTime.Equals(TEXT("Sunset"),ESearchCase::IgnoreCase)?1:0;
+    bRainyWeather=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinRain"));
     ApplyEnvironmentPreset();
     CreateParisPhotoCameras(this,Data,GeometryBlob);
     CreateParisPhotoArchitecture(this);
@@ -458,8 +468,10 @@ void AParisTwinScene::BeginPlay() {
     AParisPalaisDetail* Palais=nullptr;if(FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))){Palais=GetWorld()->SpawnActor<AParisPalaisDetail>();if(Palais&&!Palais->Initialize(this,Data)){Palais->Destroy();Palais=nullptr;}}
     CreateParisGroundDisplay(this,Data);
     CreateParisRoadDetail(this,Data);
+    CreateParisNightLighting(this,Data);
     AParisMetro* Metro=GetWorld()->SpawnActor<AParisMetro>();if(Metro&&!Metro->Initialize(this,Data)){Metro->Destroy();Metro=nullptr;}
     AParisCruise* Cruise=GetWorld()->SpawnActor<AParisCruise>();if(Cruise&&!Cruise->Initialize(Data)){Cruise->Destroy();Cruise=nullptr;}
+    CreateParisSoundscape(this,Data);
     if(auto C=Cast<AParisTwinCamera>(GetWorld()->GetFirstPlayerController()->GetPawn())){if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinWalk"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinThirdPerson")))C->Eye(QualityCentre);else C->Overview(Extent,SceneCentre);}
     int32 Landmark=0;if(FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),Landmark)&&Landmark>=1&&Landmark<=3)FocusLandmark(Landmark-1);
     if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFootprints")))ToggleFootprints();
@@ -524,51 +536,34 @@ FString AParisTwinScene::EnvironmentLabel() const {
     return FString::Printf(TEXT("%s | %s"),Time,bRainyWeather?TEXT("Rain"):TEXT("Clear"));
 }
 void AParisTwinScene::CycleTimeOfDay(){TimeOfDayPreset=(TimeOfDayPreset+1)%3;ApplyEnvironmentPreset();}
-void AParisTwinScene::ToggleWeather(){bRainyWeather=!bRainyWeather;RainElapsed=0;ApplyEnvironmentPreset();}
+void AParisTwinScene::ToggleWeather(){bRainyWeather=!bRainyWeather;ApplyEnvironmentPreset();}
 void AParisTwinScene::ApplyEnvironmentPreset(){
     const bool Sunset=TimeOfDayPreset==1,Night=TimeOfDayPreset==2,Wet=bRainyWeather;
-    const FRotator Rotation=Night?FRotator(-2.f,-35.f,0):Sunset?FRotator(-8.f,-35.f,0):FRotator(-43.f,-35.f,0);
+    const FRotator Rotation=Night?FRotator(-38.f,-65.f,0):Sunset?FRotator(-8.f,-35.f,0):FRotator(-43.f,-35.f,0);
     const FLinearColor SunColor=Night?FLinearColor(.42f,.52f,.72f):Sunset?FLinearColor(1.f,.48f,.25f):FLinearColor(1.f,.93f,.82f);
     const FLinearColor FogColor=Night?FLinearColor(.035f,.055f,.10f):Sunset?FLinearColor(.72f,.36f,.20f):Wet?FLinearColor(.36f,.43f,.49f):FLinearColor(.50f,.62f,.74f);
     for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
         It->SetActorRotation(Rotation);auto L=Cast<UDirectionalLightComponent>(It->GetLightComponent());
-        if(L){L->SetUseTemperature(true);L->SetTemperature(Night?8500.f:Sunset?3200.f:Wet?6500.f:5600.f);L->SetLightColor(SunColor);L->SetIntensity(Night?.25f:Sunset?16000.f:Wet?30000.f:50000.f);}
+        if(L){L->SetUseTemperature(true);L->SetTemperature(Night?8500.f:Sunset?3200.f:Wet?6500.f:5600.f);L->SetLightColor(SunColor);L->SetLightSourceAngle(Wet?5.f:.8f);L->SetIntensity(Night?.25f:Sunset?16000.f:Wet?8500.f:50000.f);}
     }
     for(TActorIterator<ASkyLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
-        auto L=It->GetLightComponent();if(L){const bool Cube=L->SourceType==SLS_SpecifiedCubemap;L->SetIntensity(Night?(Cube?170.f:.35f):Sunset?(Cube?6500.f:1.25f):Wet?(Cube?7200.f:1.5f):(Cube?12000.f:2.f));if(L->SourceType==SLS_CapturedScene)L->RecaptureSky();}
+        auto L=It->GetLightComponent();if(L){const bool Cube=L->SourceType==SLS_SpecifiedCubemap;L->SetIntensity(Night?(Cube?40.f:.16f):Sunset?(Cube?6500.f:1.25f):Wet?(Cube?7200.f:1.5f):(Cube?12000.f:2.f));if(L->SourceType==SLS_CapturedScene)L->RecaptureSky();}
     }
     for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
-        auto F=It->GetComponent();if(F){F->SetFogDensity(Night?.0011f:Sunset?.0009f:Wet?.0018f:.0007f);F->SetFogInscatteringColor(FogColor);F->SetFogMaxOpacity(Night?.32f:Wet?.24f:.14f);}
+        auto F=It->GetComponent();if(F){F->SetFogDensity(Night?.0016f:Sunset?.0009f:Wet?.0018f:.0007f);F->SetFogInscatteringColor(FogColor);F->SetFogMaxOpacity(Night?.32f:Wet?.24f:.14f);F->SetVolumetricFog(Night&&DetailQuality==2);}
     }
     for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
-        auto& P=It->Settings;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=Night?2.5f:Sunset?.6f:.5f;P.bOverride_CameraISO=true;P.CameraISO=Night?800.f:100.f;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=Night?30.f:125.f;
+        auto& P=It->Settings;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=Night?1.5f:Sunset?.6f:.5f;P.bOverride_CameraISO=true;P.CameraISO=Night?1600.f:100.f;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=Night?45.f:125.f;
+        P.bOverride_BloomIntensity=true;P.BloomIntensity=Night?.35f:.20f;P.bOverride_BloomThreshold=true;P.BloomThreshold=Night?.8f:1.f;
     }
-    for(TActorIterator<AStaticMeshActor> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotographicSky")))It->SetActorHiddenInGame(Night||Sunset||Wet);
-    if(RainMesh)RainMesh->SetVisibility(Wet);
-}
-void AParisTwinScene::UpdateRainMesh(){
-    if(!bRainyWeather)return;
-    auto PC=GetWorld()->GetFirstPlayerController();if(!PC)return;
-    FVector CameraLocation;FRotator CameraRotation;PC->GetPlayerViewPoint(CameraLocation,CameraRotation);
-    if(!RainMesh){
-        RainMesh=NewObject<UProceduralMeshComponent>(this,TEXT("ParisRainStreaks"));AddInstanceComponent(RainMesh);RainMesh->SetupAttachment(RootComponent);RainMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);RainMesh->SetCastShadow(false);RainMesh->SetCanEverAffectNavigation(false);RainMesh->RegisterComponent();
-        if(auto M=LoadObject<UMaterialInterface>(nullptr,TEXT("/Engine/EngineDebugMaterials/M_SimpleUnlitTranslucent.M_SimpleUnlitTranslucent"))){auto MID=UMaterialInstanceDynamic::Create(M,RainMesh);MID->SetVectorParameterValue(TEXT("Color"),FLinearColor(.67f,.79f,.88f,.55f));MID->SetScalarParameterValue(TEXT("Opacity"),.42f);RainMesh->SetMaterial(0,MID);}
+    for(TActorIterator<AStaticMeshActor> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotographicSky"))){
+        auto C=It->GetStaticMeshComponent();
+        if(Wet){if(auto M=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Weather/M_ParisRainSky"))){auto MID=UMaterialInstanceDynamic::Create(M,C);MID->SetScalarParameterValue(TEXT("SkyRadiance"),Night?8.f:Sunset?700.f:3500.f);C->SetMaterial(0,MID);}}
+        else if(Night){if(auto M=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Night/M_ParisNightSky")))C->SetMaterial(0,M);}
+        else if(auto M=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisPhotographicSky")))C->SetMaterial(0,M);
+        It->SetActorHiddenInGame(!Wet&&Sunset);
     }
-    RainMesh->SetWorldLocationAndRotation(CameraLocation,FRotator(0,CameraRotation.Yaw,0));
-    constexpr int32 Drops=520;constexpr float Radius=2600.f,Height=3600.f,Length=105.f,Width=.9f;
-    TArray<FVector> Vertices;TArray<int32> Indices;TArray<FVector> Normals;TArray<FVector2D> UV;TArray<FLinearColor> Colors;TArray<FProcMeshTangent> Tangents;
-    Vertices.Reserve(Drops*4);Indices.Reserve(Drops*6);Normals.Reserve(Drops*4);UV.Reserve(Drops*4);Colors.Reserve(Drops*4);Tangents.Reserve(Drops*4);
-    FRandomStream Random(61723);const FVector2D Drift(RainElapsed*190.f,RainElapsed*65.f);
-    for(int32 I=0;I<Drops;I++){
-        const float X=Random.FRandRange(-Radius,Radius)+Drift.X;const float Y=Random.FRandRange(-Radius,Radius)+Drift.Y;
-        const float Z=FMath::Fmod(Random.FRandRange(0.f,Height)-RainElapsed*5200.f+Height*4.f,Height)-500.f;
-        const FVector A(X,Y,Z),B=A+FVector(22.f,0.f,-Length),Side(Width*.5f,0,0);const int32 V=Vertices.Num();
-        Vertices.Append({A-Side,B-Side,B+Side,A+Side});Indices.Append({V,V+1,V+2,V,V+2,V+3});
-        for(int32 J=0;J<4;J++){Normals.Add(FVector(0,-1,0));Colors.Add(FLinearColor(.72f,.83f,.9f,.58f));Tangents.Add(FProcMeshTangent(1,0,0));}
-        UV.Append({FVector2D(0,0),FVector2D(0,1),FVector2D(1,1),FVector2D(1,0)});
-    }
-    if(!bRainMeshCreated){RainMesh->CreateMeshSection_LinearColor(0,Vertices,Indices,Normals,UV,Colors,{},false);bRainMeshCreated=true;}
-    else RainMesh->UpdateMeshSection_LinearColor(0,Vertices,Normals,UV,Colors,Tangents,false);
+    SyncParisNightLighting(this);
 }
 void AParisTwinScene::TogglePeople(){bPeople=!bPeople;ApplyDetailQuality();}
 void AParisTwinScene::ToggleTraffic(){bTraffic=!bTraffic;ApplyDetailQuality();}
@@ -652,7 +647,7 @@ void AParisTwinScene::Tick(float Delta) {
             }
         }
     }
-    if(bRainyWeather){RainElapsed+=Delta;RainUpdateAccumulator+=Delta;if(RainUpdateAccumulator>=.08){RainUpdateAccumulator=0;UpdateRainMesh();}}
+    RainWeather->Advance(Delta,bRainyWeather,DetailQuality);
 #if WITH_EDITOR
     // First-run Nanite, SDF, mesh-card, texture and shader preparation is not
     // steady rendering. Restart the CLI warmup until all registered queues
@@ -677,7 +672,7 @@ void AParisTwinScene::Tick(float Delta) {
         else if(FocusBusiness()){bCaptured=true;FTimerHandle CaptureTimer;GetWorld()->GetTimerManager().SetTimer(CaptureTimer,FTimerDelegate::CreateWeakLambda(this,[this](){Capture();}),.2f,false);}
     }
     double Duration=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinBenchmark="),Duration);
-    if(Duration>0&&Age>5&&!bMeasured){FrameTimes.Add(Delta*1000.);if(Age>=5+Duration){bMeasured=true;double Sum=0;for(double T:FrameTimes)Sum+=T;FrameTimes.Sort();auto J=MakeShared<FJsonObject>();J->SetNumberField(TEXT("fps"),FrameTimes.Num()*1000/FMath::Max(Sum,1.));J->SetNumberField(TEXT("frame_p95_ms"),FrameTimes[FMath::Clamp(FMath::CeilToInt(FrameTimes.Num()*.95)-1,0,FrameTimes.Num()-1)]);J->SetNumberField(TEXT("frames"),FrameTimes.Num());J->SetNumberField(TEXT("buildings"),BuildingCount);J->SetNumberField(TEXT("businesses"),BusinessCount);J->SetNumberField(TEXT("terraces"),TerraceCount);J->SetNumberField(TEXT("scene_load_ms"),SceneLoadMs);J->SetNumberField(TEXT("scene_input_bytes"),SceneInputBytes);J->SetBoolField(TEXT("compact_runtime"),bCompactRuntime);const auto Memory=FPlatformMemory::GetStats();J->SetNumberField(TEXT("process_physical_mb"),Memory.UsedPhysical/(1024.*1024));J->SetNumberField(TEXT("process_peak_physical_mb"),Memory.PeakUsedPhysical/(1024.*1024));J->SetNumberField(TEXT("triangles"),TriangleCount);J->SetNumberField(TEXT("mesh_components"),Meshes.Num());J->SetNumberField(TEXT("instance_components"),StreetMeshes.Num());J->SetNumberField(TEXT("street_objects"),StreetCount);J->SetNumberField(TEXT("instances"),InstanceCount);J->SetNumberField(TEXT("instance_triangles_before_culling"),InstanceTriangles);J->SetNumberField(TEXT("detail_quality"),DetailQuality);J->SetNumberField(TEXT("pedestrians_total"),Crowd?Crowd->People().Num():0);J->SetNumberField(TEXT("pedestrians_visible_budget"),Crowd?Crowd->VisibleCount:0);J->SetNumberField(TEXT("pedestrian_distance_travelled_m"),Crowd?Crowd->TravelledCm/100:0);J->SetBoolField(TEXT("people_enabled"),bPeople);J->SetNumberField(TEXT("pedestrians_instanced_now"),Crowd?Crowd->RenderedCount-Crowd->SkeletalRenderedCount:0);J->SetNumberField(TEXT("pedestrians_rendered_now"),Crowd?Crowd->RenderedCount:0);J->SetNumberField(TEXT("pedestrians_near"),Crowd?Crowd->NearRenderedCount:0);J->SetNumberField(TEXT("pedestrians_far"),Crowd?Crowd->FarRenderedCount:0);J->SetNumberField(TEXT("pedestrian_parts"),Crowd?Crowd->RenderedParts:0);J->SetNumberField(TEXT("visit_destinations"),Crowd?Crowd->Destinations().Num():0);J->SetNumberField(TEXT("navigation_nodes"),Crowd?Crowd->NavigationNodes():0);J->SetNumberField(TEXT("navigation_edges"),Crowd?Crowd->NavigationEdges():0);J->SetNumberField(TEXT("network_visits"),Crowd?Crowd->NetworkVisits:0);J->SetNumberField(TEXT("network_visits_completed"),Crowd?Crowd->NetworkVisitsCompleted:0);J->SetNumberField(TEXT("plans_rejected"),Crowd?Crowd->PlansRejected:0);J->SetBoolField(TEXT("navigation_overlay"),Crowd&&Crowd->bShowNavigation);J->SetNumberField(TEXT("visits_dwelling_rendered"),Crowd?Crowd->StandingVisitorsRendered:0);J->SetNumberField(TEXT("seated_rendered"),Crowd?Crowd->SeatedRenderedCount:0);J->SetNumberField(TEXT("seated_arrivals"),Crowd?Crowd->SeatArrivals:0);J->SetNumberField(TEXT("greetings_started"),Crowd?Crowd->SocialStarted:0);J->SetNumberField(TEXT("greetings_completed"),Crowd?Crowd->SocialCompleted:0);J->SetNumberField(TEXT("visits_completed"),Crowd?Crowd->CompletedVisits:0);J->SetNumberField(TEXT("visits_aborted"),Crowd?Crowd->AbortedVisits:0);J->SetBoolField(TEXT("full_people"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFullPeople")));J->SetNumberField(TEXT("vehicles_instanced_now"),Traffic?Traffic->RenderedCount:0);J->SetNumberField(TEXT("vehicles_total"),Traffic?Traffic->Vehicles().Num():0);J->SetNumberField(TEXT("vehicle_visible_budget"),Traffic?Traffic->VisibleBudget:0);J->SetNumberField(TEXT("vehicle_distance_travelled_m"),Traffic?Traffic->TravelledCm/100:0);J->SetNumberField(TEXT("vehicle_recycles"),Traffic?Traffic->Recycles:0);J->SetNumberField(TEXT("vehicle_yield_steps"),Traffic?Traffic->YieldSteps:0);J->SetBoolField(TEXT("traffic_enabled"),bTraffic);auto Walker=Cast<AParisWalker>(GetWorld()->GetFirstPlayerController()->GetPawn());J->SetBoolField(TEXT("walking"),Walker!=nullptr);auto Camera=Cast<AParisTwinCamera>(GetWorld()->GetFirstPlayerController()->GetPawn());J->SetBoolField(TEXT("camera_eye"),Camera&&Camera->bEye);J->SetNumberField(TEXT("camera_pitch_degrees"),Camera?Camera->Pitch:0);J->SetNumberField(TEXT("camera_elevation_ngf_m"),Camera?GeoReference.NGFFromUE(Camera->Target):0);J->SetBoolField(TEXT("third_person"),Walker&&Walker->bThirdPerson);J->SetBoolField(TEXT("player_skeletal"),Walker&&Walker->HasHumanAppearance());J->SetNumberField(TEXT("player_speed_cm_s"),Walker?Walker->GetVelocity().Size2D():0);J->SetNumberField(TEXT("player_distance_m"),Walker?Walker->DistanceTravelledCm/100:0);J->SetBoolField(TEXT("street_details"),bStreetDetails);J->SetBoolField(TEXT("shadows_disabled"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));FVector2D Size;GEngine->GameViewport->GetViewportSize(Size);J->SetNumberField(TEXT("viewport_width"),Size.X);J->SetNumberField(TEXT("viewport_height"),Size.Y);J->SetStringField(TEXT("rhi"),TEXT("DX11 preview; no Nanite/Lumen claim"));int32 LandmarkIndex=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),LandmarkIndex);J->SetNumberField(TEXT("landmark_index"),LandmarkIndex);J->SetBoolField(TEXT("footprints"),bFootprints);J->SetStringField(TEXT("view"),Walker?(Walker->bThirdPerson?TEXT("walk_third"):TEXT("walk_first")):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeatingView"))?TEXT("seated_cafe_inspection"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinCafeView"))?TEXT("cafe_inspection"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinTrafficView"))?TEXT("traffic_inspection"):LandmarkIndex>0?TEXT("landmark"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))?TEXT("eye_1.7m"):TEXT("overview"));J->SetBoolField(TEXT("detailed_surfaces"),bDetailedSurfaces&&DetailQuality>0);J->SetBoolField(TEXT("photographic_surfaces"),!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces"))&&bDetailedSurfaces&&DetailQuality>0);J->SetStringField(TEXT("surface_recipe"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces"))?TEXT("original_periodic_pbr_v1"):TEXT("cc0_photo_orm_dx_v1"));J->SetNumberField(TEXT("pedestrians_skeletal"),Crowd?Crowd->SkeletalRenderedCount:0);J->SetNumberField(TEXT("human_variants"),Crowd?Crowd->HumanVisualVariants():0);J->SetNumberField(TEXT("human_skeletal_budget"),Crowd?Crowd->HumanVisualBudget():0);AddParisRenderCacheStats(this,J);AddParisPhotoEnvironmentStats(GetWorld(),J);AddParisPhotoDetailStats(this,J);FString Output;FJsonSerializer::Serialize(J,TJsonWriterFactory<>::Create(&Output));FFileHelper::SaveStringToFile(Output,*(FPaths::ProjectSavedDir()/TEXT("paris-twin-performance.json")));UE_LOG(LogTemp,Display,TEXT("PARIS_TWIN_BENCHMARK %s"),*Output);if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinExit")))FPlatformMisc::RequestExit(false);}}
+    if(Duration>0&&Age>5&&!bMeasured){FrameTimes.Add(Delta*1000.);if(Age>=5+Duration){bMeasured=true;double Sum=0;for(double T:FrameTimes)Sum+=T;FrameTimes.Sort();auto J=MakeShared<FJsonObject>();J->SetNumberField(TEXT("fps"),FrameTimes.Num()*1000/FMath::Max(Sum,1.));J->SetNumberField(TEXT("frame_p95_ms"),FrameTimes[FMath::Clamp(FMath::CeilToInt(FrameTimes.Num()*.95)-1,0,FrameTimes.Num()-1)]);J->SetNumberField(TEXT("frames"),FrameTimes.Num());J->SetNumberField(TEXT("buildings"),BuildingCount);J->SetNumberField(TEXT("businesses"),BusinessCount);J->SetNumberField(TEXT("terraces"),TerraceCount);J->SetNumberField(TEXT("scene_load_ms"),SceneLoadMs);J->SetNumberField(TEXT("scene_input_bytes"),SceneInputBytes);J->SetBoolField(TEXT("compact_runtime"),bCompactRuntime);const auto Memory=FPlatformMemory::GetStats();J->SetNumberField(TEXT("process_physical_mb"),Memory.UsedPhysical/(1024.*1024));J->SetNumberField(TEXT("process_peak_physical_mb"),Memory.PeakUsedPhysical/(1024.*1024));J->SetNumberField(TEXT("triangles"),TriangleCount);J->SetNumberField(TEXT("mesh_components"),Meshes.Num());J->SetNumberField(TEXT("instance_components"),StreetMeshes.Num());J->SetNumberField(TEXT("street_objects"),StreetCount);J->SetNumberField(TEXT("instances"),InstanceCount);J->SetNumberField(TEXT("instance_triangles_before_culling"),InstanceTriangles);J->SetNumberField(TEXT("detail_quality"),DetailQuality);J->SetNumberField(TEXT("pedestrians_total"),Crowd?Crowd->People().Num():0);J->SetNumberField(TEXT("pedestrians_visible_budget"),Crowd?Crowd->VisibleCount:0);J->SetNumberField(TEXT("pedestrian_distance_travelled_m"),Crowd?Crowd->TravelledCm/100:0);J->SetBoolField(TEXT("people_enabled"),bPeople);J->SetNumberField(TEXT("pedestrians_instanced_now"),Crowd?Crowd->RenderedCount-Crowd->SkeletalRenderedCount:0);J->SetNumberField(TEXT("pedestrians_rendered_now"),Crowd?Crowd->RenderedCount:0);J->SetNumberField(TEXT("pedestrians_near"),Crowd?Crowd->NearRenderedCount:0);J->SetNumberField(TEXT("pedestrians_far"),Crowd?Crowd->FarRenderedCount:0);J->SetNumberField(TEXT("pedestrian_parts"),Crowd?Crowd->RenderedParts:0);J->SetNumberField(TEXT("visit_destinations"),Crowd?Crowd->Destinations().Num():0);J->SetNumberField(TEXT("navigation_nodes"),Crowd?Crowd->NavigationNodes():0);J->SetNumberField(TEXT("navigation_edges"),Crowd?Crowd->NavigationEdges():0);J->SetNumberField(TEXT("network_visits"),Crowd?Crowd->NetworkVisits:0);J->SetNumberField(TEXT("network_visits_completed"),Crowd?Crowd->NetworkVisitsCompleted:0);J->SetNumberField(TEXT("plans_rejected"),Crowd?Crowd->PlansRejected:0);J->SetBoolField(TEXT("navigation_overlay"),Crowd&&Crowd->bShowNavigation);J->SetNumberField(TEXT("visits_dwelling_rendered"),Crowd?Crowd->StandingVisitorsRendered:0);J->SetNumberField(TEXT("seated_rendered"),Crowd?Crowd->SeatedRenderedCount:0);J->SetNumberField(TEXT("seated_arrivals"),Crowd?Crowd->SeatArrivals:0);J->SetNumberField(TEXT("greetings_started"),Crowd?Crowd->SocialStarted:0);J->SetNumberField(TEXT("greetings_completed"),Crowd?Crowd->SocialCompleted:0);J->SetNumberField(TEXT("visits_completed"),Crowd?Crowd->CompletedVisits:0);J->SetNumberField(TEXT("visits_aborted"),Crowd?Crowd->AbortedVisits:0);J->SetBoolField(TEXT("full_people"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFullPeople")));J->SetNumberField(TEXT("vehicles_instanced_now"),Traffic?Traffic->RenderedCount:0);J->SetNumberField(TEXT("vehicles_total"),Traffic?Traffic->Vehicles().Num():0);J->SetNumberField(TEXT("vehicle_visible_budget"),Traffic?Traffic->VisibleBudget:0);J->SetNumberField(TEXT("vehicle_distance_travelled_m"),Traffic?Traffic->TravelledCm/100:0);J->SetNumberField(TEXT("vehicle_recycles"),Traffic?Traffic->Recycles:0);J->SetNumberField(TEXT("vehicle_yield_steps"),Traffic?Traffic->YieldSteps:0);J->SetBoolField(TEXT("traffic_enabled"),bTraffic);auto Walker=Cast<AParisWalker>(GetWorld()->GetFirstPlayerController()->GetPawn());J->SetBoolField(TEXT("walking"),Walker!=nullptr);auto Camera=Cast<AParisTwinCamera>(GetWorld()->GetFirstPlayerController()->GetPawn());J->SetBoolField(TEXT("camera_eye"),Camera&&Camera->bEye);J->SetNumberField(TEXT("camera_pitch_degrees"),Camera?Camera->Pitch:0);J->SetNumberField(TEXT("camera_elevation_ngf_m"),Camera?GeoReference.NGFFromUE(Camera->Target):0);J->SetBoolField(TEXT("third_person"),Walker&&Walker->bThirdPerson);J->SetBoolField(TEXT("player_skeletal"),Walker&&Walker->HasHumanAppearance());J->SetNumberField(TEXT("player_speed_cm_s"),Walker?Walker->GetVelocity().Size2D():0);J->SetNumberField(TEXT("player_distance_m"),Walker?Walker->DistanceTravelledCm/100:0);J->SetBoolField(TEXT("street_details"),bStreetDetails);J->SetBoolField(TEXT("shadows_disabled"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));FVector2D Size;GEngine->GameViewport->GetViewportSize(Size);J->SetNumberField(TEXT("viewport_width"),Size.X);J->SetNumberField(TEXT("viewport_height"),Size.Y);J->SetStringField(TEXT("rhi"),TEXT("DX11 preview; no Nanite/Lumen claim"));int32 LandmarkIndex=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinLandmark="),LandmarkIndex);J->SetNumberField(TEXT("landmark_index"),LandmarkIndex);J->SetBoolField(TEXT("footprints"),bFootprints);J->SetStringField(TEXT("view"),Walker?(Walker->bThirdPerson?TEXT("walk_third"):TEXT("walk_first")):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeatingView"))?TEXT("seated_cafe_inspection"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinCafeView"))?TEXT("cafe_inspection"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinTrafficView"))?TEXT("traffic_inspection"):LandmarkIndex>0?TEXT("landmark"):FParse::Param(FCommandLine::Get(),TEXT("ParisTwinEye"))?TEXT("eye_1.7m"):TEXT("overview"));J->SetBoolField(TEXT("detailed_surfaces"),bDetailedSurfaces&&DetailQuality>0);J->SetBoolField(TEXT("photographic_surfaces"),!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces"))&&bDetailedSurfaces&&DetailQuality>0);J->SetStringField(TEXT("surface_recipe"),FParse::Param(FCommandLine::Get(),TEXT("ParisTwinProceduralSurfaces"))?TEXT("original_periodic_pbr_v1"):TEXT("cc0_photo_orm_dx_v1"));J->SetNumberField(TEXT("pedestrians_skeletal"),Crowd?Crowd->SkeletalRenderedCount:0);J->SetNumberField(TEXT("human_variants"),Crowd?Crowd->HumanVisualVariants():0);J->SetNumberField(TEXT("human_skeletal_budget"),Crowd?Crowd->HumanVisualBudget():0);AddParisRenderCacheStats(this,J);AddParisPhotoEnvironmentStats(GetWorld(),J);AddParisPhotoDetailStats(this,J);AddParisNightLightingStats(this,J);AddParisSoundscapeStats(this,J);FString Output;FJsonSerializer::Serialize(J,TJsonWriterFactory<>::Create(&Output));FFileHelper::SaveStringToFile(Output,*(FPaths::ProjectSavedDir()/TEXT("paris-twin-performance.json")));UE_LOG(LogTemp,Display,TEXT("PARIS_TWIN_BENCHMARK %s"),*Output);if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinExit")))FPlatformMisc::RequestExit(false);}}
 }
 struct FParisButton{int32 Action;FString Label;FVector2D Position,Size;};
 static TArray<FParisButton> ParisButtons(float Width,bool Help=false) {
@@ -711,7 +706,7 @@ void AParisTwinHUD::DrawHUD() {
         TEXT("ランドマーク 1:ノートルダム | 2:サント・シャペル | 3:サン・ミシェル | J:シャペル視点 | O:旧司法宮視点"),
         TEXT("街 P:歩行者 | T:車 | C:車を確認 | B:カフェ | I:スーパー | Y:レストラン | Z:花屋 | X:パン屋 | Q:本屋"),
         TEXT("乗り物 U:クルーズ船を追従 | K:最寄り駅で乗降/地上へ | L:列車に乗る/停車後に降りる"),
-        TEXT("環境 G:昼→夕→夜 | R:雨/晴れ | N:歩行者ルート | 4/5/6:写真視点 | F9:画面保存"),
+        TEXT("環境 G:昼→夕→夜 | R:雨/晴れ | F11:環境音ON/OFF | F12:音を試聴 | N:歩行者ルート | 4/5/6:写真視点 | F9:画面保存"),
         TEXT("上部ボタンもクリックできます。F10で隠した後はF10をもう一度押してHUDを表示してください。")
     };
     const float HelpHeight=28.f+HelpLines.Num()*22.f;

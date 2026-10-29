@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "key": "bell",
+      "title": "ND G1 Emmanuel",
+      "author": "Rongaman",
+      "page": "https://commons.wikimedia.org/wiki/File:ND_G1_Emmanuel.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/97/ND_G1_Emmanuel.ogg",
+      "license": "CC0-1.0",
+      "file": "emmanuel.ogg",
+      "start": 8.0,
+      "seconds": 30.0,
+      "loop": false,
+      "note": "Historic recording before the 2019 fire; not a current service schedule.",
+      "sha256": "d51040554babd2bebaa86d8e9d22f3db1d5fdd61a411fae99283c81f98592df7",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "key": "crowd",
+      "title": "Ambience_Paris_street market at the Bastille_November 2021.wav",
+      "author": "Rmlbrg",
+      "page": "https://freesound.org/people/Rmlbrg/sounds/617062/",
+      "url": "https://cdn.freesound.org/previews/617/617062_10370110-hq.mp3",
+      "license": "CC0-1.0",
+      "file": "bastille-market.mp3",
+      "start": 5.0,
+      "seconds": 32.0,
+      "loop": true,
+      "note": "Public HQ preview of a Bastille market recording; reused as an inferred crowd bed near mapped businesses, not a survey of this district.",
+      "sha256": "63959f490a8184df92b49d25200cdff05399d2a94b57c03519fcf12f9c343cb8",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "key": "river",
+      "title": "Ambience Water Seine Paris City",
+      "author": "Salomé_Lubczanski",
+      "page": "https://freesound.org/people/Salom%C3%A9_Lubczanski/sounds/733783/",
+      "url": "https://cdn.freesound.org/previews/733/733783_7796757-hq.mp3",
+      "license": "CC0-1.0",
+      "file": "seine.mp3",
+      "start": 5.0,
+      "seconds": 32.0,
+      "loop": true,
+      "note": "Public HQ preview; Seine field-recording appearance proxy, not a measured sound level at every generated bank.",
+      "sha256": "45ef4d90b636804005b103a7717f1f112e9b264e0da26bff65e055a97dbc7459",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "key": "pigeon",
+      "title": "pigeon walking and cooing.wav",
+      "author": "5ro4 / Alva Majo",
+      "page": "https://freesound.org/people/5ro4/sounds/701282/",
+      "url": "https://cdn.freesound.org/previews/701/701282_1629501-hq.mp3",
+      "license": "CC0-1.0",
+      "file": "pigeon.mp3",
+      "start": 5.0,
+      "seconds": 7.0,
+      "loop": false,
+      "note": "Recorded male pigeon; placement is inferred and no visible pigeon model is introduced.",
+      "sha256": "419bad5bb0498eeeeea740fd1095a6620d483d2c3d1983347e4877048f189820",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "key": "siren",
+      "title": "Deux-Tons-Police-France",
+      "author": "Manotechnologie",
+      "page": "https://commons.wikimedia.org/wiki/File:Deux-Tons-Police-France.ogg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Deux-Tons-Police-France.ogg",
+      "license": "CC-BY-SA-4.0",
+      "file": "french-siren.ogg",
+      "start": 0.0,
+      "seconds": 8.0,
+      "loop": false,
+      "note": "Authored reproduction of a French two-tone police siren, not a recording of an actual emergency in Paris.",
+      "sha256": "7f2a539d6c8c6350130afd72a01c24cecd8329d0757b16a849c2a27a63b03d4e",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/"
+    }
+  ]
+}

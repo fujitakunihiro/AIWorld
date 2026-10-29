@@ -1,0 +1,42 @@
+{
+  "recipe": "paris_rain_v1",
+  "materials": [
+    "/Game/Materials/M_ParisRoadAsphalt",
+    "/Game/Materials/M_ParisRoadSidewalk",
+    "/Game/Materials/M_ParisRoadPaving",
+    "/Game/Materials/M_ParisRoadKerb",
+    "/Game/Materials/M_ParisPaving",
+    "/Game/Materials/M_ParisGroundPaving",
+    "/Game/Materials/M_ParisAsphaltPhotographic",
+    "/Game/Materials/M_ParisQuayWet",
+    "/Game/Materials/M_ParisBridgeMasonry",
+    "/Game/Materials/M_ParisBridgeCutStone",
+    "/Game/Materials/M_ParisBridgePaving"
+  ],
+  "audio": {
+    "recipe": "original_periodic_stereo_rain_v1",
+    "provenance": "Original deterministic procedural synthesis; no field recording or external audio assets.",
+    "files": {
+      "rain": {
+        "file": "rain.wav",
+        "sha256": "572f97f775a429e34fc59550b3ff2d64903936125547bccb4a930713f1d57818",
+        "seconds": 32,
+        "sample_rate": 48000,
+        "channels": 2,
+        "rms": 0.06301333678574697,
+        "peak": 0.519012451171875,
+        "seam_jump": 0.014312744140625
+      },
+      "runoff": {
+        "file": "runoff.wav",
+        "sha256": "da04372309da3e63da327a5e9db6a3f9d08f46db8c11abfcebcefd1664da5f85",
+        "seconds": 32,
+        "sample_rate": 48000,
+        "channels": 2,
+        "rms": 0.029032419915363882,
+        "peak": 0.596710205078125,
+        "seam_jump": 0.001434326171875
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+	"soundscape_channels": 8,
+	"soundscape_active_voices": 3,
+	"soundscape_crowd_anchors": 200,
+	"soundscape_water_edges": 251,
+	"soundscape_pigeon_anchors": 1317,
+	"soundscape_bell_events": 0,
+	"soundscape_pigeon_events": 0,
+	"soundscape_siren_events": 0,
+	"soundscape_muted": false,
+	"soundscape_ferry_attached": true,
+	"soundscape_bell_source_id": "osm/way/201611261",
+	"soundscape_provenance": "Historic Emmanuel recording, Paris market/Seine recordings, recorded pigeon, authored French siren and original ferry synthesis; placements and event schedules inferred.",
+	"preview_categories_verified": 6,
+	"day_crowd_gain": 0.30000001192092896,
+	"night_crowd_gain": 0.064999997615814209
+}

@@ -1,0 +1,13 @@
+{
+  "recipe": "paris_night_v1",
+  "patched_materials": [
+    "/Game/Materials/M_ParisWindowGlass",
+    "/Game/Materials/M_ParisStainedGlass"
+  ],
+  "assets": [
+    "/Game/Night/MPC_ParisNight",
+    "/Game/Night/M_ParisNightLantern",
+    "/Game/Night/M_ParisNightSky"
+  ],
+  "provenance": "Original inferred lighting; archived OSM lamp positions retained. Intensities, temperatures, occupied windows, store opening state and cathedral floods are artistic estimates, not current observations."
+}

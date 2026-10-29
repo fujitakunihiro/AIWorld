@@ -1,6 +1,7 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$PalaisView,[switch]$ChapelleView,[switch]$MetroView,[switch]$CruiseView,[switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$SimpleCars,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='')
+    [switch]$PalaisView,[switch]$ChapelleView,[switch]$MetroView,[switch]$CruiseView,[switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$SimpleCars,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='',[switch]$Rain,[switch]$MuteSound,[switch]$Night,[ValidateSet('Day','Sunset','Night')][string]$TimeOfDay='Day')
 $ErrorActionPreference='Stop'
+if($Night){$TimeOfDay='Night'}
 if($PalaisView){$Photoreal=$true}
 if($ChapelleView){$Photoreal=$true}
 if($MetroView){$Photoreal=$true}
@@ -172,6 +173,39 @@ if(Test-Path -LiteralPath $cruisePath){
     foreach($part in $cruise.parts){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$part.asset.Substring(6)+'.uasset')))){$cruiseReady=$false}}
 }
 if(-not $cruiseReady){& (Join-Path $PSScriptRoot 'Build-ParisCruise.ps1') -EngineRoot $EngineRoot}
+$rainReport=Join-Path (Split-Path $project) 'Content\Data\paris-rain.json'
+$rainReady=Test-Path -LiteralPath $rainReport
+foreach($asset in @('MPC_ParisWeather','M_ParisRain','M_ParisRainSplash','M_ParisRainSky','A_ParisRain','A_ParisRunoff')){
+    if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Weather\'+$asset+'.uasset')))){$rainReady=$false}
+}
+if($rainReady){
+    $rainBakeTime=(Get-Item -LiteralPath $rainReport).LastWriteTime
+    $rainData=Get-Content -LiteralPath $rainReport -Raw | ConvertFrom-Json
+    foreach($material in $rainData.materials){
+        $file=Join-Path (Split-Path $project) ('Content\'+$material.Substring(6)+'.uasset')
+        if((Test-Path -LiteralPath $file) -and (Get-Item -LiteralPath $file).LastWriteTime -gt $rainBakeTime){$rainReady=$false}
+    }
+}
+if(-not $rainReady){& (Join-Path $PSScriptRoot 'Build-ParisRain.ps1') -EngineRoot $EngineRoot}
+$nightReport=Join-Path (Split-Path $project) 'Content\Data\paris-night.json'
+$nightReady=Test-Path -LiteralPath $nightReport
+foreach($asset in @('MPC_ParisNight','M_ParisNightLantern','M_ParisNightSky')){
+    if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Night\'+$asset+'.uasset')))){$nightReady=$false}
+}
+if($nightReady){
+    $nightBakeTime=(Get-Item -LiteralPath $nightReport).LastWriteTime
+    $nightData=Get-Content -LiteralPath $nightReport -Raw | ConvertFrom-Json
+    foreach($material in $nightData.patched_materials){
+        $file=Join-Path (Split-Path $project) ('Content\'+$material.Substring(6)+'.uasset')
+        if((Test-Path -LiteralPath $file) -and (Get-Item -LiteralPath $file).LastWriteTime -gt $nightBakeTime){$nightReady=$false}
+    }
+}
+if(-not $nightReady){& (Join-Path $PSScriptRoot 'Build-ParisNight.ps1') -EngineRoot $EngineRoot}
+$soundReady=Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-soundscape.json')
+foreach($name in @('Bell','Crowd','Seine','Ferry','Pigeon','Siren')){
+    if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Soundscape\A_Paris'+$name+'.uasset')))){$soundReady=$false}
+}
+if(-not $soundReady){& (Join-Path $PSScriptRoot 'Build-ParisSoundscape.ps1') -EngineRoot $EngineRoot}
 if(-not(Test-Path -LiteralPath $editor)){throw 'Unreal Engine is not installed at '+$EngineRoot}
 $launchArgs=@( ('"'+$project+'"'),'-game','-ParisTwin','-dx11','-windowed','-ResX=1280','-ResY=720','-NoSplash')
 if($Photoreal){$launchArgs=@($launchArgs | Where-Object {$_ -ne '-dx11'});$launchArgs+=@('-dx12','-sm6','-CustomConfig=ParisPhotoreal','-ParisPhotoreal')}
@@ -196,6 +230,9 @@ if($SimpleCars){$launchArgs+='-ParisTwinSimpleCars'}
 if($LegacyRoads){$launchArgs+='-ParisTwinLegacyRoads'}
 if($Walk){$launchArgs+='-ParisTwinWalk'}
 if($ThirdPerson){$launchArgs+='-ParisTwinThirdPerson'}
+if($Rain){$launchArgs+='-ParisTwinRain'}
+$launchArgs+=('-ParisTwinTime='+$TimeOfDay)
+if($MuteSound){$launchArgs+='-ParisTwinMuteSound'}
 if($NoPeople){$launchArgs+='-ParisTwinNoPeople'}
 if($SimplePeople){$launchArgs+='-ParisTwinSimplePeople'}
 if($NoTraffic){$launchArgs+='-ParisTwinNoTraffic'}

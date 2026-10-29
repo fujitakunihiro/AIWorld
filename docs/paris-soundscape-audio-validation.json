@@ -1,0 +1,61 @@
+{
+  "deterministic_regeneration": true,
+  "sample_rate": 48000,
+  "channels": 1,
+  "files": [
+    {
+      "key": "bell",
+      "generated_sha256": "c101a19c80e9394c07257b85f9d59425f0c0c1bbb28f56e81cccd2669727e910",
+      "duration_seconds": 30.0,
+      "rms": 0.15999999028603037,
+      "peak": 0.7247314453125,
+      "loop": false
+    },
+    {
+      "key": "crowd",
+      "generated_sha256": "1bebe0c62d86fb1374fc261e30e2c3cbd8d12f2921dbd9724e17074009eeb6cd",
+      "duration_seconds": 31.4,
+      "rms": 0.04814711195675918,
+      "peak": 0.79998779296875,
+      "loop": true,
+      "loop_seam_step": 0.00238037109375,
+      "ordinary_step_p999": 0.070068359375
+    },
+    {
+      "key": "river",
+      "generated_sha256": "4ab834ab3f698fda5f27384474c3b6e22faa0c5d8d38dbc1ca5a7ff870666f05",
+      "duration_seconds": 31.4,
+      "rms": 0.02868870707016745,
+      "peak": 0.800018310546875,
+      "loop": true,
+      "loop_seam_step": 0.000152587890625,
+      "ordinary_step_p999": 0.037689208984375
+    },
+    {
+      "key": "pigeon",
+      "generated_sha256": "6e36444b9063689b85d42977a6b72bf099131f63eda9726176a09416f23b6462",
+      "duration_seconds": 7.0,
+      "rms": 0.06803068071477515,
+      "peak": 0.79998779296875,
+      "loop": false
+    },
+    {
+      "key": "siren",
+      "generated_sha256": "898ef4d2519bf6f22f12e7381e2d12fcb4516ca582c6adfbf0834b1226dfd4d9",
+      "duration_seconds": 8.0,
+      "rms": 0.15000001098342142,
+      "peak": 0.18035888671875,
+      "loop": false
+    },
+    {
+      "key": "boat",
+      "generated_sha256": "df1f3a44097b187ea4d83b8fd1cb2e5effc50656a241f7c23a161c224c93d262",
+      "duration_seconds": 32.0,
+      "rms": 0.10999999910127206,
+      "peak": 0.213623046875,
+      "loop": true,
+      "loop_seam_step": 0.004638671875,
+      "ordinary_step_p999": 0.009521484375
+    }
+  ]
+}

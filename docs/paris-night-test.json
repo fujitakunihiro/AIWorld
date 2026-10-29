@@ -1,0 +1,11 @@
+{
+	"night_mapped_lamp_sources": 479,
+	"night_inferred_store_lights": 395,
+	"night_inferred_floods": 4,
+	"night_active_lights": 17,
+	"night_shadow_lights": 2,
+	"night_light_pool": 34,
+	"night_amount": 1,
+	"night_street_budget": 12,
+	"night_provenance": "Archived OSM lamp positions; estimated fixture heights; inferred 2800K/4500lm illumination, store lighting and cathedral flood placement. Not measured current lighting."
+}

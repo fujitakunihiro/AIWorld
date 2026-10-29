@@ -17,6 +17,7 @@ class UStaticMesh;
 class AParisWalker;
 class AParisPedestrianCrowd;
 class AParisTraffic;
+class UParisRainWeather;
 
 UCLASS()
 class AParisTwinCamera : public APawn {
@@ -46,7 +47,7 @@ public:
     bool IsLooking() const { return bLooking; }
     void ToggleFootprints();void ToggleIssues();void ToggleHelp();void ToggleHUD();
     void ToggleStreetDetails();void CycleDetailQuality();void ToggleSurfaces();
-    void CycleTimeOfDay();void ToggleWeather();
+    void CycleTimeOfDay();void ToggleWeather();void ToggleSound();
     void LandmarkOne();void LandmarkTwo();void LandmarkThree();
     bool EnterWalk(bool ThirdPerson=false);void Walk();void ToggleWalkView();void TogglePeople();void ToggleTraffic();void InspectTraffic();void InspectBusiness();
     void ReturnToFree();
@@ -103,6 +104,7 @@ public:
     UPROPERTY() TObjectPtr<AParisTraffic> Traffic;
     bool bPeople=true;
     UPROPERTY() TObjectPtr<AParisPedestrianCrowd> Crowd;
+    UPROPERTY() TObjectPtr<UParisRainWeather> RainWeather;
 private:
     UPROPERTY() TArray<TObjectPtr<UProceduralMeshComponent>> Meshes;
     UPROPERTY() TObjectPtr<UMaterialInterface> VertexMaterial;
@@ -125,11 +127,7 @@ private:
     TArray<TSharedPtr<FJsonObject>> SourceFeatures,Landmarks,Issues;
     TSet<FString> OverlapIDs;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> FootprintMesh;
-    UPROPERTY() TObjectPtr<UProceduralMeshComponent> RainMesh;
-    double RainElapsed=0,RainUpdateAccumulator=0;
-    bool bRainMeshCreated=false;
     void ApplyEnvironmentPreset();
-    void UpdateRainMesh();
     void RefreshAppearance();
     UMaterialInterface* SurfaceMaterialFor(const TSharedPtr<FJsonObject>& Feature) const;
     double ReadyAt=0;
