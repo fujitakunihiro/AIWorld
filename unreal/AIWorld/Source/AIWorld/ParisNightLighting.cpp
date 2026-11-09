@@ -1,6 +1,9 @@
 #include "ParisNightLighting.h"
 #include "ParisDigitalTwin.h"
 #include "ParisBridgeDetail.h"
+#include "ParisLuxury.h"
+#include "ParisReference.h"
+#include "Misc/Crc.h"
 #include "WorldProtocol.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
@@ -61,12 +64,15 @@ bool AParisNightLighting::Initialize(AParisTwinScene* InScene,const TSharedPtr<F
                 S.Rotation=(Aim-S.Position).Rotation();S.Kind=2;S.Lumens=26000;S.Radius=6500;S.Temperature=3200;S.OuterAngle=38;
                 S.SourceID=FString::Printf(TEXT("inferred_flood:osm/way/201611261:%.0f"),X);Sources.Add(S);
             }
+            if(IsParisSeineDressed())for(float X:{-1200.f,1200.f}){
+                FParisNightSource S;S.Position=Front+Across*X-Depth*4000+FVector(0,0,250);S.Rotation=(Front+Across*X+FVector(0,0,5500)-S.Position).Rotation();S.Kind=2;S.Lumens=52000;S.Radius=12500;S.Temperature=3100;S.OuterAngle=27;S.SourceID=FString::Printf(TEXT("inferred_tower_flood:osm/way/201611261:%.0f"),X);Sources.Add(S);
+            }
         }
     }
     TArray<UInstancedStaticMeshComponent*> Parts;InScene->GetComponents(Parts);
     for(auto C:Parts)if(C->ComponentHasTag(TEXT("ParisStreetLampGlass")))OriginalLampMaterials.Add(C,C->GetMaterial(0));
     // Fixed reusable pool; camera movement never allocates hundreds of lights.
-    for(int32 I=0;I<34;I++){
+    for(int32 I=0;I<(IsParisSeineDressed()?36:34);I++){
         auto L=NewObject<USpotLightComponent>(this);AddInstanceComponent(L);L->SetupAttachment(RootComponent);
         L->SetMobility(EComponentMobility::Movable);L->SetIntensityUnits(ELightUnits::Lumens);L->bUseInverseSquaredFalloff=true;
         L->SetUseTemperature(true);L->SetIntensity(0);L->SetVisibility(false);L->SetCastShadows(false);
@@ -80,7 +86,7 @@ void AParisNightLighting::SelectLights(const FVector& View){
     Selected.Reset();auto S=Scene.Get();if(!S)return;
     for(int32 Kind=0;Kind<3;Kind++){
         TArray<int32> Order;
-        for(int32 I=0;I<Sources.Num();I++)if(Sources[I].Kind==Kind&&FVector::DistSquared2D(Sources[I].Position,View)<FMath::Square(Kind==2?22000.:8000.))Order.Add(I);
+        for(int32 I=0;I<Sources.Num();I++)if(Sources[I].Kind==Kind&&FVector::DistSquared2D(Sources[I].Position,View)<FMath::Square(Kind==2?(IsParisSeineDressed()?45000.:22000.):8000.))Order.Add(I);
         Order.Sort([&](int32 A,int32 B){return FVector::DistSquared2D(Sources[A].Position,View)<FVector::DistSquared2D(Sources[B].Position,View);});
         const int32 Budget=Kind==0?StreetBudget:Kind==1?ShopBudget:FloodBudget;
         for(int32 I=0;I<FMath::Min(Budget,Order.Num());I++)Selected.Add(Order[I]);
@@ -92,7 +98,7 @@ void AParisNightLighting::Synchronize(bool Immediate){
     const bool Debug=S->bLevels||S->bIssues||S->bFootprints;
     StreetBudget=S->bStreetDetails?(S->DetailQuality==0?6:S->DetailQuality==1?12:24):0;
     ShopBudget=S->DetailQuality==0?1:S->DetailQuality==1?3:6;
-    FloodBudget=S->DetailQuality==2?4:2;
+    FloodBudget=IsParisSeineDressed()?(S->DetailQuality==2?6:4):(S->DetailQuality==2?4:2);
     if(Immediate)NightAmount=Debug?0:S->TimeOfDayPreset==2?1.f:S->TimeOfDayPreset==1?.32f:0;
     PreviousPreset=S->TimeOfDayPreset;PreviousQuality=S->DetailQuality;PreviousDebug=Debug;SelectionElapsed=1;
     for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetComponent()->SetVolumetricFog(S->TimeOfDayPreset==2&&S->DetailQuality==2&&!Debug);
@@ -117,7 +123,11 @@ void AParisNightLighting::Tick(float Delta){
         const auto& Source=Sources[Selected[I]];const int32 MaxStreetShadows=S->DetailQuality==2?4:S->DetailQuality==1?1:0,MaxFloodShadows=S->DetailQuality==2?2:S->DetailQuality==1?1:0;
         const bool Shadow=!NoShadows&&(Source.Kind==0?StreetShadows++<MaxStreetShadows:Source.Kind==2?FloodShadows++<MaxFloodShadows:false);
         L->SetWorldLocationAndRotation(Source.Position,Source.Rotation);L->SetAttenuationRadius(Source.Radius);L->SetTemperature(Source.Temperature);
-        L->SetOuterConeAngle(Source.OuterAngle);L->SetInnerConeAngle(Source.OuterAngle*.68f);L->SetIntensity(Source.Lumens*NightAmount);
+        const bool Party=IsParisFestivalEnabled(S)&&S->bStreetDetails&&!Debug&&Source.Kind==1;
+        static const FLinearColor Colors[]={FLinearColor(.95f,.05f,.3f),FLinearColor(.05f,.45f,1.f),FLinearColor(1.f,.5f,.08f)};
+        L->SetUseTemperature(!Party);L->SetLightColor(Party?Colors[FCrc::StrCrc32(*Source.SourceID)%3]:FLinearColor::White);
+        const float LandmarkGain=IsParisSeineDressed()&&S->TimeOfDayPreset==2&&Source.Kind==2?(Source.SourceID.StartsWith(TEXT("inferred_tower_flood:"))?8.f:6.f):1.f;
+        L->SetOuterConeAngle(Source.OuterAngle);L->SetInnerConeAngle(Source.OuterAngle*.68f);L->SetIntensity(Source.Lumens*NightAmount*(Party?1.7f:LandmarkGain));
         L->SetCastShadows(Shadow);L->SetVisibility(true);L->ComponentTags.Reset();L->ComponentTags.Add(FName(*Source.SourceID));L->ComponentTags.Add(TEXT("ParisNightLight"));
         ActiveLights++;ShadowLights+=Shadow?1:0;
     }

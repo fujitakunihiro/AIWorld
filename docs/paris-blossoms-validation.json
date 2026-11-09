@@ -1,0 +1,53 @@
+{
+  "recipe": "paris_floral_illumination_v2",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "python_tests": 5,
+  "native_tests": [
+    {
+      "name": "CoveredTerrainDisplayAndCollision",
+      "result": "Success"
+    },
+    {
+      "name": "LuxuryStreetAndWalkingClearance",
+      "result": "Success"
+    },
+    {
+      "name": "MappedMorrisAndStreetSigns",
+      "result": "Success"
+    },
+    {
+      "name": "NightLightingAndDayRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "RainLifecycleAndShelter",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    }
+  ],
+  "models": 19,
+  "hanging_baskets": 156,
+  "bulbs": 960,
+  "minimum_verified_headroom_cm": 205.2646,
+  "hanging_sites_skipped": [
+    "osm/node/321932192",
+    "osm/node/10746322392"
+  ],
+  "rendered_views": {
+    "after": {
+      "fps": 29.969795542902798,
+      "frame_p95_ms": 39.105698466300964,
+      "hanging_baskets": 156,
+      "bulbs": 960
+    },
+    "night": {
+      "fps": 28.929121420991443,
+      "frame_p95_ms": 38.78990188241005,
+      "hanging_baskets": 156,
+      "bulbs": 960
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "recipe": "paris_lively_street_v9",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "backup": "backups\\paris-before-street-props-20261107-142709",
+  "build": "Succeeded",
+  "bake": "Succeeded",
+  "python_tests": 12,
+  "targeted_rechecks": 2,
+  "native_tests": [
+    {
+      "name": "CoveredTerrainDisplayAndCollision",
+      "result": "Success"
+    },
+    {
+      "name": "FestivalModeAndRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "LocalWeatheringAndSkyPresets",
+      "result": "Success"
+    },
+    {
+      "name": "LuxuryStreetAndWalkingClearance",
+      "result": "Success"
+    },
+    {
+      "name": "MappedMorrisAndStreetSigns",
+      "result": "Success"
+    },
+    {
+      "name": "MinimapGeographyAndPlayerTracking",
+      "result": "Success"
+    },
+    {
+      "name": "NightLightingAndDayRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "RainLifecycleAndShelter",
+      "result": "Success"
+    },
+    {
+      "name": "RealisticPedestrianVisuals",
+      "result": "Success"
+    },
+    {
+      "name": "StreetRealismRenderingPolicy",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    }
+  ],
+  "counts": {
+    "canopy": 395,
+    "table": 49,
+    "urn": 251,
+    "pole": 392,
+    "window": 2400,
+    "facade_banner": 150,
+    "street_garland": 47,
+    "night_window": 6362,
+    "facade_relief": 15530,
+    "party_shop": 395,
+    "party_banner": 150,
+    "party_canopy": 40,
+    "street_display": 260,
+    "terrace_parasol": 17
+  },
+  "display_types": {
+    "menu": 138,
+    "books": 55,
+    "flowers": 60,
+    "produce": 7
+  },
+  "models": 77,
+  "previous_68_models_preserved": true,
+  "previous_records_and_cameras_preserved": true,
+  "weathering_and_minimap_manifests_preserved": true,
+  "placement_inferred": true,
+  "rendered_views": {
+    "after": {
+      "fps": 38.72945512398042,
+      "frame_p95_ms": 28.685200959444046,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "street_prop_visible_parts": 9,
+      "minimap_ready": true
+    },
+    "before": {
+      "fps": 31.351466539296993,
+      "frame_p95_ms": 34.77479889988899,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "street_prop_visible_parts": 0,
+      "minimap_ready": true
+    },
+    "cafe": {
+      "fps": 31.148425399026426,
+      "frame_p95_ms": 35.523802042007446,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "street_prop_visible_parts": 9,
+      "minimap_ready": true
+    },
+    "night": {
+      "fps": 37.17501755926827,
+      "frame_p95_ms": 30.180301517248154,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "street_prop_visible_parts": 9,
+      "minimap_ready": true
+    }
+  },
+  "frame_rate_target": 60
+}

@@ -106,14 +106,19 @@ for name in names:
         if n: original[prop] = (n, lib.get_material_property_input_node_output_name(mat, prop))
     base = original.get(unreal.MaterialProperty.MP_BASE_COLOR)
     if not base: continue
-    if str(base[0].get_editor_property('desc')) == 'ParisRain.Base_v1': patched.append(path); continue
+    if str(base[0].get_editor_property('desc')) == 'ParisRain.Base_v1':
+        rough_node = lib.get_material_property_input_node(mat, unreal.MaterialProperty.MP_ROUGHNESS)
+        if rough_node and isinstance(rough_node, unreal.MaterialExpressionCustom) and rough_node.get_editor_property('code') == 'return lerp(R,max(.075,R*.18),W);':
+            rough_node.set_editor_property('code', 'return lerp(R,max(.32,R*.45),W);')
+            lib.recompile_material(mat); save(mat)
+        patched.append(path); continue
     wet, rain = weather(mat, 'Wetness'), weather(mat, 'RainIntensity')
     pos, normal, time = node(mat, unreal.MaterialExpressionWorldPosition), node(mat, unreal.MaterialExpressionVertexNormalWS), node(mat, unreal.MaterialExpressionTime)
     mask = custom(mat, 'float n=.5+.25*sin(P.x*.0021+sin(P.y*.0017))+.25*sin(P.y*.0037+P.x*.0011);return saturate(W)*smoothstep(.55,.95,N.z)*(.55+.45*smoothstep(.3,.68,n));',
                   {'P': (pos, ''), 'N': (normal, ''), 'W': (wet, '')}, 1)
     output(custom(mat, 'return C*lerp(1.,.52,W);', {'C': base, 'W': (mask, '')}, desc='ParisRain.Base_v1'), unreal.MaterialProperty.MP_BASE_COLOR)
     rough = original.get(unreal.MaterialProperty.MP_ROUGHNESS)
-    if rough: output(custom(mat, 'return lerp(R,max(.075,R*.18),W);', {'R': rough, 'W': (mask, '')}, 1), unreal.MaterialProperty.MP_ROUGHNESS)
+    if rough: output(custom(mat, 'return lerp(R,max(.32,R*.45),W);', {'R': rough, 'W': (mask, '')}, 1), unreal.MaterialProperty.MP_ROUGHNESS)
     norm = original.get(unreal.MaterialProperty.MP_NORMAL)
     if norm and not mat.get_editor_property('tangent_space_normal'):
         code = '''float2 p=P.xy/85.;float2 cell=floor(p);float2 f=frac(p)-.5;

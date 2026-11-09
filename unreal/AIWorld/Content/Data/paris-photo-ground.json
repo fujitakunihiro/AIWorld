@@ -1,8 +1,8 @@
 {
   "format": "paris_covered_terrain_display_v1",
   "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
-  "geometry_sha256": "4b6178b9763fbfb415b3efcfdee91b12dc14a3e3aafa416c27591fcc44cd22d5",
-  "asset": "/Game/ParisPhotoreal/Ground/SM_ParisTerrainCut_4b6178b9763f",
+  "geometry_sha256": "e38e474a798d14d04bd6be69a748961d21e608712798927948bacd134da2de08",
+  "asset": "/Game/ParisPhotoreal/Ground/SM_ParisTerrainCut_e38e474a798d",
   "source_terrain_id": "terrain-ign",
   "coverage_mesh_ids": [
     "seine",
@@ -48,9 +48,10 @@
     "water"
   ],
   "original_area_m2": 512158.96384987095,
-  "visible_area_m2": 273692.23971175315,
-  "geometry_provenance": "Original terrain clipped only for display below exact existing surface coverage; all source GIS and collision retained. No artificial Z offset.",
-  "triangles": 30896,
+  "visible_area_m2": 276042.6719031186,
+  "restored_beneath_raised_paths_m2": 2350.432191365559,
+  "geometry_provenance": "Terrain cut below surface coverage; lower terrain retained beneath raised paths with >30cm clearance near Notre-Dame. Path edges under 20cm are reconciled for display; source GIS and collision remain unchanged.",
+  "triangles": 31750,
   "color": "beb39a",
-  "surface_provenance": "Inferred urban paving within 100m of the west anchor, fading to source palette by 130m. Not surveyed land cover."
+  "surface_provenance": "Inferred urban paving within 200m of the west anchor, fading to source palette by 240m. Not surveyed land cover."
 }

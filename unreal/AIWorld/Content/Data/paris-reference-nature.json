@@ -1,0 +1,13 @@
+{
+  "asset": "/Game/ParisPhotoreal/ReferenceNature/SM_ParisAvenueTree",
+  "source_triangles": 2062487,
+  "height_cm": 1000.0000000327013,
+  "materials": 3,
+  "source_url": "https://polyhaven.com/a/tree_small_02",
+  "license": "CC0-1.0",
+  "recipe": "paris_tree_foliage_v2",
+  "recipe_sha256": "212a04dde2956ce8ca11a35b16c07e9e5455325447e0ce95ca5656e1a977d576",
+  "wind_disable_distance_cm": 6000,
+  "appearance_provenance": "Broadleaf appearance proxy; not identification of actual Paris tree species; mapped OSM locations retained",
+  "texture_resolution": 2048
+}

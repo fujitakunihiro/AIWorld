@@ -131,6 +131,7 @@ private:
     void RefreshAppearance();
     UMaterialInterface* SurfaceMaterialFor(const TSharedPtr<FJsonObject>& Feature) const;
     double ReadyAt=0;
+    double LoadCoverStableSince=0,LoadCoverStarted=0;bool bLoadCoverDone=false;
     bool bCaptured=false,bMeasured=false;
     bool bGPUProfiled=false;
     bool bWalkLaunchPending=false;

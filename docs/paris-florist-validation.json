@@ -1,0 +1,14 @@
+﻿{
+    "checks":  [
+                   "all shared parts load at mapped shops",
+                   "no new walking collisions",
+                   "same source placement for all parts",
+                   "F6 hides detailed parts",
+                   "explicit legacy fallback"
+               ],
+    "reference_sha256":  "236bc83c6a46e1a773630d8cfe86adf979d9f0119923238d59781afe56a11dea",
+    "runtime_passes":  [
+                           "detailed",
+                           "fallback"
+                       ]
+}

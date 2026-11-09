@@ -205,8 +205,8 @@ void AParisPedestrianCrowd::SimulateStep(double Delta,const FVector* Player){
 }
 void AParisPedestrianCrowd::UpdateInstances(bool TraceGround){
     TMap<FString,TArray<FTransform>> Transforms;TMap<FString,TArray<int32>> Lookup;
-    TArray<int32> Visible;FVector View=FVector::ZeroVector;
-    if(auto PC=GetWorld()->GetFirstPlayerController())if(PC->PlayerCameraManager)View=PC->PlayerCameraManager->GetCameraLocation();
+    TArray<int32> Visible;FVector View=FVector::ZeroVector,Forward=FVector::ForwardVector;
+    if(auto PC=GetWorld()->GetFirstPlayerController())if(PC->PlayerCameraManager){View=PC->PlayerCameraManager->GetCameraLocation();Forward=PC->PlayerCameraManager->GetCameraRotation().Vector();}
     const double Range=DetailQuality==0?10000:DetailQuality==1?20000:35000;
     for(int32 I=0;I<Agents.Num();I++)if(FVector::DistSquared2D(Agents[I].Position,View)<=Range*Range)Visible.Add(I);
     Visible.Sort([&](int32 A,int32 B){const double DA=FVector::DistSquared2D(Agents[A].Position,View),DB=FVector::DistSquared2D(Agents[B].Position,View);return DA==DB?A<B:DA<DB;});
@@ -216,8 +216,14 @@ void AParisPedestrianCrowd::UpdateInstances(bool TraceGround){
     const bool FullPeople=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFullPeople"));
     TSet<int32> WantedHumans,UsedHumanSlots;HumanAgentByComponent.Empty();
     if(!HumanVisuals.IsEmpty()){
-        int32 ByType[2]={0,0};const int32 PerType=HumanVisualBudget()/2;const double RangeCm=DetailQuality==2?3500:2200;
-        for(int32 I:Visible)if(ByType[I%2]<PerType&&FVector::DistSquared2D(Agents[I].Position,View)<RangeCm*RangeCm){WantedHumans.Add(I);ByType[I%2]++;}
+        int32 ByType[2]={0,0};const int32 PerType=HumanVisualBudget()/2;const double RangeCm=HumanVisualRangeCm();TArray<int32> Candidates;
+        for(int32 I:Visible)if(FVector::DistSquared(Agents[I].Position+FVector(0,0,90),View)<RangeCm*RangeCm)Candidates.Add(I);
+        Candidates.Sort([&](int32 A,int32 B){
+            const FVector DA=Agents[A].Position+FVector(0,0,90)-View,DB=Agents[B].Position+FVector(0,0,90)-View;
+            const bool FrontA=FVector::DotProduct(DA.GetSafeNormal(),Forward)>.2,FrontB=FVector::DotProduct(DB.GetSafeNormal(),Forward)>.2;
+            if(FrontA!=FrontB)return FrontA;const double A2=DA.SizeSquared(),B2=DB.SizeSquared();return A2==B2?A<B:A2<B2;
+        });
+        for(int32 I:Candidates)if(ByType[I%2]<PerType){WantedHumans.Add(I);ByType[I%2]++;}
     }
     for(int32 I:Visible){auto& A=Agents[I];if(A.VisitStage==3)StandingVisitorsRendered++;
         const bool Seated=A.SeatBlend>.001;const auto* Stop=Visits.IsValidIndex(A.Visit)?&Visits[A.Visit]:nullptr;

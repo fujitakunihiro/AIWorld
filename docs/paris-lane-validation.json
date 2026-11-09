@@ -1,0 +1,159 @@
+{
+  "timestamp_utc": "2026-11-08T09:35:29.291338+00:00",
+  "recipe": "paris_everyday_lane_v1",
+  "street": {
+    "source_street_id": "osm/way/40067719",
+    "street_name": "Rue de la Bûcherie",
+    "mapped_surface": "sett",
+    "fan_layout_inferred": true,
+    "paving_source": {
+      "source_mesh_id": "roads",
+      "source_triangle_indices": [
+        2248,
+        2253,
+        2255,
+        2256,
+        2258
+      ],
+      "area_m2": 536.7549958366881,
+      "visual_offset_cm": 0.7
+    },
+    "bicycles": 15,
+    "racks": 15,
+    "planters": 3,
+    "storefronts": 5,
+    "walking_ribbon_width_cm": 210,
+    "centreline_cm": [
+      [
+        -3430.249078804627,
+        20725.721088424325
+      ],
+      [
+        -2977.925003133714,
+        20956.308396346867
+      ],
+      [
+        -2653.439283266198,
+        21116.894726175815
+      ],
+      [
+        -1282.9160867491737,
+        21767.622369155288
+      ],
+      [
+        126.62685305112973,
+        22492.06029213965
+      ],
+      [
+        2407.291377382353,
+        24006.531276460737
+      ]
+    ],
+    "street_axis": [
+      -0.876582681441283,
+      -0.48125128841096115
+    ],
+    "parking_offset_cm": 250,
+    "pedestrian_routes_kept_clear": true,
+    "sidewalk_occupancy_inferred": true
+  },
+  "camera": {
+    "name": "Rue de la Bucherie / everyday Paris",
+    "source_id": "osm/way/40067719",
+    "eye_cm": [
+      1653.6595181368227,
+      23434.31405732795,
+      147.53454810830146
+    ],
+    "target_cm": [
+      -3071.597357670733,
+      20908.55578440062,
+      262.53454810830146
+    ],
+    "ground_cm": -22.46545189169855,
+    "eye_height_cm": 170,
+    "focal_length_mm": 38
+  },
+  "georeference": {
+    "axes": "X=east, Y=south, Z=up",
+    "cesium_transform_applied": false,
+    "origin_elevation_ngf_m": 35.38,
+    "projected_crs": "EPSG:2154",
+    "projected_origin_m": [
+      652093.08244807,
+      6861827.078295114
+    ],
+    "reference_id": "paris_lambert93_shared_v1",
+    "units": "cm",
+    "vertical_datum": "NGF-IGN69",
+    "vertical_mode": "orthometric NGF-IGN69 minus shared origin; no ellipsoidal conversion",
+    "wgs84_origin": [
+      2.3471,
+      48.8547
+    ]
+  },
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "source_geometry_unchanged": true,
+  "source_mesh_sha256": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8",
+  "base_reference_records_preserved": true,
+  "python_tests": 5,
+  "native_tests": {
+    "paris-reference-regression-automation.log": [
+      "CoveredTerrainDisplayAndCollision",
+      "FestivalModeAndRestoration",
+      "LocalWeatheringAndSkyPresets",
+      "LuxuryStreetAndWalkingClearance",
+      "MappedMorrisAndStreetSigns",
+      "MinimapGeographyAndPlayerTracking",
+      "NightLightingAndDayRestoration",
+      "RainLifecycleAndShelter",
+      "RealisticPedestrianVisuals",
+      "StreetRealismRenderingPolicy",
+      "SurfaceMaterialsAndDetails"
+    ],
+    "paris-reference-reference-automation.log": [
+      "ReferenceArchitectureAndRestoration"
+    ],
+    "paris-lane-automation.log": [
+      "LaneSurfacePropsAndRestoration"
+    ]
+  },
+  "regeneration_test_passed": true,
+  "generated_sha256": "6f0d0912b0f27bf7ff1b8b6cae4dd83361a694ed843c432738061ee2236ba394",
+  "captures": {
+    "before": {
+      "file": "paris-lane-before.png",
+      "sha256": "194dd486aa00eb10d2f361d697a87d63d3726070aaf7ec2095a4c4e9eda61800",
+      "fps": 27.027832019305674,
+      "frame_p95_ms": 41.334398090839386,
+      "quality": "High / 100% / 1280x720 / static comparison"
+    },
+    "after": {
+      "file": "paris-lane-after.png",
+      "sha256": "65a1fa3ac24152fbb4af48c5251cdb70630b8c2b116aa9ac0b116d2bba83ccf3",
+      "fps": 27.21106170877463,
+      "frame_p95_ms": 43.20710152387619,
+      "quality": "High / 100% / 1280x720 / static comparison"
+    },
+    "rain": {
+      "file": "paris-lane-rain.png",
+      "sha256": "ca55f70acbb618fb6227867884285a9a386572d8be2866d58f2af70449c1bbd5",
+      "fps": 26.28559919092863,
+      "frame_p95_ms": 44.1582016646862,
+      "quality": "High / 100% / 1280x720 / static comparison"
+    },
+    "night": {
+      "file": "paris-lane-night.png",
+      "sha256": "36cd11df64cb442c89ff2446fd1cfde7586a5ebbabc13b4c52a109602742cdb8",
+      "fps": 26.55228305434643,
+      "frame_p95_ms": 43.1085005402565,
+      "quality": "High / 100% / 1280x720 / static comparison"
+    }
+  },
+  "installed_models": 38,
+  "reference_photo_parity_achieved": false,
+  "parking_occupancy_and_design_inferred": true,
+  "actual_laying_pattern_not_surveyed": true,
+  "target_60fps_achieved": false,
+  "backup": "D:\\work\\develop\\21_マインクラフト風AI街\\backups\\paris-before-lane-20261108-174234"
+}

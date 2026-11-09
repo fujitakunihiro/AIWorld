@@ -3,10 +3,14 @@ import hashlib
 import json
 from pathlib import Path
 import urllib.request
+import sys
 
 ROOT=Path(__file__).resolve().parents[2]
 FOLDER=ROOT/'unreal/assets/paris-nature'
 ASSET='island_tree_01'
+if '--reference' in sys.argv:
+    FOLDER=ROOT/'unreal/assets/paris-reference-nature'
+    ASSET='tree_small_02'
 AGENT='AIWorld/1.0 (local Unreal photoreal development)'
 
 

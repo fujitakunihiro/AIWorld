@@ -99,7 +99,7 @@ for kind,name in [('asphalt','M_ParisRoadAsphalt'),('sidewalk','M_ParisRoadSidew
         uv2=custom(mat,'return float2(-UV.y,UV.x)*.793+float2(.31,.67);',{'UV':(uv,'')},2)
         second={role:sample(mat,assets.load_asset('/Game/Textures/T_ParisPhotoAsphalt'+role.title()),uv2,'normal' if role=='normal' else 'mask' if role=='orm' else 'color') for role in ('albedo','normal','orm')}
         common['Second']=(second['albedo'],'RGB')
-        color=custom(mat,'float m=.5+.5*sin(Position.x*.00091+sin(Position.y*.00073));float3 c=lerp(Albedo,Second,.25+.35*m);float gutter=(1.-smoothstep(8.,80.,max(Distance,0.)))*(.5+.5*Wear.b);c*=lerp(.88,1.08,Wear.b);c*=1.-Wear.r*.19;c*=1.-Wear.g*.40;c*=1.-gutter*.20;return c*float3(.93,.96,1.);',common)
+        color=custom(mat,'float m=.5+.5*sin(Position.x*.00091+sin(Position.y*.00073));float3 c=lerp(Albedo,Second,.25+.35*m);float gutter=(1.-smoothstep(8.,80.,max(Distance,0.)))*(.5+.5*Wear.b);c*=lerp(.88,1.08,Wear.b);c*=1.-Wear.r*.19;c*=1.-Wear.g*.40;c*=1.-gutter*.32;return c*float3(.93,.96,1.);',common)
         color=custom(mat,'return Color*Brightness;',{'Color':(color,''),'Brightness':(scalar(mat,'AsphaltBrightness',.62),'')})
         rough=custom(mat,'return clamp(lerp(ORM.g,Second.g,.4)*.35+.55-Wear.r*.13-Wear.a*.09,.55,.95);',{'ORM':(samples['orm'],'RGB'),'Second':(second['orm'],'RGB'),'Wear':(wear,'RGBA')},1)
         local=custom(mat,'float2 s=lerp(N.xy,float2(Second.y,-Second.x),.42)*.72;return normalize(float3(s,1.));',{'N':(samples['normal'],'RGB'),'Second':(second['normal'],'RGB')})

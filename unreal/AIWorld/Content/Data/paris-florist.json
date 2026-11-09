@@ -1,0 +1,60 @@
+{
+  "format": "paris_florist_display_v1",
+  "recipe": "paris_photo_reference_florist_v1",
+  "reference_sha256": "236bc83c6a46e1a773630d8cfe86adf979d9f0119923238d59781afe56a11dea",
+  "appearance_provenance": "Original inferred 3D display guided by the user photograph; not a scan or a verified real shop exterior",
+  "reference_usage": "Local visual reference only. No photographed people, brands or pixels are baked into the models.",
+  "local_units": "cm; X along facade, +Y toward street, Z above existing shop ground",
+  "entrance_clear_width_cm": 100,
+  "display_max_depth_cm": 93,
+  "models": [
+    {
+      "id": "wicker",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_wicker_cce8d7a1eb0a",
+      "geometry_sha256": "cce8d7a1eb0ac288352d46a12987672f19258a270e0c93b691f8cda242e59b06",
+      "triangles": 64688
+    },
+    {
+      "id": "timber",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_timber_f2356b6a0406",
+      "geometry_sha256": "f2356b6a0406ca983db40fade5d4bfb45d82d73aba310f7b5a75876d72b2ec9c",
+      "triangles": 4528
+    },
+    {
+      "id": "metal",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_metal_41440fab62e0",
+      "geometry_sha256": "41440fab62e0a5bea8545f00fc96d1c3076b83962708328d04024a155ce31225",
+      "triangles": 2064
+    },
+    {
+      "id": "foliage",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_foliage_3fa07805a2b5",
+      "geometry_sha256": "3fa07805a2b594b9801ac0d27cfc65ff8f77ecb055be504a49d3c54e65e5768a",
+      "triangles": 13376
+    },
+    {
+      "id": "petals",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_petals_82b08ff70abd",
+      "geometry_sha256": "82b08ff70abd09b66d3eee97c43dc9d0463c2fff4cbab04b212f9fba7be2cd79",
+      "triangles": 69392
+    },
+    {
+      "id": "paint",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_paint_5d2af9ebe7ca",
+      "geometry_sha256": "5d2af9ebe7ca511bf5eefdfbbe1717aaaae720f9a31590215fd778d9f478b8c4",
+      "triangles": 220
+    },
+    {
+      "id": "cloth",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_cloth_a7131352550c",
+      "geometry_sha256": "a7131352550cd245a485b5df371f3f46987a875e721b99f1db14149c8f24b668",
+      "triangles": 70
+    },
+    {
+      "id": "slates",
+      "asset": "/Game/ParisPhotoreal/Florist/SM_ParisFlorist_slates_0513be1b73dd",
+      "geometry_sha256": "0513be1b73dddc66b7a88a0c83eb3b4696ae5833bc221cb205ce30f7a96b1d12",
+      "triangles": 1056
+    }
+  ]
+}

@@ -8,7 +8,10 @@ sys.path.insert(0,os.path.dirname(__file__))
 from paris_foliage import RECIPE, WIND_DISABLE_DISTANCE_CM, finish_tree_material
 
 def main():
-    root=os.path.normpath(os.path.join(os.path.dirname(__file__),'..','assets','paris-nature'))
+    reference=os.environ.get('PARIS_REFERENCE_NATURE')=='1'
+    prefix='ParisAvenueTree' if reference else 'ParisBroadleaf'
+    report_name='paris-reference-nature.json' if reference else 'paris-nature.json'
+    root=os.path.normpath(os.path.join(os.path.dirname(__file__),'..','assets','paris-reference-nature' if reference else 'paris-nature'))
     with open(os.path.join(root,'manifest.json'),encoding='utf-8') as f:manifest=json.load(f)
     if manifest['license']!='CC0-1.0':raise RuntimeError('Unverified nature asset license')
     for filename,record in manifest['files'].items():
@@ -22,14 +25,15 @@ def main():
     canonical=os.path.join(root,'paris_broadleaf.gltf')
     with open(canonical,'w',encoding='utf-8') as f:json.dump(source,f)
     assets=unreal.EditorAssetLibrary;tools=unreal.AssetToolsHelpers.get_asset_tools();lib=unreal.MaterialEditingLibrary
-    folder='/Game/ParisPhotoreal/Nature';package=folder+'/SM_ParisBroadleaf'
+    folder='/Game/ParisPhotoreal/ReferenceNature' if reference else '/Game/ParisPhotoreal/Nature';package=folder+'/SM_'+prefix
     recipe_bytes=b''.join(open(os.path.join(os.path.dirname(__file__),name),'rb').read().replace(b'\r\n',b'\n') for name in ('create-paris-nature.py','paris_foliage.py'))
     signature=hashlib.sha256(recipe_bytes+json.dumps(manifest,sort_keys=True).encode()).hexdigest()
     cached=assets.load_asset(package) if assets.does_asset_exist(package) else None
-    if cached and assets.get_metadata_tag(cached,'ParisTwin.NatureRecipe')==signature and os.path.isfile(os.path.join(unreal.Paths.project_content_dir(),'Data','paris-nature.json')):
+    if cached and assets.get_metadata_tag(cached,'ParisTwin.NatureRecipe')==signature and os.path.isfile(os.path.join(unreal.Paths.project_content_dir(),'Data',report_name)):
         unreal.log_warning('PARIS_PHOTO_NATURE_CACHED');return
     for sub in ('Materials','Textures','paris_broadleaf/StaticMeshes','paris_broadleaf/Materials','paris_broadleaf/Textures'):
         assets.make_directory(folder+'/'+sub)
+        os.makedirs(os.path.join(unreal.Paths.project_content_dir(),folder[6:],sub),exist_ok=True)
     mesh=cached
     if not mesh:
         task=unreal.AssetImportTask();task.set_editor_properties(dict(filename=canonical,destination_path=folder,automated=True,replace_existing=True,save=True))
@@ -69,7 +73,7 @@ def main():
 
 
     for index,material in enumerate(source['materials']):
-        leaf='leaves' in material['name'];branch='branches' in material['name'];name='M_ParisBroadleaf_'+str(index);path=folder+'/Materials/'+name
+        leaf='leaves' in material['name'].lower();branch='branch' in material['name'].lower();name='M_'+prefix+'_'+str(index);path=folder+'/Materials/'+name
         mat=assets.load_asset(path) if assets.does_asset_exist(path) else tools.create_asset(name,folder+'/Materials',unreal.Material,unreal.MaterialFactoryNew())
         lib.delete_all_material_expressions(mat);mat.set_editor_property('two_sided',True)
         lib.set_material_usage(mat,unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES)
@@ -104,8 +108,8 @@ def main():
     if abs((box.max.z-box.min.z)-1000)>1:raise RuntimeError('Imported tree did not preserve canonical 10m height')
     report=dict(asset=package,source_triangles=sum(source['accessors'][p['indices']]['count']//3 for m in source['meshes'] for p in m['primitives']),height_cm=box.max.z-box.min.z,materials=len(source['materials']),source_url=manifest['source_url'],license=manifest['license'],recipe=RECIPE,recipe_sha256=signature,wind_disable_distance_cm=WIND_DISABLE_DISTANCE_CM,
         appearance_provenance=manifest['appearance_provenance'],texture_resolution=manifest['maps_resolution'])
-    with open(os.path.join(unreal.Paths.project_content_dir(),'Data','paris-nature.json'),'w',encoding='utf-8') as f:json.dump(report,f,indent=2)
-    with open(os.path.join(unreal.Paths.project_dir(),'Saved','paris-v3-nature-import.json'),'w',encoding='utf-8') as f:json.dump(report,f,indent=2)
+    with open(os.path.join(unreal.Paths.project_content_dir(),'Data',report_name),'w',encoding='utf-8') as f:json.dump(report,f,indent=2)
+    with open(os.path.join(unreal.Paths.project_dir(),'Saved',report_name),'w',encoding='utf-8') as f:json.dump(report,f,indent=2)
     unreal.log_warning('PARIS_PHOTO_NATURE_READY')
 
 

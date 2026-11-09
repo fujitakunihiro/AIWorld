@@ -1,0 +1,1007 @@
+{
+  "recipe": "paris_street_realism_v7",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "backup": "backups\\paris-before-realism-20261107-114005",
+  "build": "Succeeded",
+  "python_tests": 10,
+  "native_tests": [
+    {
+      "name": "CoveredTerrainDisplayAndCollision",
+      "result": "Success"
+    },
+    {
+      "name": "LuxuryStreetAndWalkingClearance",
+      "result": "Success"
+    },
+    {
+      "name": "MappedMorrisAndStreetSigns",
+      "result": "Success"
+    },
+    {
+      "name": "NightLightingAndDayRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "RainLifecycleAndShelter",
+      "result": "Success"
+    },
+    {
+      "name": "RealisticPedestrianVisuals",
+      "result": "Success"
+    },
+    {
+      "name": "StreetRealismRenderingPolicy",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    }
+  ],
+  "counts": {
+    "canopy": 395,
+    "table": 49,
+    "urn": 251,
+    "pole": 392,
+    "window": 2400,
+    "facade_banner": 150,
+    "street_garland": 47,
+    "night_window": 6362,
+    "facade_relief": 15530
+  },
+  "models": 59,
+  "window_buildings": 573,
+  "existing_planters_reused": 9,
+  "hanging_baskets": 692,
+  "coverage": {
+    "extent_m": 800,
+    "cell_size_m": 100,
+    "eligible_cells": 61,
+    "decorated_eligible_cells": 61,
+    "decorated_cells": 63,
+    "bounds_cm": [
+      -39928.31640625,
+      -39946.24,
+      39937.857421875,
+      39934.834
+    ],
+    "cells": [
+      {
+        "x": -4,
+        "y": -3,
+        "counts": {
+          "canopy": 10,
+          "pole": 6,
+          "window": 62,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 89,
+          "facade_relief": 225
+        }
+      },
+      {
+        "x": -4,
+        "y": -2,
+        "counts": {
+          "canopy": 1,
+          "pole": 11,
+          "window": 65,
+          "facade_banner": 3,
+          "night_window": 60,
+          "facade_relief": 133
+        }
+      },
+      {
+        "x": -4,
+        "y": -1,
+        "counts": {
+          "canopy": 2,
+          "pole": 3,
+          "window": 52,
+          "facade_banner": 3,
+          "night_window": 32,
+          "facade_relief": 81
+        }
+      },
+      {
+        "x": -4,
+        "y": 0,
+        "counts": {
+          "canopy": 2,
+          "pole": 1,
+          "window": 70,
+          "facade_banner": 3,
+          "night_window": 275,
+          "facade_relief": 683
+        }
+      },
+      {
+        "x": -4,
+        "y": 1,
+        "counts": {
+          "canopy": 9,
+          "urn": 7,
+          "table": 1,
+          "pole": 5,
+          "window": 69,
+          "facade_banner": 3,
+          "street_garland": 3,
+          "night_window": 257,
+          "facade_relief": 629
+        }
+      },
+      {
+        "x": -4,
+        "y": 2,
+        "counts": {
+          "canopy": 8,
+          "urn": 6,
+          "window": 66,
+          "facade_banner": 3,
+          "street_garland": 2,
+          "night_window": 212,
+          "facade_relief": 490
+        }
+      },
+      {
+        "x": -4,
+        "y": 3,
+        "counts": {
+          "canopy": 7,
+          "urn": 2,
+          "pole": 3,
+          "window": 62,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 165,
+          "facade_relief": 438
+        }
+      },
+      {
+        "x": -3,
+        "y": -4,
+        "counts": {
+          "pole": 4,
+          "window": 42,
+          "facade_banner": 3,
+          "night_window": 23,
+          "facade_relief": 63
+        }
+      },
+      {
+        "x": -3,
+        "y": -3,
+        "counts": {
+          "pole": 14,
+          "window": 17,
+          "facade_banner": 3,
+          "night_window": 80,
+          "facade_relief": 206
+        }
+      },
+      {
+        "x": -3,
+        "y": -2,
+        "counts": {
+          "pole": 8,
+          "window": 3,
+          "facade_banner": 3,
+          "night_window": 142,
+          "facade_relief": 390
+        }
+      },
+      {
+        "x": -3,
+        "y": -1,
+        "counts": {
+          "pole": 4,
+          "window": 2,
+          "facade_banner": 3,
+          "night_window": 135,
+          "facade_relief": 322
+        }
+      },
+      {
+        "x": -3,
+        "y": 0,
+        "counts": {
+          "canopy": 5,
+          "table": 2,
+          "urn": 8,
+          "pole": 3,
+          "window": 67,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 61,
+          "facade_relief": 145
+        }
+      },
+      {
+        "x": -3,
+        "y": 1,
+        "counts": {
+          "canopy": 15,
+          "urn": 15,
+          "table": 6,
+          "pole": 21,
+          "window": 70,
+          "facade_banner": 3,
+          "night_window": 140,
+          "facade_relief": 298
+        }
+      },
+      {
+        "x": -3,
+        "y": 2,
+        "counts": {
+          "canopy": 19,
+          "table": 4,
+          "urn": 10,
+          "pole": 7,
+          "window": 77,
+          "facade_banner": 3,
+          "street_garland": 2,
+          "night_window": 197,
+          "facade_relief": 470
+        }
+      },
+      {
+        "x": -3,
+        "y": 3,
+        "counts": {
+          "canopy": 18,
+          "table": 3,
+          "urn": 15,
+          "pole": 10,
+          "window": 71,
+          "facade_banner": 3,
+          "street_garland": 2,
+          "night_window": 125,
+          "facade_relief": 320
+        }
+      },
+      {
+        "x": -2,
+        "y": -4,
+        "counts": {
+          "canopy": 6,
+          "table": 2,
+          "pole": 5,
+          "window": 65,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 101,
+          "facade_relief": 230
+        }
+      },
+      {
+        "x": -2,
+        "y": -3,
+        "counts": {
+          "pole": 9,
+          "window": 1,
+          "facade_banner": 3,
+          "night_window": 32,
+          "facade_relief": 77
+        }
+      },
+      {
+        "x": -2,
+        "y": -2,
+        "counts": {
+          "canopy": 1,
+          "urn": 1,
+          "pole": 2,
+          "window": 3,
+          "facade_banner": 3,
+          "night_window": 154,
+          "facade_relief": 474
+        }
+      },
+      {
+        "x": -2,
+        "y": -1,
+        "counts": {
+          "pole": 2,
+          "window": 1,
+          "facade_banner": 3,
+          "night_window": 184,
+          "facade_relief": 492
+        }
+      },
+      {
+        "x": -2,
+        "y": 0,
+        "counts": {
+          "canopy": 2,
+          "urn": 3,
+          "table": 1,
+          "pole": 8,
+          "window": 25,
+          "facade_banner": 3,
+          "night_window": 90,
+          "facade_relief": 214
+        }
+      },
+      {
+        "x": -2,
+        "y": 1,
+        "counts": {
+          "canopy": 18,
+          "urn": 2,
+          "pole": 2,
+          "window": 55,
+          "facade_banner": 3,
+          "street_garland": 3,
+          "night_window": 128,
+          "facade_relief": 371
+        }
+      },
+      {
+        "x": -2,
+        "y": 2,
+        "counts": {
+          "canopy": 12,
+          "urn": 6,
+          "table": 2,
+          "pole": 1,
+          "window": 59,
+          "facade_banner": 3,
+          "street_garland": 3,
+          "night_window": 212,
+          "facade_relief": 506
+        }
+      },
+      {
+        "x": -2,
+        "y": 3,
+        "counts": {
+          "canopy": 10,
+          "urn": 8,
+          "table": 1,
+          "pole": 4,
+          "window": 68,
+          "facade_banner": 3,
+          "street_garland": 2,
+          "night_window": 221,
+          "facade_relief": 509
+        }
+      },
+      {
+        "x": -1,
+        "y": -4,
+        "counts": {
+          "canopy": 13,
+          "table": 8,
+          "urn": 12,
+          "pole": 13,
+          "window": 60,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 137,
+          "facade_relief": 317
+        }
+      },
+      {
+        "x": -1,
+        "y": -3,
+        "counts": {
+          "pole": 2
+        }
+      },
+      {
+        "x": -1,
+        "y": -2,
+        "counts": {
+          "pole": 7,
+          "window": 7,
+          "facade_banner": 3,
+          "night_window": 74,
+          "facade_relief": 167
+        }
+      },
+      {
+        "x": -1,
+        "y": -1,
+        "counts": {
+          "canopy": 4,
+          "table": 2,
+          "urn": 8,
+          "pole": 12,
+          "window": 34,
+          "facade_banner": 3,
+          "night_window": 148,
+          "facade_relief": 381
+        }
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "counts": {
+          "window": 16,
+          "facade_banner": 3,
+          "night_window": 194,
+          "facade_relief": 492
+        }
+      },
+      {
+        "x": -1,
+        "y": 1,
+        "counts": {
+          "canopy": 10,
+          "urn": 4,
+          "pole": 4,
+          "window": 46,
+          "facade_banner": 3,
+          "night_window": 103,
+          "facade_relief": 248
+        }
+      },
+      {
+        "x": -1,
+        "y": 2,
+        "counts": {
+          "canopy": 28,
+          "urn": 19,
+          "table": 2,
+          "pole": 4,
+          "window": 58,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 175,
+          "facade_relief": 431
+        }
+      },
+      {
+        "x": -1,
+        "y": 3,
+        "counts": {
+          "canopy": 40,
+          "table": 2,
+          "pole": 2,
+          "window": 55,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 238,
+          "facade_relief": 559
+        }
+      },
+      {
+        "x": 0,
+        "y": -4,
+        "counts": {
+          "canopy": 4,
+          "urn": 7,
+          "table": 1,
+          "pole": 15,
+          "window": 32,
+          "facade_banner": 3,
+          "night_window": 60,
+          "facade_relief": 164
+        }
+      },
+      {
+        "x": 0,
+        "y": -3,
+        "counts": {
+          "canopy": 1,
+          "table": 1,
+          "urn": 2,
+          "pole": 8,
+          "window": 29,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 31,
+          "facade_relief": 110
+        }
+      },
+      {
+        "x": 0,
+        "y": -2,
+        "counts": {
+          "canopy": 1,
+          "urn": 1,
+          "pole": 5,
+          "window": 18,
+          "facade_banner": 3,
+          "night_window": 22,
+          "facade_relief": 51
+        }
+      },
+      {
+        "x": 0,
+        "y": -1,
+        "counts": {
+          "pole": 12,
+          "urn": 1,
+          "window": 5,
+          "facade_banner": 3,
+          "night_window": 14,
+          "facade_relief": 48
+        }
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "counts": {
+          "pole": 14,
+          "urn": 1,
+          "window": 9,
+          "facade_banner": 3,
+          "night_window": 76,
+          "facade_relief": 165
+        }
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "counts": {
+          "pole": 8,
+          "urn": 4
+        }
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "counts": {
+          "canopy": 3,
+          "urn": 4,
+          "pole": 12,
+          "window": 30,
+          "facade_banner": 3,
+          "street_garland": 1,
+          "night_window": 21,
+          "facade_relief": 57
+        }
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "counts": {
+          "canopy": 22,
+          "table": 2,
+          "urn": 6,
+          "pole": 5,
+          "window": 70,
+          "facade_banner": 3,
+          "street_garland": 4,
+          "night_window": 206,
+          "facade_relief": 530
+        }
+      },
+      {
+        "x": 1,
+        "y": -4,
+        "counts": {
+          "canopy": 6,
+          "urn": 8,
+          "table": 3,
+          "pole": 4,
+          "window": 45,
+          "facade_banner": 2,
+          "night_window": 52,
+          "facade_relief": 129
+        }
+      },
+      {
+        "x": 1,
+        "y": -3,
+        "counts": {
+          "canopy": 1,
+          "pole": 12,
+          "urn": 1,
+          "window": 32,
+          "facade_banner": 2,
+          "night_window": 90,
+          "facade_relief": 244
+        }
+      },
+      {
+        "x": 1,
+        "y": -2,
+        "counts": {
+          "pole": 2
+        }
+      },
+      {
+        "x": 1,
+        "y": -1,
+        "counts": {
+          "pole": 3
+        }
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "counts": {
+          "canopy": 9,
+          "urn": 18,
+          "pole": 7,
+          "window": 40,
+          "facade_banner": 2,
+          "night_window": 31,
+          "facade_relief": 27
+        }
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "counts": {
+          "canopy": 5,
+          "table": 1,
+          "urn": 11,
+          "pole": 5,
+          "window": 72,
+          "facade_banner": 2,
+          "night_window": 41
+        }
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "counts": {
+          "canopy": 4,
+          "window": 47,
+          "facade_banner": 2,
+          "night_window": 30,
+          "facade_relief": 59
+        }
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "counts": {
+          "canopy": 12,
+          "urn": 13,
+          "table": 1,
+          "pole": 4,
+          "window": 67,
+          "facade_banner": 2,
+          "street_garland": 3,
+          "night_window": 262,
+          "facade_relief": 651
+        }
+      },
+      {
+        "x": 2,
+        "y": -4,
+        "counts": {
+          "canopy": 24,
+          "urn": 3,
+          "table": 1,
+          "pole": 6,
+          "window": 57,
+          "facade_banner": 2,
+          "street_garland": 3,
+          "night_window": 205,
+          "facade_relief": 482
+        }
+      },
+      {
+        "x": 2,
+        "y": -3,
+        "counts": {
+          "canopy": 2,
+          "pole": 3,
+          "window": 31,
+          "facade_banner": 2,
+          "street_garland": 1,
+          "night_window": 73,
+          "facade_relief": 188
+        }
+      },
+      {
+        "x": 2,
+        "y": -2,
+        "counts": {
+          "canopy": 2,
+          "urn": 4,
+          "table": 1,
+          "pole": 9,
+          "window": 22,
+          "facade_banner": 2,
+          "night_window": 10,
+          "facade_relief": 33
+        }
+      },
+      {
+        "x": 2,
+        "y": -1,
+        "counts": {
+          "canopy": 6,
+          "pole": 9,
+          "window": 26,
+          "facade_banner": 2,
+          "night_window": 35,
+          "facade_relief": 77
+        }
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "counts": {
+          "canopy": 9,
+          "urn": 12,
+          "pole": 3,
+          "window": 51,
+          "facade_banner": 2,
+          "street_garland": 5,
+          "night_window": 251,
+          "facade_relief": 606
+        }
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "counts": {
+          "canopy": 5,
+          "urn": 4,
+          "pole": 7,
+          "window": 88,
+          "facade_banner": 2,
+          "street_garland": 2,
+          "night_window": 161,
+          "facade_relief": 303
+        }
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "counts": {
+          "window": 11,
+          "night_window": 6,
+          "facade_relief": 12
+        }
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "counts": {
+          "canopy": 6,
+          "urn": 7,
+          "table": 1,
+          "pole": 9,
+          "window": 55,
+          "facade_banner": 2,
+          "night_window": 31,
+          "facade_relief": 79
+        }
+      },
+      {
+        "x": 3,
+        "y": -4,
+        "counts": {
+          "canopy": 25,
+          "urn": 10,
+          "pole": 4,
+          "window": 59,
+          "facade_banner": 2,
+          "street_garland": 1,
+          "night_window": 162,
+          "facade_relief": 407
+        }
+      },
+      {
+        "x": 3,
+        "y": -3,
+        "counts": {
+          "canopy": 2,
+          "urn": 2,
+          "pole": 15,
+          "window": 22,
+          "facade_banner": 2,
+          "night_window": 40,
+          "facade_relief": 96
+        }
+      },
+      {
+        "x": 3,
+        "y": -2,
+        "counts": {
+          "pole": 9,
+          "window": 8,
+          "facade_banner": 2,
+          "night_window": 25,
+          "facade_relief": 60
+        }
+      },
+      {
+        "x": 3,
+        "y": -1,
+        "counts": {
+          "pole": 6
+        }
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "counts": {
+          "pole": 5,
+          "window": 39,
+          "facade_banner": 2,
+          "night_window": 62,
+          "facade_relief": 138
+        }
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "counts": {
+          "canopy": 3,
+          "urn": 2,
+          "pole": 5,
+          "window": 52,
+          "facade_banner": 2,
+          "street_garland": 2,
+          "night_window": 156,
+          "facade_relief": 395
+        }
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "counts": {
+          "canopy": 3,
+          "table": 1,
+          "urn": 4,
+          "pole": 7,
+          "window": 33,
+          "facade_banner": 2,
+          "night_window": 23,
+          "facade_relief": 54
+        }
+      },
+      {
+        "x": 3,
+        "y": 3,
+        "counts": {
+          "pole": 2,
+          "window": 2,
+          "facade_banner": 1,
+          "night_window": 2,
+          "facade_relief": 4
+        }
+      }
+    ]
+  },
+  "district_views": [
+    {
+      "name": "District overview",
+      "eye_cm": [
+        0,
+        65000,
+        60000
+      ],
+      "target_cm": [
+        0,
+        0,
+        500
+      ]
+    },
+    {
+      "name": "North west",
+      "source_id": "osm/node/3481937594",
+      "eye_cm": [
+        -18312.1051959128,
+        -38156.30650189473,
+        140.63899062794627
+      ],
+      "target_cm": [
+        -19499.491821716874,
+        -38223.485374031945,
+        319.627
+      ]
+    },
+    {
+      "name": "North east",
+      "source_id": "osm/node/5196643322",
+      "eye_cm": [
+        25229.590157931118,
+        -29124.73988162637,
+        119.25912712188796
+      ],
+      "target_cm": [
+        24918.598009024634,
+        -30407.581993235795,
+        301.765
+      ]
+    },
+    {
+      "name": "Festival street",
+      "source_id": "osm/way/1189154339",
+      "eye_cm": [
+        -3185.856679763062,
+        28807.193861927666,
+        185.05416543144952
+      ],
+      "target_cm": [
+        -4817.178268823251,
+        28488.644425317474,
+        423.8280277715109
+      ]
+    },
+    {
+      "name": "South east",
+      "source_id": "osm/node/12403457895",
+      "eye_cm": [
+        19694.02157766346,
+        14995.222761714418,
+        82.6089947047664
+      ],
+      "target_cm": [
+        20101.719046213075,
+        14170.490820937153,
+        259.56100000000004
+      ]
+    },
+    {
+      "name": "Riverside",
+      "eye_cm": [
+        9659.502,
+        23488.187,
+        -595.001
+      ],
+      "target_cm": [
+        20456.853,
+        19373.88,
+        2866.999
+      ]
+    }
+  ],
+  "previous_window_decoration_preserved": true,
+  "camera_only_refresh_verified": false,
+  "rendered_views": {
+    "paris-realism-after": {
+      "fps": 41.63329251137371,
+      "frame_p95_ms": 26.949498802423477,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0,
+      "skeletal_humans": 5,
+      "skeletal_budget": 8
+    },
+    "paris-realism-sunset": {
+      "fps": 38.11809608366935,
+      "frame_p95_ms": 31.756900250911713,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0,
+      "skeletal_humans": 5,
+      "skeletal_budget": 8
+    },
+    "paris-realism-night": {
+      "fps": 39.54484162475564,
+      "frame_p95_ms": 28.61100062727928,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0,
+      "skeletal_humans": 5,
+      "skeletal_budget": 8
+    },
+    "paris-realism-overview-after": {
+      "fps": 54.616173689894936,
+      "frame_p95_ms": 20.526401698589325,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0,
+      "skeletal_humans": 0,
+      "skeletal_budget": 8
+    }
+  },
+  "inferred_decoration": true,
+  "frame_rate_target": 60,
+  "previous_models_preserved": true,
+  "previous_records_preserved": true,
+  "overhead_flags": 658,
+  "overhead_bulbs": 799,
+  "minimum_overhead_clearance_cm": 480,
+  "lit_windows": 6362,
+  "lit_window_buildings": 589,
+  "daytime_overlay_masked": true,
+  "occupancy_inferred": true,
+  "relief_windows": 15530
+}

@@ -1,0 +1,124 @@
+{
+  "recipe": "paris_street_accents_v10",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "backup": "backups\\paris-before-extra-objects-20261107-145107",
+  "build": "Succeeded",
+  "bake": "Succeeded",
+  "initial_python_tests": 13,
+  "final_decoration_checks": 4,
+  "native_tests": [
+    {
+      "name": "CoveredTerrainDisplayAndCollision",
+      "result": "Success"
+    },
+    {
+      "name": "FestivalModeAndRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "LocalWeatheringAndSkyPresets",
+      "result": "Success"
+    },
+    {
+      "name": "LuxuryStreetAndWalkingClearance",
+      "result": "Success"
+    },
+    {
+      "name": "MappedMorrisAndStreetSigns",
+      "result": "Success"
+    },
+    {
+      "name": "MinimapGeographyAndPlayerTracking",
+      "result": "Success"
+    },
+    {
+      "name": "NightLightingAndDayRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "RainLifecycleAndShelter",
+      "result": "Success"
+    },
+    {
+      "name": "RealisticPedestrianVisuals",
+      "result": "Success"
+    },
+    {
+      "name": "StreetRealismRenderingPolicy",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    }
+  ],
+  "extra_types": {
+    "bread": 18,
+    "cart": 68,
+    "topiary": 166,
+    "wine": 44,
+    "bicycle": 22,
+    "orrery": 7,
+    "hanging_bouquet": 310
+  },
+  "extra_object_sets": 635,
+  "models": 89,
+  "previous_77_models_preserved": true,
+  "previous_records_and_cameras_preserved": true,
+  "weathering_and_minimap_preserved": true,
+  "appearance_inferred": true,
+  "inspection_camera": {
+    "source_id": "osm/node/8395137419",
+    "name": "Street objects",
+    "eye_cm": [
+      -1721.475598112604,
+      -5865.053178286507,
+      114.75515365711482
+    ],
+    "target_cm": [
+      -2344.9185496776686,
+      -6581.864789620922,
+      65.54250345576745
+    ],
+    "visible_accent_types": [
+      "bicycle",
+      "orrery"
+    ]
+  },
+  "rendered_views": {
+    "after": {
+      "fps": 37.165968557800866,
+      "frame_p95_ms": 29.76129949092865,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "street_extra_visible_parts": 12,
+      "minimap_ready": true
+    },
+    "before": {
+      "fps": 38.099457263310796,
+      "frame_p95_ms": 29.230598360300064,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "street_extra_visible_parts": 0,
+      "minimap_ready": true
+    },
+    "night": {
+      "fps": 34.62666944719288,
+      "frame_p95_ms": 31.646400690078735,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "street_extra_visible_parts": 12,
+      "minimap_ready": true
+    }
+  },
+  "frame_rate_target": 60,
+  "live_preview": {
+    "pid": 4012,
+    "responding": true,
+    "scene_ready": true,
+    "material_error": false,
+    "window_title": "AIWorld (64-bit Development PCD3D_SM6) ",
+    "verified_at": "2026-11-07T17:42:43.6747573+09:00"
+  },
+  "central_camera_recheck": "Succeeded"
+}

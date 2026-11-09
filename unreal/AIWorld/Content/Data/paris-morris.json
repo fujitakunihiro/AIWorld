@@ -1,0 +1,286 @@
+{
+  "format": "paris_morris_props_v1",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "source_snapshot": "osm-map.xml.gz",
+  "source_license": "OpenStreetMap contributors, ODbL 1.0",
+  "texture_sha256": "c6e0d2f53cd291e944348fe9532abae5d10976ed57b966e442ccb51c5f94ef9a",
+  "appearance_provenance": "Original fictional posters and inferred Paris-style prop geometry; no surveyed appearance claim.",
+  "records": [
+    {
+      "source_id": "osm/node/9693401739",
+      "kind": "column",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3508415,
+        48.856177
+      ],
+      "anchor_cm": [
+        27587.8714,
+        -16196.5831,
+        -86.08
+      ],
+      "yaw_degrees": 135,
+      "footprint_radius_cm": 75,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 1.0,
+      "nearest_furniture_cm": 319.26,
+      "building_distance_m": 11.264,
+      "water_distance_m": 38.62,
+      "source_tags": {
+        "advertising": "column",
+        "lit": "yes"
+      }
+    },
+    {
+      "source_id": "osm/node/9792590378",
+      "kind": "column",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3514844,
+        48.8573645
+      ],
+      "anchor_cm": [
+        32413.3944,
+        -29361.7864,
+        -82.0709
+      ],
+      "yaw_degrees": 90,
+      "footprint_radius_cm": 75,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 1.0,
+      "nearest_furniture_cm": 505.08,
+      "building_distance_m": 12.446,
+      "water_distance_m": 178.208,
+      "source_tags": {
+        "advertising": "column"
+      }
+    },
+    {
+      "source_id": "osm/node/9793994475",
+      "kind": "column",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3475512,
+        48.857581
+      ],
+      "anchor_cm": [
+        3575.328,
+        -32006.8115,
+        75.282
+      ],
+      "yaw_degrees": 135,
+      "footprint_radius_cm": 75,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 1.0,
+      "nearest_furniture_cm": 545.89,
+      "building_distance_m": 16.194,
+      "water_distance_m": 14.444,
+      "source_tags": {
+        "advertising": "column",
+        "lit": "yes"
+      }
+    },
+    {
+      "source_id": "osm/node/9793994476",
+      "kind": "column",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3479707,
+        48.8578665
+      ],
+      "anchor_cm": [
+        6679.4075,
+        -35155.9,
+        96.5124
+      ],
+      "yaw_degrees": 180,
+      "footprint_radius_cm": 75,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 1.0,
+      "nearest_furniture_cm": 277.03,
+      "building_distance_m": 15.869,
+      "water_distance_m": 57.683,
+      "source_tags": {
+        "advertising": "column",
+        "animated": "no",
+        "colour": "darkgreen",
+        "inscription": "Théâtres",
+        "land_property": "public",
+        "legal_type:FR": "publicité:mobilier_urbain:colonne",
+        "luminous": "no",
+        "mapillary": "263348838850442",
+        "visibility": "area"
+      }
+    },
+    {
+      "source_id": "osm/node/10740125424",
+      "kind": "column",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3497737,
+        48.8570685
+      ],
+      "anchor_cm": [
+        19834.854,
+        -26173.7465,
+        -5.4895
+      ],
+      "yaw_degrees": 0,
+      "footprint_radius_cm": 75,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 1.0,
+      "nearest_furniture_cm": 1408.9,
+      "building_distance_m": 12.755,
+      "water_distance_m": 88.684,
+      "source_tags": {
+        "advertising": "column",
+        "colour": "darkgreen",
+        "inscription": "Théâtre",
+        "land_property": "public",
+        "legal_type:FR": "publicité:mobilier_urbain:colonne",
+        "luminous": "no",
+        "message": "showbiz",
+        "support": "ground",
+        "visibility": "area"
+      }
+    },
+    {
+      "source_id": "osm/node/11161962856",
+      "kind": "column",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3502444,
+        48.8513915
+      ],
+      "anchor_cm": [
+        22768.9772,
+        36977.82,
+        -226.4474
+      ],
+      "yaw_degrees": 0,
+      "footprint_radius_cm": 75,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 1.0,
+      "nearest_furniture_cm": 390.26,
+      "building_distance_m": 9.465,
+      "water_distance_m": 38.782,
+      "source_tags": {
+        "advertising": "column"
+      }
+    },
+    {
+      "source_id": "osm/node/11271425748",
+      "kind": "sign",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3495783,
+        48.8571349
+      ],
+      "anchor_cm": [
+        18407.2742,
+        -26923.8644,
+        28.4141
+      ],
+      "yaw_degrees": -155.0,
+      "footprint_radius_cm": 68,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 0.98835,
+      "nearest_furniture_cm": 158.36,
+      "building_distance_m": 6.397,
+      "water_distance_m": 88.138,
+      "source_tags": {
+        "advertising": "poster_box",
+        "check_date": "2026-04-11",
+        "direction": "25;205",
+        "land_property": "public",
+        "legal_type:FR": "publicité:mobilier_urbain:information",
+        "luminous": "no",
+        "message": "commercial",
+        "message:reverse": "m",
+        "operator": "Clear Channel Outdoor",
+        "operator:wikidata": "Q5130656",
+        "sides": "2",
+        "support": "ground",
+        "visibility": "street"
+      }
+    },
+    {
+      "source_id": "osm/node/13688206223",
+      "kind": "column",
+      "position_provenance": "mapped_osm_node",
+      "appearance_provenance": "original_inferred_design",
+      "wgs84": [
+        2.3467042,
+        48.858087
+      ],
+      "anchor_cm": [
+        -2592.5485,
+        -37684.4758,
+        46.6471
+      ],
+      "yaw_degrees": 315,
+      "footprint_radius_cm": 75,
+      "path_coverage": 1.0,
+      "one_metre_clearance_coverage": 1.0,
+      "nearest_furniture_cm": 226.64,
+      "building_distance_m": 6.665,
+      "water_distance_m": 70.904,
+      "source_tags": {
+        "advertising": "column",
+        "message": "showbiz",
+        "source": "survey"
+      }
+    }
+  ],
+  "rejected": [],
+  "inspection_camera": {
+    "source_id": "osm/node/9693401739",
+    "eye_cm": [
+      28188.912,
+      -15595.542,
+      90.383
+    ],
+    "target_cm": [
+      27587.8714,
+      -16196.5831,
+      123.92
+    ]
+  },
+  "objects": [
+    {
+      "id": "column_iron",
+      "asset": "/Game/ParisPhotoreal/Morris/SM_ParisMorris_column_iron_f0a406c0348f",
+      "material": "/Game/Materials/M_ParisMorrisIron",
+      "geometry_sha256": "f0a406c0348f43b1f87e657bddb84b824971ad459eeecabefcefaa1f2d08e8b7",
+      "triangles": 4352
+    },
+    {
+      "id": "column_paper",
+      "asset": "/Game/ParisPhotoreal/Morris/SM_ParisMorris_column_paper_4f5e7bca520d",
+      "material": "/Game/Materials/M_ParisMorrisPoster",
+      "geometry_sha256": "4f5e7bca520d6b657d0784bfad009f4f2d4fea4802f37da40fc2588bb5876c49",
+      "triangles": 256
+    },
+    {
+      "id": "sign_iron",
+      "asset": "/Game/ParisPhotoreal/Morris/SM_ParisMorris_sign_iron_49d931fa0b48",
+      "material": "/Game/Materials/M_ParisMorrisIron",
+      "geometry_sha256": "49d931fa0b48bef07b8db1d9c8a8c021237c2bfc4ad89b90d8dc6a9564f0ae7d",
+      "triangles": 120
+    },
+    {
+      "id": "sign_paper",
+      "asset": "/Game/ParisPhotoreal/Morris/SM_ParisMorris_sign_paper_c33c8c7579b2",
+      "material": "/Game/Materials/M_ParisMorrisPoster",
+      "geometry_sha256": "c33c8c7579b2c802943007acb5b763657d4ad4253851bc3fed0c7450cda255e5",
+      "triangles": 4
+    }
+  ]
+}

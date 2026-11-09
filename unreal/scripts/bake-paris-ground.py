@@ -25,6 +25,6 @@ mesh.set_material(0,material);mesh.set_editor_property('allow_cpu_access',True)
 for key in ['source_scene_sha256','geometry_sha256','geometry_provenance']:assets.set_metadata_tag(mesh,'ParisTwin.'+key,data[key])
 if not assets.save_loaded_asset(mesh):raise RuntimeError('Ground display asset save failed')
 runtime={k:v for k,v in data.items() if k not in ['positions_cm','normals','indices']}
-runtime['surface_provenance']='Inferred urban paving within 100m of the west anchor, fading to source palette by 130m. Not surveyed land cover.'
+runtime['surface_provenance']='Inferred urban paving within 200m of the west anchor, fading to source palette by 240m. Not surveyed land cover.'
 with open(os.path.join(folder,'paris-photo-ground.json'),'w',encoding='utf-8') as f:json.dump(runtime,f,indent=2)
 unreal.log_warning('PARIS_PHOTO_GROUND_READY')

@@ -11,6 +11,9 @@
 #include "Materials/MaterialInterface.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonSerializer.h"
 using namespace AIWorld;
 
 namespace {
@@ -32,6 +35,22 @@ bool ReadPosition(const TSharedPtr<FJsonValue>& Value,FVector& Position){
     if(!Value.IsValid()||Value->Type!=EJson::Array)return false;const auto& A=Value->AsArray();
     double X,Y,Z;if(A.Num()!=3||!A[0]->TryGetNumber(X)||!A[1]->TryGetNumber(Y)||!A[2]->TryGetNumber(Z)||!FMath::IsFinite(X)||!FMath::IsFinite(Y)||!FMath::IsFinite(Z))return false;
     Position=FVector(X,Y,Z);return true;
+}
+bool BuildDetailedFlorists(AActor* Owner,const TSharedPtr<FJsonObject>& Data){
+    if(!FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSimpleFlorists")))return false;
+    FString Text;TSharedPtr<FJsonObject> Display;
+    if(!FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Data/paris-florist.json")))||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Display)||!Display.IsValid()||String(Display,TEXT("format"))!=TEXT("paris_florist_display_v1"))return false;
+    TArray<UStaticMesh*> Models;TArray<FString> Roles;const auto& Parts=Array(Display,TEXT("models"));if(Parts.Num()!=8)return false;
+    for(const auto& V:Parts){auto Part=V->AsObject();const FString Path=String(Part,TEXT("asset"));if(!Path.StartsWith(TEXT("/Game/ParisPhotoreal/Florist/SM_ParisFlorist_")))return false;
+        auto Mesh=LoadObject<UStaticMesh>(nullptr,*Path);if(!Mesh)return false;Models.Add(Mesh);Roles.Add(String(Part,TEXT("id")));}
+    TArray<FTransform> Instances;
+    for(const auto& V:Array(Data,TEXT("pick_features"))){auto Item=V->AsObject();auto Props=Object(Item,TEXT("properties"));FVector P;const double Yaw=Number(Props,TEXT("facade_yaw_degrees"));
+        if(String(Item,TEXT("kind"))!=TEXT("business")||String(Props,TEXT("category"))!=TEXT("florist")||String(Props,TEXT("name")).IsEmpty()||!ReadPosition(Item->TryGetField(TEXT("point_cm")),P)||!FMath::IsFinite(Yaw))continue;
+        Instances.Emplace(FRotator(0,Yaw,0),P,FVector::OneVector);}
+    if(Instances.IsEmpty()||Instances.Num()>64)return false;
+    for(int32 I=0;I<Models.Num();I++){auto Group=NewObject<UHierarchicalInstancedStaticMeshComponent>(Owner);Owner->AddInstanceComponent(Group);Group->SetupAttachment(Owner->GetRootComponent());Group->SetStaticMesh(Models[I]);
+        Group->SetCollisionEnabled(ECollisionEnabled::NoCollision);Group->SetGenerateOverlapEvents(false);Group->SetCanEverAffectNavigation(false);Group->SetCastShadow(true);Group->SetCullDistances(5000,7500);Group->ComponentTags.Add(TEXT("ParisShopFlorist"));Group->ComponentTags.Add(TEXT("ParisFloristDetailed"));Group->ComponentTags.Add(FName(*Roles[I]));Group->RegisterComponent();Group->AddInstances(Instances,false,false,false);}
+    UE_LOG(LogTemp,Display,TEXT("PARIS_FLORIST_READY shops=%d models=%d"),Instances.Num(),Models.Num());return true;
 }
 UStaticMesh* BuildProduceMesh(UObject* Outer,UMaterialInterface* Material,const TCHAR* Color=TEXT("#80a640")){
     auto Model=MakeShared<FJsonObject>();TArray<TSharedPtr<FJsonValue>> Positions,Normals,Indices;
@@ -71,6 +90,7 @@ bool AParisShopfrontSigns::Initialize(AParisTwinScene* InScene,const TSharedPtr<
     auto Cloth=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisCloth.M_ParisCloth"));
     if(!Cube||!Wood||!Iron||!Cloth)return false;
     auto Sphere=BuildProduceMesh(this,Cloth);auto Blossom=BuildProduceMesh(this,Cloth,TEXT("#ed5680"));auto Bread=BuildProduceMesh(this,Cloth,TEXT("#dfaa58"));auto Book=BuildBookMesh(this,Cloth);if(!Sphere||!Blossom||!Bread||!Book)return false;
+    const bool DetailedFlorists=BuildDetailedFlorists(this,Data);
     TArray<FTransform> Transforms,Boards,Crates,Fruit,Pots,Stems,Blossoms,FlowerCentres,BakeryShelves,Loaves,BookShelves,Books;
     for(const auto& Value:Array(Data,TEXT("pick_features"))){auto Item=Value->AsObject();if(String(Item,TEXT("kind"))!=TEXT("business"))continue;
         const auto Props=Object(Item,TEXT("properties"));FVector Position;
@@ -90,7 +110,7 @@ bool AParisShopfrontSigns::Initialize(AParisTwinScene* InScene,const TSharedPtr<
             Crates.Emplace(Rotation,Position-Along*101+Out*37+FVector(0,0,52),FVector(.85,.36,.22));
             for(int32 X=0;X<3;X++)for(int32 Y=0;Y<2;Y++)Fruit.Emplace(Rotation,Position+Along*(-125+X*24)+Out*(28+Y*17)+FVector(0,0,68),FVector(.16));
         }
-        if(Category==TEXT("florist")){
+        if(Category==TEXT("florist")&&!DetailedFlorists){
             for(int32 Pot=0;Pot<3;Pot++){
                 const double X=-130+Pot*40;Pots.Emplace(Rotation,Position+Along*X+Out*38+FVector(0,0,48),FVector(.30,.29,.30));
                 for(int32 Flower=0;Flower<3;Flower++){

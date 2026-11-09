@@ -15,3 +15,6 @@ New-Item -ItemType Directory -Path (Join-Path $repo 'unreal\AIWorld\Content\Pari
 $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe';$log=Join-Path (Split-Path $project) 'Saved\paris-chapelle-bake.log'
 & $editor $project '-run=pythonscript' ('-script='+(Join-Path $PSScriptRoot 'bake-paris-chapelle.py')) '-unattended' '-nullrhi' '-nosplash' '-stdout' '-UTF8Output' "-abslog=$log"
 if($LASTEXITCODE -ne 0 -or -not(Select-String -LiteralPath $log -Pattern 'PARIS_CHAPELLE_MATERIAL_READY' -Quiet)){throw 'Chapel material build failed'}
+$log2=Join-Path (Split-Path $project) 'Saved\paris-chapelle-interior-bake.log'
+& $editor $project '-run=pythonscript' ('-script='+(Join-Path $PSScriptRoot 'bake-paris-chapelle-interior.py')) '-unattended' '-nullrhi' '-nosplash' '-stdout' '-UTF8Output' "-abslog=$log2"
+if($LASTEXITCODE -ne 0 -or -not(Select-String -LiteralPath $log2 -Pattern 'PARIS_CHAPELLE_INTERIOR_MATERIALS_READY' -Quiet)){throw 'Chapel interior material build failed'}

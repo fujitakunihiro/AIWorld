@@ -28,7 +28,10 @@ def color_hlsl():
     return course_hlsl()+'''
 float broad=sin(dot(Position.xy,float2(.0037,.0041)))*sin(Position.z*.0028);
 float variation=.97+.06*block+.018*broad;
-return Albedo*float3(1,.965,.90)*variation*lerp(.58,1,stone);
+// Inferred soot accumulates only in recessed mortar joints. The slow,
+// non-repeating variation avoids uniformly darkening every block.
+float deposit=(1-stone)*(.045+.075*(.5+.5*sin(dot(Position.xy,float2(.018,.013))+Position.z*.006+block*6.283)));
+return Albedo*float3(1,.965,.90)*variation*lerp(.58,1,stone)*(1-deposit);
 '''
 
 

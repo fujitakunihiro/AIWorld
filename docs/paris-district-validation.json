@@ -1,0 +1,846 @@
+{
+  "recipe": "paris_district_festival_v4",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "backup": "backups\\paris-before-district-festival-20261107-095644",
+  "build": "Succeeded",
+  "python_tests": 7,
+  "native_tests": [
+    {
+      "name": "CoveredTerrainDisplayAndCollision",
+      "result": "Success"
+    },
+    {
+      "name": "LuxuryStreetAndWalkingClearance",
+      "result": "Success"
+    },
+    {
+      "name": "MappedMorrisAndStreetSigns",
+      "result": "Success"
+    },
+    {
+      "name": "NightLightingAndDayRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "RainLifecycleAndShelter",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    }
+  ],
+  "counts": {
+    "canopy": 395,
+    "table": 49,
+    "urn": 251,
+    "pole": 392,
+    "window": 1200,
+    "facade_banner": 150
+  },
+  "models": 45,
+  "window_buildings": 104,
+  "existing_planters_reused": 8,
+  "hanging_baskets": 692,
+  "coverage": {
+    "extent_m": 800,
+    "cell_size_m": 100,
+    "eligible_cells": 61,
+    "decorated_eligible_cells": 61,
+    "decorated_cells": 63,
+    "bounds_cm": [
+      -39922.224609375,
+      -39946.24,
+      39811.143,
+      39934.834
+    ],
+    "cells": [
+      {
+        "x": -4,
+        "y": -3,
+        "counts": {
+          "canopy": 10,
+          "pole": 6,
+          "window": 29,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -4,
+        "y": -2,
+        "counts": {
+          "canopy": 1,
+          "pole": 11,
+          "window": 35,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -4,
+        "y": -1,
+        "counts": {
+          "canopy": 2,
+          "pole": 3,
+          "window": 25,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -4,
+        "y": 0,
+        "counts": {
+          "canopy": 2,
+          "pole": 1,
+          "window": 28,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -4,
+        "y": 1,
+        "counts": {
+          "canopy": 9,
+          "urn": 7,
+          "table": 1,
+          "pole": 5,
+          "window": 26,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -4,
+        "y": 2,
+        "counts": {
+          "canopy": 8,
+          "urn": 6,
+          "window": 30,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -4,
+        "y": 3,
+        "counts": {
+          "canopy": 7,
+          "urn": 2,
+          "pole": 3,
+          "window": 27,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": -4,
+        "counts": {
+          "pole": 4,
+          "window": 34,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": -3,
+        "counts": {
+          "pole": 14,
+          "window": 1,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": -2,
+        "counts": {
+          "pole": 8,
+          "window": 3,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": -1,
+        "counts": {
+          "pole": 4,
+          "window": 2,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": 0,
+        "counts": {
+          "canopy": 5,
+          "table": 2,
+          "urn": 8,
+          "pole": 3,
+          "window": 29,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": 1,
+        "counts": {
+          "canopy": 15,
+          "urn": 15,
+          "table": 6,
+          "pole": 21,
+          "window": 33,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": 2,
+        "counts": {
+          "canopy": 19,
+          "table": 4,
+          "urn": 10,
+          "pole": 7,
+          "window": 36,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -3,
+        "y": 3,
+        "counts": {
+          "canopy": 18,
+          "table": 3,
+          "urn": 15,
+          "pole": 10,
+          "window": 30,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": -4,
+        "counts": {
+          "canopy": 6,
+          "table": 2,
+          "pole": 5,
+          "window": 24,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": -3,
+        "counts": {
+          "pole": 9,
+          "window": 1,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": -2,
+        "counts": {
+          "canopy": 1,
+          "urn": 1,
+          "pole": 2,
+          "window": 3,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": -1,
+        "counts": {
+          "pole": 2,
+          "window": 1,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": 0,
+        "counts": {
+          "canopy": 2,
+          "urn": 3,
+          "table": 1,
+          "pole": 8,
+          "window": 1,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": 1,
+        "counts": {
+          "canopy": 18,
+          "urn": 2,
+          "pole": 2,
+          "window": 18,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": 2,
+        "counts": {
+          "canopy": 12,
+          "urn": 6,
+          "table": 2,
+          "pole": 1,
+          "window": 23,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -2,
+        "y": 3,
+        "counts": {
+          "canopy": 10,
+          "urn": 8,
+          "table": 1,
+          "pole": 4,
+          "window": 29,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -1,
+        "y": -4,
+        "counts": {
+          "canopy": 13,
+          "table": 8,
+          "urn": 12,
+          "pole": 13,
+          "window": 29,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -1,
+        "y": -3,
+        "counts": {
+          "pole": 2
+        }
+      },
+      {
+        "x": -1,
+        "y": -2,
+        "counts": {
+          "pole": 7,
+          "window": 2,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -1,
+        "y": -1,
+        "counts": {
+          "canopy": 4,
+          "table": 2,
+          "urn": 8,
+          "pole": 12,
+          "window": 10,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -1,
+        "y": 0,
+        "counts": {
+          "window": 8,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -1,
+        "y": 1,
+        "counts": {
+          "canopy": 10,
+          "urn": 4,
+          "pole": 4,
+          "window": 10,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -1,
+        "y": 2,
+        "counts": {
+          "canopy": 28,
+          "urn": 19,
+          "table": 2,
+          "pole": 4,
+          "window": 23,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": -1,
+        "y": 3,
+        "counts": {
+          "canopy": 40,
+          "table": 2,
+          "pole": 2,
+          "window": 18,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 0,
+        "y": -4,
+        "counts": {
+          "canopy": 4,
+          "urn": 7,
+          "table": 1,
+          "pole": 15,
+          "window": 18,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 0,
+        "y": -3,
+        "counts": {
+          "canopy": 1,
+          "table": 1,
+          "urn": 2,
+          "pole": 8,
+          "window": 29,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 0,
+        "y": -2,
+        "counts": {
+          "canopy": 1,
+          "urn": 1,
+          "pole": 5,
+          "window": 18,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 0,
+        "y": -1,
+        "counts": {
+          "pole": 12,
+          "urn": 1,
+          "window": 5,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "counts": {
+          "pole": 14,
+          "urn": 1,
+          "window": 9,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "counts": {
+          "pole": 8,
+          "urn": 4
+        }
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "counts": {
+          "canopy": 3,
+          "urn": 4,
+          "pole": 12,
+          "window": 28,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "counts": {
+          "canopy": 22,
+          "table": 2,
+          "urn": 6,
+          "pole": 5,
+          "window": 27,
+          "facade_banner": 3
+        }
+      },
+      {
+        "x": 1,
+        "y": -4,
+        "counts": {
+          "canopy": 6,
+          "urn": 8,
+          "table": 3,
+          "pole": 4,
+          "window": 20,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 1,
+        "y": -3,
+        "counts": {
+          "canopy": 1,
+          "pole": 12,
+          "urn": 1,
+          "window": 18,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 1,
+        "y": -2,
+        "counts": {
+          "pole": 2
+        }
+      },
+      {
+        "x": 1,
+        "y": -1,
+        "counts": {
+          "pole": 3
+        }
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "counts": {
+          "canopy": 9,
+          "urn": 18,
+          "pole": 7,
+          "window": 40,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "counts": {
+          "canopy": 5,
+          "table": 1,
+          "urn": 11,
+          "pole": 5,
+          "window": 72,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "counts": {
+          "canopy": 4,
+          "window": 27,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "counts": {
+          "canopy": 12,
+          "urn": 13,
+          "table": 1,
+          "pole": 4,
+          "window": 30,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 2,
+        "y": -4,
+        "counts": {
+          "canopy": 24,
+          "urn": 3,
+          "table": 1,
+          "pole": 6,
+          "window": 18,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 2,
+        "y": -3,
+        "counts": {
+          "canopy": 2,
+          "pole": 3,
+          "window": 18,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 2,
+        "y": -2,
+        "counts": {
+          "canopy": 2,
+          "urn": 4,
+          "table": 1,
+          "pole": 9,
+          "window": 22,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 2,
+        "y": -1,
+        "counts": {
+          "canopy": 6,
+          "pole": 9,
+          "window": 18,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "counts": {
+          "canopy": 9,
+          "urn": 12,
+          "pole": 3,
+          "window": 9,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "counts": {
+          "canopy": 5,
+          "urn": 4,
+          "pole": 7,
+          "window": 53,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "counts": {
+          "window": 11
+        }
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "counts": {
+          "canopy": 6,
+          "urn": 7,
+          "table": 1,
+          "pole": 9,
+          "window": 34,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 3,
+        "y": -4,
+        "counts": {
+          "canopy": 25,
+          "urn": 10,
+          "pole": 4,
+          "window": 20,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 3,
+        "y": -3,
+        "counts": {
+          "canopy": 2,
+          "urn": 2,
+          "pole": 15,
+          "window": 10,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 3,
+        "y": -2,
+        "counts": {
+          "pole": 9,
+          "window": 8,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 3,
+        "y": -1,
+        "counts": {
+          "pole": 6
+        }
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "counts": {
+          "pole": 5,
+          "window": 19,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "counts": {
+          "canopy": 3,
+          "urn": 2,
+          "pole": 5,
+          "window": 16,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "counts": {
+          "canopy": 3,
+          "table": 1,
+          "urn": 4,
+          "pole": 7,
+          "window": 33,
+          "facade_banner": 2
+        }
+      },
+      {
+        "x": 3,
+        "y": 3,
+        "counts": {
+          "pole": 2,
+          "window": 2,
+          "facade_banner": 1
+        }
+      }
+    ]
+  },
+  "district_views": [
+    {
+      "name": "District overview",
+      "eye_cm": [
+        0,
+        65000,
+        60000
+      ],
+      "target_cm": [
+        0,
+        0,
+        500
+      ]
+    },
+    {
+      "name": "North west",
+      "source_id": "osm/node/3481937594",
+      "eye_cm": [
+        -18312.1051959128,
+        -38156.30650189473,
+        140.63899062794627
+      ],
+      "target_cm": [
+        -19499.491821716874,
+        -38223.485374031945,
+        319.627
+      ]
+    },
+    {
+      "name": "North east",
+      "source_id": "osm/node/5196643322",
+      "eye_cm": [
+        25229.590157931118,
+        -29124.73988162637,
+        119.25912712188796
+      ],
+      "target_cm": [
+        24918.598009024634,
+        -30407.581993235795,
+        301.765
+      ]
+    },
+    {
+      "name": "South west",
+      "source_id": "osm/node/2529721887",
+      "eye_cm": [
+        -18758.640238040054,
+        22982.692062882703,
+        11.592706587987664
+      ],
+      "target_cm": [
+        -18829.27969554006,
+        24169.877839012162,
+        203.358
+      ]
+    },
+    {
+      "name": "South east",
+      "source_id": "osm/node/12403457895",
+      "eye_cm": [
+        19694.02157766346,
+        14995.222761714418,
+        82.6089947047664
+      ],
+      "target_cm": [
+        20101.719046213075,
+        14170.490820937153,
+        259.56100000000004
+      ]
+    },
+    {
+      "name": "Riverside",
+      "eye_cm": [
+        9659.502,
+        23488.187,
+        -595.001
+      ],
+      "target_cm": [
+        20456.853,
+        19373.88,
+        2866.999
+      ]
+    }
+  ],
+  "camera_only_refresh_verified": true,
+  "rendered_views": {
+    "paris-district-after": {
+      "fps": 52.99122932660739,
+      "frame_p95_ms": 21.06189727783203,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0
+    },
+    "paris-district-night": {
+      "fps": 48.742685029809564,
+      "frame_p95_ms": 22.540397942066193,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0
+    },
+    "paris-district-northwest-after": {
+      "fps": 44.74933347818739,
+      "frame_p95_ms": 25.828201323747635,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0
+    },
+    "paris-district-northwest-night": {
+      "fps": 42.4168172335883,
+      "frame_p95_ms": 26.813600212335587,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0
+    },
+    "paris-district-southwest-after": {
+      "fps": 43.910040411763376,
+      "frame_p95_ms": 25.70899948477745,
+      "width": 1280,
+      "height": 720,
+      "quality": 1,
+      "material_compilation_errors": 0
+    }
+  },
+  "inferred_decoration": true,
+  "frame_rate_target": 60
+}

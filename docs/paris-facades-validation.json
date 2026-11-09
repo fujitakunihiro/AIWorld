@@ -1,0 +1,66 @@
+{
+  "recipe": "paris_facade_gardens_v3",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "python_tests": 6,
+  "native_tests": [
+    {
+      "name": "CoveredTerrainDisplayAndCollision",
+      "result": "Success"
+    },
+    {
+      "name": "LuxuryStreetAndWalkingClearance",
+      "result": "Success"
+    },
+    {
+      "name": "MappedMorrisAndStreetSigns",
+      "result": "Success"
+    },
+    {
+      "name": "NightLightingAndDayRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "RainLifecycleAndShelter",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    }
+  ],
+  "models": 28,
+  "upper_windows": 122,
+  "window_buildings": 9,
+  "existing_planters_reused": 8,
+  "facade_banners": 14,
+  "facade_lanterns": 14,
+  "minimum_window_box_clearance_cm": 392.6393821017007,
+  "minimum_banner_clearance_cm": 421.96337196986474,
+  "inspection_camera": {
+    "source_id": "osm/relation/538023",
+    "eye_cm": [
+      16908.888643901915,
+      13666.469296846053,
+      95.31622511285613
+    ],
+    "target_cm": [
+      17307.886824213758,
+      12826.409506052662,
+      425.97999572753906
+    ]
+  },
+  "rendered_views": {
+    "after": {
+      "fps": 33.16212939247399,
+      "frame_p95_ms": 33.09430181980133,
+      "upper_windows": 122,
+      "facade_lanterns": 14
+    },
+    "night": {
+      "fps": 31.380337449106054,
+      "frame_p95_ms": 35.900600254535675,
+      "upper_windows": 122,
+      "facade_lanterns": 14
+    }
+  }
+}

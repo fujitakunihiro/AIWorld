@@ -1,7 +1,16 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$PalaisView,[switch]$ChapelleView,[switch]$MetroView,[switch]$CruiseView,[switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$SimpleCars,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='',[switch]$Rain,[switch]$MuteSound,[switch]$Night,[ValidateSet('Day','Sunset','Night')][string]$TimeOfDay='Day')
+    [switch]$FloristView,[switch]$Lane,[switch]$ChapelleInterior,[switch]$Seine,[ValidateSet('Cathedral','Bridge','Aerial')][string]$SeineCamera='Cathedral',[switch]$ReferenceLook,[switch]$ExtraObjectsView,[switch]$StreetPropsView,[switch]$Festival,[switch]$DistrictView,[ValidateRange(0,5)][int]$DistrictSpot=0,[switch]$LuxuryView,[switch]$MorrisView,[switch]$PalaisView,[switch]$ChapelleView,[switch]$MetroView,[switch]$CruiseView,[switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$SimpleCars,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='',[switch]$Rain,[switch]$MuteSound,[switch]$Night,[ValidateSet('Day','Sunset','Night')][string]$TimeOfDay='Day')
 $ErrorActionPreference='Stop'
+if($ChapelleInterior){$ChapelleView=$true}
+if($FloristView){$Photoreal=$true}
 if($Night){$TimeOfDay='Night'}
+if($LuxuryView -or $DistrictView -or $Festival){$Photoreal=$true;$PhotoCamera='Street'}
+if($Seine){$Photoreal=$true;$PhotoCamera='Street';$SeineCamera=@{cathedral='Cathedral';bridge='Bridge';aerial='Aerial'}[$SeineCamera.ToLowerInvariant()];if(-not $Night -and -not $PSBoundParameters.ContainsKey('TimeOfDay')){$TimeOfDay='Sunset'}}
+if($Lane){$ReferenceLook=$true}
+if($ReferenceLook){$Photoreal=$true;$PhotoCamera='Street'}
+if($ExtraObjectsView){$Photoreal=$true;$PhotoCamera='Street'}
+if($StreetPropsView){$Photoreal=$true;$PhotoCamera='Street'}
+if($MorrisView){$Photoreal=$true;$PhotoCamera='Street'}
 if($PalaisView){$Photoreal=$true}
 if($ChapelleView){$Photoreal=$true}
 if($MetroView){$Photoreal=$true}
@@ -39,6 +48,9 @@ $dll=Join-Path $repo 'unreal\AIWorld\Binaries\Win64\UnrealEditor-AIWorld.dll'
 $newestSource=Get-ChildItem -LiteralPath (Join-Path $repo 'unreal\AIWorld\Source') -File -Recurse | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if($Build -or -not(Test-Path -LiteralPath $dll) -or $newestSource.LastWriteTime -gt (Get-Item -LiteralPath $dll).LastWriteTime){& (Join-Path $PSScriptRoot 'Build-AIWorldUE.ps1') -EngineRoot $EngineRoot;if($LASTEXITCODE -ne 0){throw 'Native build failed'}}
 $project=& (Join-Path $PSScriptRoot 'Get-AIWorldProject.ps1')
+if($Photoreal -and -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-florist.json'))){
+    & (Join-Path $PSScriptRoot 'Build-ParisFlorist.ps1') -EngineRoot $EngineRoot
+}
 if($Photoreal){
     # Windows PowerShell 5.1 is very slow expanding millions of mesh numbers.
     # The launcher only needs the small readiness manifest from this packet.
@@ -201,6 +213,71 @@ if($nightReady){
     }
 }
 if(-not $nightReady){& (Join-Path $PSScriptRoot 'Build-ParisNight.ps1') -EngineRoot $EngineRoot}
+if($Photoreal){
+    $minimapPath=Join-Path (Split-Path $project) 'Content\Data\paris-minimap.json'
+    $minimapReady=$false
+    if(Test-Path -LiteralPath $minimapPath){$mapHash=& $python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); print(d.get('source_scene_sha256','') if d.get('format')=='paris_vector_minimap_v1' else '')" $minimapPath;$minimapReady=($LASTEXITCODE -eq 0 -and $mapHash -eq $packet.source_scene_sha256)}
+    if(-not $minimapReady){& $python (Join-Path $PSScriptRoot 'generate_paris_minimap.py');if($LASTEXITCODE -ne 0){throw 'Minimap generation failed'}}
+    $weatheringPath=Join-Path (Split-Path $project) 'Content\Data\paris-weathering.json'
+    $weatheringReady=Test-Path -LiteralPath $weatheringPath
+    if($weatheringReady){
+        $weathering=Get-Content -LiteralPath $weatheringPath -Raw | ConvertFrom-Json
+        if($weathering.format -ne 'paris_local_weathering_v2' -or $weathering.source_scene_sha256 -ne $packet.source_scene_sha256 -or @($weathering.objects).Count -lt 3){$weatheringReady=$false}
+        foreach($part in $weathering.objects){foreach($asset in @($part.asset,$part.material)){if(-not $asset -or -not $asset.StartsWith('/Game/') -or -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset.Substring(6)+'.uasset')))){$weatheringReady=$false}}}
+    }
+    if(-not $weatheringReady){& (Join-Path $PSScriptRoot 'Build-ParisWeathering.ps1') -EngineRoot $EngineRoot}
+    $morrisPath=Join-Path (Split-Path $project) 'Content\Data\paris-morris.json'
+    $morrisReady=Test-Path -LiteralPath $morrisPath
+    if($morrisReady){
+        $morris=Get-Content -LiteralPath $morrisPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if($morris.format -ne 'paris_morris_props_v1' -or $morris.source_scene_sha256 -ne $packet.source_scene_sha256 -or @($morris.objects).Count -ne 4){$morrisReady=$false}
+        foreach($part in $morris.objects){foreach($asset in @($part.asset,$part.material)){if(-not $asset -or -not $asset.StartsWith('/Game/') -or -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset.Substring(6)+'.uasset')))){$morrisReady=$false}}}
+        if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\ParisPhotoreal\Morris\T_ParisMorrisOriginalPosters.uasset'))){$morrisReady=$false}
+    }
+    if(-not $morrisReady){& (Join-Path $PSScriptRoot 'Build-ParisMorris.ps1') -EngineRoot $EngineRoot}
+    $luxuryPath=Join-Path (Split-Path $project) 'Content\Data\paris-luxury.json'
+    $luxuryReady=Test-Path -LiteralPath $luxuryPath
+    if($luxuryReady){
+        $luxury=Get-Content -LiteralPath $luxuryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if($luxury.format -ne 'paris_luxury_street_v1' -or $luxury.source_scene_sha256 -ne $packet.source_scene_sha256 -or @($luxury.objects).Count -ne 89 -or $luxury.decoration_recipe -ne 'paris_street_accents_v10'){$luxuryReady=$false}
+        if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Materials\M_ParisEveningSky.uasset'))){$luxuryReady=$false}
+        foreach($part in $luxury.objects){foreach($asset in @($part.asset,$part.material)){if(-not $asset -or -not $asset.StartsWith('/Game/') -or -not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset.Substring(6)+'.uasset')))){$luxuryReady=$false}}}
+    }
+    if(-not $luxuryReady){& (Join-Path $PSScriptRoot 'Build-ParisLuxury.ps1') -EngineRoot $EngineRoot}
+}
+if($ReferenceLook){
+    $referenceReady=$true
+    $referencePath=Join-Path (Split-Path $project) 'Content\Data\paris-reference.json'
+    if(-not(Test-Path -LiteralPath $referencePath)){$referenceReady=$false}else{
+        $reference=Get-Content -LiteralPath $referencePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if($reference.recipe -ne 'paris_reference_architecture_v1' -or $reference.source_scene_sha256 -ne $packet.source_scene_sha256){$referenceReady=$false}
+        foreach($part in $reference.objects){foreach($asset in @($part.asset,$part.material)){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset.Substring(6)+'.uasset')))){$referenceReady=$false}}}
+    }
+    if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\ParisPhotoreal\ReferenceNature\SM_ParisAvenueTree.uasset'))){$referenceReady=$false}
+    foreach($name in @('M_ParisReferenceStone','M_ParisReferenceSidewalk')){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Materials\'+$name+'.uasset')))){$referenceReady=$false}}
+    if(-not $referenceReady){& (Join-Path $PSScriptRoot 'Build-ParisReference.ps1') -EngineRoot $EngineRoot}
+}
+if($Lane){
+    $laneReady=$true
+    $lanePath=Join-Path (Split-Path $project) 'Content\Data\paris-lane.json'
+    if(-not(Test-Path -LiteralPath $lanePath)){$laneReady=$false}else{
+        $lanePacket=Get-Content -LiteralPath $lanePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if($lanePacket.recipe -ne 'paris_everyday_lane_v1' -or $lanePacket.source_scene_sha256 -ne $packet.source_scene_sha256){$laneReady=$false}
+        foreach($part in $lanePacket.objects){foreach($asset in @($part.asset,$part.material)){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset.Substring(6)+'.uasset')))){$laneReady=$false}}}
+    }
+    if(-not $laneReady){& (Join-Path $PSScriptRoot 'Build-ParisLane.ps1') -EngineRoot $EngineRoot}
+}
+if($Seine){
+    $seineReady=$true
+    $seinePath=Join-Path (Split-Path $project) 'Content\Data\paris-seine.json'
+    if(-not(Test-Path -LiteralPath $seinePath)){$seineReady=$false}else{
+        $seinePacket=Get-Content -LiteralPath $seinePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if($seinePacket.recipe -ne 'paris_seine_vista_v1' -or $seinePacket.source_scene_sha256 -ne $packet.source_scene_sha256){$seineReady=$false}
+        foreach($part in $seinePacket.objects){foreach($asset in @($part.asset,$part.material)){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset.Substring(6)+'.uasset')))){$seineReady=$false}}}
+    }
+    foreach($name in @('M_ParisSeineWater','M_ParisSeineStone','M_ParisSeineTwilight')){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Materials\'+$name+'.uasset')))){$seineReady=$false}}
+    if(-not $seineReady){& (Join-Path $PSScriptRoot 'Build-ParisSeine.ps1') -EngineRoot $EngineRoot}
+}
 $soundReady=Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-soundscape.json')
 foreach($name in @('Bell','Crowd','Seine','Ferry','Pigeon','Siren')){
     if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Soundscape\A_Paris'+$name+'.uasset')))){$soundReady=$false}
@@ -217,8 +294,18 @@ if($NoNCStatues){$launchArgs+="-ParisTwinNoNCStatues"}
 if($EntryDetail){$launchArgs+='-ParisTwinEntryDetail'}
 if($PhotoCamera){$launchArgs+=('-ParisTwinPhotoCamera='+@{Front='Camera_NotreDame_Front';Riverside='Camera_NotreDame_Riverside';Street='Camera_Paris_Street'}[$PhotoCamera])}
 if($Eye){$launchArgs+='-ParisTwinEye'}
+if($Festival){$launchArgs+='-ParisTwinFestival'}
+if($LuxuryView){$launchArgs+='-ParisTwinLuxuryView'}
+if($StreetPropsView){$launchArgs+=@('-ParisTwinLuxuryView','-ParisTwinLuxuryClose')}
+if($Seine){$launchArgs+=@('-ParisTwinSeine',('-ParisTwinSeineCamera='+$SeineCamera))}
+if($Lane){$launchArgs+='-ParisTwinLane'}
+if($ReferenceLook){$launchArgs+='-ParisTwinReferenceLook'}
+if($ExtraObjectsView){$launchArgs+='-ParisTwinExtraObjectsView'}
+if($DistrictView){$launchArgs+=@('-ParisTwinDistrictView',('-ParisTwinDistrictSpot='+$DistrictSpot))}
+if($MorrisView){$launchArgs+='-ParisTwinMorrisView'}
 if($PalaisView){$launchArgs+='-ParisTwinPalaisView'}
 if($ChapelleView){$launchArgs+='-ParisTwinChapelleView'}
+if($ChapelleInterior){$launchArgs+='-ParisTwinChapelleInterior=1'}
 if($MetroView){$launchArgs+='-ParisTwinMetroView'}
 if($CruiseView){$launchArgs+='-ParisTwinCruiseView'}
 if($RiverView){$launchArgs+='-ParisTwinRiverView'}
@@ -238,6 +325,7 @@ if($SimplePeople){$launchArgs+='-ParisTwinSimplePeople'}
 if($NoTraffic){$launchArgs+='-ParisTwinNoTraffic'}
 if($TrafficView){$launchArgs+='-ParisTwinTrafficView'}
 if($CafeView){$launchArgs+='-ParisTwinCafeView'}
+if($FloristView){$launchArgs+=@('-ParisTwinShopView=florist','-ParisTwinNoLuxury')}
 if($StreetPhotoView){$launchArgs+=@('-ParisTwinCafeView','-ParisTwinSurfaceView','-ParisTwinStreetPhoto')}
 if($ProceduralSurfaces){$launchArgs+='-ParisTwinProceduralSurfaces'}
 if($MaterialsView){$launchArgs+=@('-ParisTwinCafeView','-ParisTwinSurfaceView')}

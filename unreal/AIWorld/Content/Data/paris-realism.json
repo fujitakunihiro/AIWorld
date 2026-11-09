@@ -1,0 +1,9 @@
+{
+  "recipe": "paris_street_realism_v7",
+  "assets": [
+    "/Game/Materials/M_ParisStreetWindowGlass",
+    "/Game/Materials/M_ParisEveningSky"
+  ],
+  "inferred_appearance": true,
+  "geometry_unchanged": true
+}

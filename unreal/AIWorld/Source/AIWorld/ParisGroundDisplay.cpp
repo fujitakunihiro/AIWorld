@@ -1,5 +1,7 @@
 #include "ParisGroundDisplay.h"
 #include "ParisDigitalTwin.h"
+#include "ParisReference.h"
+#include "Materials/MaterialInterface.h"
 #include "WorldProtocol.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -18,6 +20,10 @@ void CreateParisGroundDisplay(AParisTwinScene* Scene,const TSharedPtr<FJsonObjec
     if(String(Data,TEXT("format"))!=TEXT("paris_covered_terrain_display_v1")||String(Data,TEXT("source_scene_sha256"))!=String(Source,TEXT("source_scene_sha256"))||!Path.StartsWith(TEXT("/Game/ParisPhotoreal/Ground/SM_ParisTerrainCut_")))return;
     auto Mesh=LoadObject<UStaticMesh>(nullptr,*Path);if(!Mesh)return;
     auto Part=NewObject<UStaticMeshComponent>(Scene);Scene->AddInstanceComponent(Part);Part->SetupAttachment(Scene->GetRootComponent());Part->SetStaticMesh(Mesh);
+    // The legacy finish fades to the terrain palette beyond the cathedral's
+    // 240m photo zone. Continue the same physical paving in the reference look.
+    if(IsParisReferenceLook())if(auto Paving=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisRoadPaving")))Part->SetMaterial(0,Paving);
+    if(IsParisLaneDressed())if(auto Paving=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisLanePaving")))Part->SetMaterial(0,Paving);
     Part->ComponentTags.Add(TEXT("ParisGroundDisplay"));Part->SetCollisionProfileName(TEXT("NoCollision"));Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Part->SetGenerateOverlapEvents(false);Part->SetCanEverAffectNavigation(false);Part->SetCastShadow(false);Part->RegisterComponent();
     SyncParisGroundDisplay(Scene);

@@ -1,0 +1,191 @@
+{
+  "date": "2026-11-09",
+  "recipe": "paris_seine_vista_v1",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "source_geometry_sha256": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8",
+  "source_geometry_unchanged": true,
+  "previous_mode_packets_preserved": {
+    "paris-reference.json": true,
+    "paris-lane.json": true
+  },
+  "counts": {
+    "windows": 27979,
+    "balconies": 11100,
+    "cornices": 5792,
+    "buildings": 589,
+    "entrances": 564,
+    "chimneys": 549
+  },
+  "models": 85,
+  "regeneration": {
+    "sha256": "1cdec8f9080b4d1ee7eab57943fbfd53f4cd491f4bcc7f588568029cb9c7de7b",
+    "byte_identical_regeneration": true
+  },
+  "native_tests": {
+    "seine": [
+      "ReferenceArchitectureAndRestoration"
+    ],
+    "environment": [
+      "NightLightingAndDayRestoration",
+      "RainLifecycleAndShelter"
+    ],
+    "reference": [
+      "ReferenceArchitectureAndRestoration"
+    ],
+    "lane": [
+      "LaneSurfacePropsAndRestoration"
+    ]
+  },
+  "python_tests": 3,
+  "captures": {
+    "paris-seine-aerial-after.png": {
+      "fps": 16.41787237931482,
+      "quality": 2,
+      "rhi": "D3D12",
+      "feature_level": "SM6",
+      "camera": {
+        "name": "Ile de la Cite / district aerial",
+        "source_id": "osm/way/201611261",
+        "eye_cm": [
+          -26000,
+          48000,
+          31000
+        ],
+        "target_cm": [
+          2500,
+          3000,
+          800
+        ],
+        "focal_length_mm": 34,
+        "viewpoint_provenance": "inferred aerial viewpoint; district acquisition boundary remains visible",
+        "eye_wgs84": [
+          2.3436111273062514,
+          48.85036400705462
+        ],
+        "eye_elevation_ngf_m": 345.38
+      },
+      "seine_look": true
+    },
+    "paris-seine-bridge-day.png": {
+      "fps": 26.03712442968394,
+      "quality": 2,
+      "rhi": "D3D12",
+      "feature_level": "SM6",
+      "camera": {
+        "name": "Pont Saint-Michel / river arches",
+        "source_id": "osm/way/25344944",
+        "eye_cm": [
+          -8500,
+          12500,
+          -250
+        ],
+        "target_cm": [
+          -18400,
+          6600,
+          500
+        ],
+        "focal_length_mm": 32,
+        "viewpoint_provenance": "inferred river-level photographic viewpoint; not a walking spawn",
+        "eye_wgs84": [
+          2.345955739677148,
+          48.8535695587731
+        ],
+        "eye_elevation_ngf_m": 32.88
+      },
+      "seine_look": true
+    },
+    "paris-seine-cathedral-after.png": {
+      "fps": 26.091525329346,
+      "quality": 2,
+      "rhi": "D3D12",
+      "feature_level": "SM6",
+      "camera": {
+        "name": "Seine / Notre-Dame",
+        "source_id": "osm/way/201611261",
+        "eye_cm": [
+          -8000,
+          13000,
+          -240
+        ],
+        "target_cm": [
+          18000,
+          17500,
+          2700
+        ],
+        "focal_length_mm": 40,
+        "viewpoint_provenance": "inferred river-level photographic viewpoint; not a walking spawn",
+        "eye_wgs84": [
+          2.346024441984161,
+          48.85352496657665
+        ],
+        "eye_elevation_ngf_m": 32.980000000000004
+      },
+      "seine_look": true
+    },
+    "paris-seine-cathedral-day.png": {
+      "fps": 26.400040039321087,
+      "quality": 2,
+      "rhi": "D3D12",
+      "feature_level": "SM6",
+      "camera": {
+        "name": "Seine / Notre-Dame",
+        "source_id": "osm/way/201611261",
+        "eye_cm": [
+          -8000,
+          13000,
+          -240
+        ],
+        "target_cm": [
+          18000,
+          17500,
+          2700
+        ],
+        "focal_length_mm": 40,
+        "viewpoint_provenance": "inferred river-level photographic viewpoint; not a walking spawn",
+        "eye_wgs84": [
+          2.346024441984161,
+          48.85352496657665
+        ],
+        "eye_elevation_ngf_m": 32.980000000000004
+      },
+      "seine_look": true
+    },
+    "paris-seine-cathedral-night.png": {
+      "fps": 26.58135622167926,
+      "quality": 2,
+      "rhi": "D3D12",
+      "feature_level": "SM6",
+      "camera": {
+        "name": "Seine / Notre-Dame",
+        "source_id": "osm/way/201611261",
+        "eye_cm": [
+          -8000,
+          13000,
+          -240
+        ],
+        "target_cm": [
+          18000,
+          17500,
+          2700
+        ],
+        "focal_length_mm": 40,
+        "viewpoint_provenance": "inferred river-level photographic viewpoint; not a walking spawn",
+        "eye_wgs84": [
+          2.346024441984161,
+          48.85352496657665
+        ],
+        "eye_elevation_ngf_m": 32.980000000000004
+      },
+      "seine_look": true
+    }
+  },
+  "backup": "D:\\work\\develop\\21_マインクラフト風AI街\\backups\\paris-before-seine-20261109-195750",
+  "photo_parity_achieved": false,
+  "appearance_inferred": true,
+  "fps_target_60_achieved": false,
+  "limitations": [
+    "800m acquired district only",
+    "inferred architectural exterior and lighting",
+    "existing terrain crossfall and source geometry warnings remain"
+  ]
+}

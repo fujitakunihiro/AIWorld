@@ -1,0 +1,127 @@
+{
+  "recipe": "district_wall_and_road_grime_v2",
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "backup": "backups\\paris-before-grime-map-20261107-130643",
+  "build": "Succeeded",
+  "bake": "Succeeded",
+  "python_tests": 6,
+  "native_tests": [
+    {
+      "name": "CoveredTerrainDisplayAndCollision",
+      "result": "Success"
+    },
+    {
+      "name": "FestivalModeAndRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "LocalWeatheringAndSkyPresets",
+      "result": "Success"
+    },
+    {
+      "name": "MinimapGeographyAndPlayerTracking",
+      "result": "Success"
+    },
+    {
+      "name": "NightLightingAndDayRestoration",
+      "result": "Success"
+    },
+    {
+      "name": "PhotoEnvironmentAndCameraSwitching",
+      "result": "Success"
+    },
+    {
+      "name": "PhotographicSurfaceBindings",
+      "result": "Success"
+    },
+    {
+      "name": "RainLifecycleAndShelter",
+      "result": "Success"
+    },
+    {
+      "name": "SpatialSoundscapeAndSharedMute",
+      "result": "Success"
+    },
+    {
+      "name": "SurfaceMaterialsAndDetails",
+      "result": "Success"
+    }
+  ],
+  "counts": {
+    "window_streak": 460,
+    "wall_base": 97,
+    "district_window_streak": 19923,
+    "district_wall_base": 6074,
+    "road_edge_grime": 603
+  },
+  "mesh_groups": 74,
+  "minimap_triangles": 7687,
+  "previous_core_geometry_preserved": true,
+  "previous_core_records_preserved": true,
+  "festival_manifest_preserved": true,
+  "coordinate_frame": "Shared EPSG:2154 origin; UE cm; X east, Y south",
+  "decoration_inferred": true,
+  "rendered_views": {
+    "street": {
+      "fps": 38.563159717832455,
+      "frame_p95_ms": 29.63949739933014,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "weathering_components": 74,
+      "weathering_visible": 74,
+      "minimap_ready": true,
+      "minimap_triangles": 7687,
+      "minimap_observer": "カメラ",
+      "walking": false,
+      "third_person": false
+    },
+    "close": {
+      "fps": 42.42602060098472,
+      "frame_p95_ms": 26.73880010843277,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "weathering_components": 74,
+      "weathering_visible": 74,
+      "minimap_ready": true,
+      "minimap_triangles": 7687,
+      "minimap_observer": "カメラ",
+      "walking": false,
+      "third_person": false
+    },
+    "before": {
+      "fps": 42.058617696091495,
+      "frame_p95_ms": 27.106601744890213,
+      "viewport_width": 1280,
+      "viewport_height": 720,
+      "weathering_components": 0,
+      "weathering_visible": 0,
+      "minimap_ready": true,
+      "minimap_triangles": 7687,
+      "minimap_observer": "カメラ",
+      "walking": false,
+      "third_person": false
+    },
+    "walk": {
+      "fps": 33.47889534876415,
+      "frame_p95_ms": 33.633001148700714,
+      "viewport_width": 1600,
+      "viewport_height": 900,
+      "weathering_components": 74,
+      "weathering_visible": 74,
+      "minimap_ready": true,
+      "minimap_triangles": 7687,
+      "minimap_observer": "現在地",
+      "walking": true,
+      "third_person": true
+    }
+  },
+  "frame_rate_target": 60,
+  "live_preview": {
+    "utf8_performance_export_verified": true,
+    "minimap_ready": true,
+    "weathering_components": 74,
+    "observer": "カメラ",
+    "fps": 39.243426180921354,
+    "verified_at": "2026-11-07T13:33:30.941594"
+  }
+}

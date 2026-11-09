@@ -1,0 +1,156 @@
+{
+  "timestamp_utc": "2026-11-08T01:32:10.225140+00:00",
+  "engine": "UE 5.8",
+  "recipe": "paris_reference_architecture_v1",
+  "counts": {
+    "windows": 7244,
+    "balconies": 2860,
+    "cornices": 1480,
+    "buildings": 191,
+    "entrances": 177,
+    "chimneys": 177
+  },
+  "installed_models": 22,
+  "camera": {
+    "name": "Boulevard du Palais / natural street",
+    "source_id": "osm/way/123461253",
+    "eye_cm": [
+      -14549.658663594164,
+      1727.2278533317149,
+      75.21416614052194
+    ],
+    "target_cm": [
+      -9490.485694631934,
+      -5693.157969601452,
+      255.21416614052194
+    ],
+    "eye_height_cm": 170,
+    "ground_cm": -94.78583385947806
+  },
+  "georeference": {
+    "axes": "X=east, Y=south, Z=up",
+    "cesium_transform_applied": false,
+    "origin_elevation_ngf_m": 35.38,
+    "projected_crs": "EPSG:2154",
+    "projected_origin_m": [
+      652093.08244807,
+      6861827.078295114
+    ],
+    "reference_id": "paris_lambert93_shared_v1",
+    "units": "cm",
+    "vertical_datum": "NGF-IGN69",
+    "vertical_mode": "orthometric NGF-IGN69 minus shared origin; no ellipsoidal conversion",
+    "wgs84_origin": [
+      2.3471,
+      48.8547
+    ]
+  },
+  "source_scene_sha256": "4e51a9332f3bc44aea0820ee4fcc77d339083fff9c2f73d59a66e1737f5353bb",
+  "archived_mesh_sha256": "fba61d4426bf6cc2fc40bda2818d48fe4a6d8e3c58bf13e025254ddc20bc97d8",
+  "archived_mesh_unchanged": true,
+  "native_tests": {
+    "regression": [
+      "CoveredTerrainDisplayAndCollision",
+      "FestivalModeAndRestoration",
+      "LocalWeatheringAndSkyPresets",
+      "LuxuryStreetAndWalkingClearance",
+      "MappedMorrisAndStreetSigns",
+      "MinimapGeographyAndPlayerTracking",
+      "NightLightingAndDayRestoration",
+      "RainLifecycleAndShelter",
+      "RealisticPedestrianVisuals",
+      "StreetRealismRenderingPolicy",
+      "SurfaceMaterialsAndDetails"
+    ],
+    "reference": [
+      "ReferenceArchitectureAndRestoration"
+    ]
+  },
+  "python_tests_passed": 5,
+  "reproducibility": {
+    "reproducible": true,
+    "before_sha256": "3ed89e80bd3fc2b6c2aec18a79e8cbeb2264c5f08b2e369ec3834a1345115c1c",
+    "repeat_sha256": "3ed89e80bd3fc2b6c2aec18a79e8cbeb2264c5f08b2e369ec3834a1345115c1c",
+    "full_generation_repeated": true
+  },
+  "captures": {
+    "before": {
+      "file": "paris-reference-before.png",
+      "sha256": "813c34d87b494dd529bbc64ecdd7cd3c37c532a6940be64c67001fe36c68fdb2",
+      "resolution": [
+        1280,
+        720
+      ],
+      "fps": 27.085023469417973,
+      "frame_p95_ms": 40.674999356269836,
+      "quality": "High / 100% / static comparison",
+      "gi_method": 1,
+      "virtual_shadow_maps": 1,
+      "physical_camera_exposure": true
+    },
+    "after": {
+      "file": "paris-reference-after.png",
+      "sha256": "da9eb2dde983a15104ad92c8da8a3a7d7f20fa180b51f7b5bd6be44153118c12",
+      "resolution": [
+        1280,
+        720
+      ],
+      "fps": 26.387136526303262,
+      "frame_p95_ms": 42.30310022830963,
+      "quality": "High / 100% / static comparison",
+      "gi_method": 1,
+      "virtual_shadow_maps": 1,
+      "physical_camera_exposure": true
+    },
+    "sunset": {
+      "file": "paris-reference-sunset.png",
+      "sha256": "dda1e5c3914f089b77463f01587c583b3e51a9b0b8d46c90545d080396e9cbdf",
+      "resolution": [
+        1280,
+        720
+      ],
+      "fps": 25.294777125704762,
+      "frame_p95_ms": 46.07129842042923,
+      "quality": "High / 100% / static comparison",
+      "gi_method": 1,
+      "virtual_shadow_maps": 1,
+      "physical_camera_exposure": true
+    },
+    "night": {
+      "file": "paris-reference-night.png",
+      "sha256": "a1198525d1fa300d7a622bdb0b844fbd07bb878dfb5c90efb754815806a6a534",
+      "resolution": [
+        1280,
+        720
+      ],
+      "fps": 25.70005197623498,
+      "frame_p95_ms": 43.36930066347122,
+      "quality": "High / 100% / static comparison",
+      "gi_method": 1,
+      "virtual_shadow_maps": 1,
+      "physical_camera_exposure": true
+    }
+  },
+  "geometry_collision_preserved": true,
+  "appearance_is_inferred": true,
+  "reference_photo_parity_achieved": false,
+  "target_60fps_achieved": false,
+  "known_remaining": [
+    "Building-specific roof/dormer/storefront modeling and multiple tree species/variants are incomplete",
+    "Western Seine quay has excessive original DTM road crossfall; reference camera is on Boulevard du Palais",
+    "No surveyed L4/L5 appearance claim for procedural facade and rooftop details"
+  ],
+  "backup": "backups/paris-before-reference-20261108-092546",
+  "hardware": {
+    "PhysicalMemoryGB": 28.8,
+    "GPU": [
+      "AMD Radeon(TM) Graphics"
+    ]
+  },
+  "existing_gis_warnings": [
+    "Some OSM footprints overlap and require source review",
+    "362 buildings lack near-complete official gutter coverage; roof profiles remain inferred",
+    "Road network has disconnected components",
+    "2 boundary-clipped low bridge fragments need fuller coverage or surveyed deck elevations"
+  ]
+}

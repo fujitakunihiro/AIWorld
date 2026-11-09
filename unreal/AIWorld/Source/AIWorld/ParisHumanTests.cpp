@@ -85,7 +85,9 @@ public:
             if(!Body.IsValid()||FootBone.IsNone()||HipBone.IsNone()){Test->AddError(TEXT("No complete imported human rig"));Cleanup();return true;}
             Crowd->SetDisplay(true,0);Test->TestEqual(TEXT("Low quality returns entirely to cheap instances"),Crowd->SkeletalRenderedCount,0);
             Crowd->SetDisplay(false,2);Test->TestEqual(TEXT("People toggle hides the skeletal pool"),Crowd->SkeletalRenderedCount,0);
-            Crowd->SetDisplay(true,2);PC->Overview();At=FPlatformTime::Seconds();Phase=1;return false;
+            Crowd->SetDisplay(true,2);PC->FreeCamera->Eye(Crowd->People()[0].Position+FVector(0,0,60000));PC->FreeCamera->Tick(0);PC->PlayerCameraManager->UpdateCamera(0);Crowd->UpdateInstances();
+            Test->TestEqual(TEXT("Aerial cameras do not allocate near skeletal humans by XY distance"),Crowd->SkeletalRenderedCount,0);
+            PC->Overview();At=FPlatformTime::Seconds();Phase=1;return false;
         }
         const double Now=FPlatformTime::Seconds();
         if(Phase==1&&Now-At>.2){FootBefore=Body->GetSocketTransform(FootBone,RTS_Component).GetLocation();HipBefore=Body->GetSocketTransform(HipBone,RTS_Component).GetLocation().Z;At=Now;Phase=2;return false;}

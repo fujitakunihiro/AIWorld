@@ -58,3 +58,15 @@ unreal/assets/paris-soundscape/Generated/
 
 # Sainte-Chapelle CC0 source image is fetched and hash-verified by the bake script.
 unreal/assets/sainte-chapelle/Raw/
+
+unreal/assets/paris-weathering/Generated/
+unreal/assets/paris-morris/Generated/
+unreal/assets/paris-luxury/Generated/
+unreal/assets/paris-reference/Generated/
+unreal/assets/paris-lane/Generated/
+unreal/assets/paris-seine/Generated/
+unreal/assets/paris-reference-nature/*.bin
+unreal/assets/paris-reference-nature/*.gltf
+unreal/assets/paris-reference-nature/textures/
+unreal/assets/paris-florist/Generated/
+unreal/assets/paris-florist/Raw/

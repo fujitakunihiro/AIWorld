@@ -144,9 +144,12 @@ for entry in entries:
     if entry['material']=='M_ParisGroundPaving':
         # Only unclassified exposed ground near the cathedral receives inferred
         # urban paving. Mapped road/park/water coverage has already been removed
-        # from this display mesh. The source palette returns beyond 130m.
+        # from this display mesh. The source palette returns beyond 240m.
         cx,cy=frame['front_cm'][:2]
-        ground_zone=custom(mat,f'return 1-smoothstep(10000,13000,length(Position.xy-float2({cx:.6f},{cy:.6f})));',dict(Position=(world_position,'')))
+        ground_zone=custom(mat,f'return 1-smoothstep(20000,24000,length(Position.xy-float2({cx:.6f},{cy:.6f})));',dict(Position=(world_position,'')))
+        # Match the mapped path's world-space cobblestone scale and color, so
+        # the inferred plaza does not change appearance at a GIS boundary.
+        color=custom(mat,'float macro=.94+.07*sin(Position.x*.0008)*sin(Position.y*.0011);return Albedo*float3(.93,.94,.91)*macro;',dict(Position=(world_position,''),Albedo=(samples['albedo'],projection)),vector=True)
         blend=node(mat,unreal.MaterialExpressionLinearInterpolate)
         link(tint,'',blend,'A');link(color,'',blend,'B');link(ground_zone,'',blend,'Alpha')
         color=blend
@@ -184,6 +187,7 @@ for entry in entries:
         basis.set_editor_property('inputs',inputs)
         basis.set_editor_property('code',
             f'float3 N=normalize(Geometric);float3 axis=abs(N.z)<.95?float3(0,0,1):{across};float3 T=normalize(axis-N*dot(N,axis));float3 B=normalize(cross(N,T));return normalize(T*Surface.x*.45+B*Surface.y*.45+N*Surface.z);' if wood else
+            'float3 N=normalize(Geometric); float3 T=normalize(float3(1,0,0)-N*N.x); float3 B=normalize(cross(N,T)); return normalize(T*Surface.x*.6+B*Surface.y*.6+N*max(Surface.z,.5));' if entry['material']=='M_ParisGroundPaving' else
             'float3 N=normalize(Geometric); float3 T=normalize(float3(1,0,0)-N*N.x); float3 B=normalize(cross(N,T)); return normalize(T*Surface.x+B*Surface.y+N*Surface.z);')
         link(normal,'',basis,'Geometric');link(samples['normal'],'',basis,'Surface')
         if ground_zone:
@@ -210,6 +214,8 @@ for entry in entries:
         mask = node(mat, unreal.MaterialExpressionComponentMask, -450, 100 + len(channel) * 30,
                     r=channel=='r', g=channel=='g', b=channel=='b')
         link(samples['orm'], projection, mask, '')
+        if entry['material']=='M_ParisGroundPaving' and channel=='g':
+            mask=custom(mat,'return clamp(R*.75+.2,.7,.97);',dict(R=(mask,'')))
         if wood and channel=='g':
             clamp=node(mat,unreal.MaterialExpressionClamp,min_default=.58,max_default=.92)
             link(mask,'',clamp,'');mask=clamp
@@ -223,7 +229,7 @@ for entry in entries:
     assets.set_metadata_tag(mat, 'ParisTwin.SurfaceRecipe', 'photographic:' + entry['id'])
     assets.set_metadata_tag(mat, 'ParisTwin.ChannelLayout', 'ORM; DirectX normal')
     if wood:assets.set_metadata_tag(mat,'ParisTwin.AppearanceProvenance','CC0 dark_wood at 2m scale; vertical grain in the shared GIS frame, inferred outdoor roughness/patina; not sampled cathedral wood')
-    if ground_zone:assets.set_metadata_tag(mat,'ParisTwin.AppearanceProvenance','Inferred paving on unclassified exposed terrain within 100m of the west anchor; fades to source palette by 130m. Not surveyed land cover.')
+    if ground_zone:assets.set_metadata_tag(mat,'ParisTwin.AppearanceProvenance','Inferred paving on unclassified exposed terrain within 200m of the west anchor; fades to source palette by 240m. Not surveyed land cover.')
     if not assets.save_loaded_asset(mat):raise RuntimeError('Cannot save photographic material: ' + entry['material'])
 
 # Exterior stained glass is opaque and dark in daylight. No emissive glow or

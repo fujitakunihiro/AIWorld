@@ -93,6 +93,7 @@ public:
     int32 SkeletalRenderedCount=0;
     int32 HumanVisualVariants() const { return HumanVisuals.Num(); }
     int32 HumanVisualBudget() const { return DetailQuality==2?16:DetailQuality==1?8:0; }
+    double HumanVisualRangeCm() const { return DetailQuality==2?9000.:DetailQuality==1?6000.:0.; }
 private:
     void InitializeHumanVisuals();
     bool RenderHuman(int32 Agent,const TSet<int32>& Wanted,TSet<int32>& Used,double Delta);

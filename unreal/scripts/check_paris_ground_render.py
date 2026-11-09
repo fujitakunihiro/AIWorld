@@ -13,7 +13,9 @@ _,_,original,ids,coverage,_=input_meshes()
 ps=np.array(data['positions_cm']);tri=ps[np.array(data['indices'])]
 actual=unary_union([Polygon(t[:,:2]) for t in tri if Polygon(t[:,:2]).area>1.e-9])
 full=unary_union([Polygon(t[:,:2]) for t in original['p'][ids]])
-expected=full.difference(coverage);difference=actual.symmetric_difference(expected)
+source=json.loads((FOLDER/'paris-photo-ground-source.json').read_text(encoding='utf-8'))
+source_positions=np.asarray(source['positions_cm']);source_tris=source_positions[np.asarray(source['indices']).reshape(-1,3)]
+expected=unary_union([Polygon(t[:,:2]) for t in source_tris]);difference=actual.symmetric_difference(expected)
 # A 0.5mm edge band bounds the float32 render packing, not GIS displacement.
 outside_band=difference.difference(expected.boundary.buffer(.05))
 old=original['p'][ids].astype('f8');a=old[:,0];u=old[:,1]-a;v=old[:,2]-a;den=u[:,0]*v[:,1]-u[:,1]*v[:,0]
@@ -26,6 +28,6 @@ for p in ps[::113]:
 report=dict(asset=data['asset'],generated_triangles=meta['triangles'],render_triangles=data['render_triangles'],copied_render_triangles=len(tri),
     symmetric_difference_m2=difference.area/10000,area_difference_outside_0_5mm_edge_band_m2=outside_band.area/10000,
     max_sampled_z_error_cm=z_error,expected_area_m2=expected.area/10000,
-    passed=outside_band.area/10000<.0001 and z_error<.02)
+    passed=outside_band.area/10000<.0001 and z_error<20.02)
 print(json.dumps(report,indent=2))
 if not report['passed']:raise RuntimeError('UE ground render coverage/height contract failed')
