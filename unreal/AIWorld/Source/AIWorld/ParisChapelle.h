@@ -8,6 +8,7 @@ class AParisTwinController;
 class UCameraComponent;
 class UPointLightComponent;
 class UProceduralMeshComponent;
+void ApplyParisInteriorLook(UWorld* World,float ISO,float Shutter);
 UCLASS()
 class AParisChapelleDetail : public AActor {
     GENERATED_BODY()

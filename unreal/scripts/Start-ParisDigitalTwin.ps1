@@ -1,7 +1,8 @@
 param([string]$EngineRoot='D:\Epic Games\UE_5.8',[switch]$Download,[switch]$Refresh,[switch]$Build,[switch]$Eye,[switch]$Capture,[ValidateRange(0,120)][double]$Benchmark=0,[switch]$ExitAfterBenchmark,[switch]$NoShadows,[switch]$Footprints,[switch]$Issues,[string]$Config='',[switch]$DownloadBuildings,[ValidateRange(0,3)][int]$Landmark=0,[switch]$DownloadTerrain,[ValidateSet('Low','Medium','High')][string]$Quality='Medium',[switch]$NoStreetDetails,[switch]$Walk,[switch]$ThirdPerson,[switch]$NoPeople,[switch]$NoTraffic,[switch]$TrafficView,[switch]$CafeView,[switch]$LegacyJSON,[switch]$MaterialsView,[switch]$FlatMaterials,[switch]$NoRenderCache,[switch]$StreetPhotoView,[switch]$ProceduralSurfaces,[switch]$Photoreal,[switch]$PortalDetail,[switch]$NoScannedFacade,
-    [switch]$FloristView,[switch]$Lane,[switch]$ChapelleInterior,[switch]$Seine,[ValidateSet('Cathedral','Bridge','Aerial')][string]$SeineCamera='Cathedral',[switch]$ReferenceLook,[switch]$ExtraObjectsView,[switch]$StreetPropsView,[switch]$Festival,[switch]$DistrictView,[ValidateRange(0,5)][int]$DistrictSpot=0,[switch]$LuxuryView,[switch]$MorrisView,[switch]$PalaisView,[switch]$ChapelleView,[switch]$MetroView,[switch]$CruiseView,[switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$SimpleCars,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='',[switch]$Rain,[switch]$MuteSound,[switch]$Night,[ValidateSet('Day','Sunset','Night')][string]$TimeOfDay='Day')
+    [switch]$FloristView,[switch]$Lane,[switch]$ChapelleInterior,[switch]$NotreDameInterior,[switch]$Seine,[ValidateSet('Cathedral','Bridge','Aerial')][string]$SeineCamera='Cathedral',[switch]$ReferenceLook,[switch]$ExtraObjectsView,[switch]$StreetPropsView,[switch]$Festival,[switch]$DistrictView,[ValidateRange(0,5)][int]$DistrictSpot=0,[switch]$LuxuryView,[switch]$MorrisView,[switch]$PalaisView,[switch]$ChapelleView,[switch]$MetroView,[switch]$CruiseView,[switch]$EntryDetail,[switch]$DoorDetail,[switch]$VirginDetail,[switch]$NoNCStatues,[switch]$SimplePeople,[switch]$SimpleCars,[switch]$RiverView,[switch]$LegacyWater,[switch]$RoadView,[switch]$LegacyRoads,[switch]$BridgeView,[switch]$LegacyBridges,[ValidateSet('Front','Riverside','Street')][string]$PhotoCamera='',[switch]$Rain,[switch]$MuteSound,[switch]$Night,[ValidateSet('Day','Sunset','Night')][string]$TimeOfDay='Day')
 $ErrorActionPreference='Stop'
 if($ChapelleInterior){$ChapelleView=$true}
+if($NotreDameInterior){$Photoreal=$true}
 if($FloristView){$Photoreal=$true}
 if($Night){$TimeOfDay='Night'}
 if($LuxuryView -or $DistrictView -or $Festival){$Photoreal=$true;$PhotoCamera='Street'}
@@ -306,6 +307,7 @@ if($MorrisView){$launchArgs+='-ParisTwinMorrisView'}
 if($PalaisView){$launchArgs+='-ParisTwinPalaisView'}
 if($ChapelleView){$launchArgs+='-ParisTwinChapelleView'}
 if($ChapelleInterior){$launchArgs+='-ParisTwinChapelleInterior=1'}
+if($NotreDameInterior){$launchArgs+='-ParisTwinNotreDameInterior=1'}
 if($MetroView){$launchArgs+='-ParisTwinMetroView'}
 if($CruiseView){$launchArgs+='-ParisTwinCruiseView'}
 if($RiverView){$launchArgs+='-ParisTwinRiverView'}
