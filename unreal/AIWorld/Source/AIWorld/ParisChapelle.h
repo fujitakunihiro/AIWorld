@@ -19,7 +19,7 @@ public:
     bool CycleView(APlayerController* PC);
     void ToggleInterior(AParisTwinController* PC);
     virtual void Tick(float DeltaSeconds) override;
-    int32 ViewIndex=0;bool bInteriorBuilt=false;bool bWasInside=false;bool bSavedExposure=false;float SavedISO=100,SavedShutter=125;
+    int32 ViewIndex=0;bool bInteriorBuilt=false;bool bWasInside=false;bool bSavedExposure=false;float SavedISO=100,SavedShutter=125;float InteriorISO=400,InteriorShutter=30;
     bool bReady=false;
     int32 WindowCount=0,ButtressCount=0;
     double SpireHeightCm=0;

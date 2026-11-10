@@ -267,22 +267,24 @@ void AParisChapelleDetail::Tick(float DeltaSeconds){
     // Interior meshes and lights are drawn only while the viewer is inside, so the exterior view pays nothing.
     // "Inside" is decided by where the camera actually is, so flying or walking in works as well as the fixed views.
     auto PC=GetWorld()?GetWorld()->GetFirstPlayerController():nullptr;bool Inside=false;
-    if(PC&&PC->PlayerCameraManager){const FVector L=GetActorTransform().InverseTransformPosition(PC->PlayerCameraManager->GetCameraLocation());Inside=L.X>-2200&&L.X<1700&&FMath::Abs(L.Y)<660&&L.Z>InFloor-40&&L.Z<InCrown;}
+    if(PC&&PC->PlayerCameraManager){const FVector L=GetActorTransform().InverseTransformPosition(PC->PlayerCameraManager->GetCameraLocation());Inside=L.X>InApseX-InApseR&&L.X<InPiers[4]-10&&FMath::Abs(L.Y)<InWallY-15&&L.Z>InFloor-20&&L.Z<InCrown;}
     SetActorTickInterval(Inside?0.f:.2f);
-    InnerSolid->SetVisibility(Inside);InnerGlass->SetVisibility(Inside);InnerVault->SetVisibility(Inside);InnerBeams->SetVisibility(Inside);for(auto L:InnerLights)L->SetVisibility(Inside);
+    InnerSolid->SetVisibility(Inside);InnerGlass->SetVisibility(Inside);InnerVault->SetVisibility(Inside);InnerBeams->SetVisibility(Inside);Glass->SetVisibility(!Inside);for(auto L:InnerLights)L->SetVisibility(Inside);
     // Keep a free-flying camera within the nave (there is no collision on the procedural shell).
     if(Inside&&PC){if(auto Cam=Cast<AParisTwinCamera>(PC->GetPawn()))if(Cam->bEye&&PC->GetViewTarget()==Cam){
         FVector L=GetActorTransform().InverseTransformPosition(Cam->Target);L.X=FMath::Clamp(L.X,-2000.,1560.);L.Y=FMath::Clamp(L.Y,-540.,540.);L.Z=FMath::Clamp(L.Z,InFloor+60.,InCrown-200.);Cam->Target=GetActorTransform().TransformPosition(L);}}
+    // While inside, the interior look is enforced every tick: other systems (time of day, weather,
+    // reference grade) may re-apply the outdoor environment at any moment and would wash out the nave.
+    if(Inside){
+        for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){auto& P=It->Settings;P.bOverride_CameraISO=true;P.CameraISO=InteriorISO;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=InteriorShutter;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=0.f;P.bOverride_BloomIntensity=true;P.BloomIntensity=.9f;P.bOverride_BloomThreshold=true;P.BloomThreshold=1.f;}
+        for(TActorIterator<ASkyLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))&&It->GetLightComponent()->Intensity!=0.f)It->GetLightComponent()->SetIntensity(0.f);
+        for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))&&It->GetLightComponent()->Intensity!=0.f)It->GetLightComponent()->SetIntensity(0.f);
+        for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))&&It->GetComponent()->FogDensity!=0.f)It->GetComponent()->SetFogDensity(0.f);
+    }
     if(Inside!=bWasInside){
         bWasInside=Inside;
-        if(Inside){
-            // The scene uses fixed daylight camera exposure; the nave is a candle-and-glass interior, so use a
-            // dark-adapted exposure and silence the outdoor sun, sky and haze (they would leak through the shell mesh).
-            for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){auto& P=It->Settings;P.bOverride_CameraISO=true;P.CameraISO=400.f;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=30.f;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=0.f;P.bOverride_BloomIntensity=true;P.BloomIntensity=1.6f;P.bOverride_BloomThreshold=true;P.BloomThreshold=.7f;}
-            for(TActorIterator<ASkyLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetLightComponent()->SetIntensity(0.f);
-            for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetLightComponent()->SetIntensity(0.f);
-            for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetComponent()->SetFogDensity(0.f);
-        }else if(Scene)Scene->ApplyEnvironmentPreset(); // rebuilds sun, sky, fog and exposure for the current time of day
+        UE_LOG(LogTemp,Display,TEXT("PARIS_CHAPELLE_INSIDE=%d"),Inside?1:0);
+        if(!Inside&&Scene)Scene->ApplyEnvironmentPreset(); // rebuilds sun, sky, fog and exposure for the current time of day
     }
 }
 void AParisChapelleDetail::ToggleInterior(AParisTwinController* PC){

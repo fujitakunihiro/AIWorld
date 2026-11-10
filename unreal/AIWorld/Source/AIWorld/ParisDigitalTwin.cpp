@@ -708,6 +708,8 @@ void AParisTwinScene::Tick(float Delta) {
     }
     if(bWalkLaunchPending&&Age>.1){if(auto PC=Cast<AParisTwinController>(GetWorld()->GetFirstPlayerController()))if(PC->EnterWalk(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinThirdPerson"))))bWalkLaunchPending=false;if(Age>15)bWalkLaunchPending=false;}
     if(bIssues)for(const auto& Issue:Issues)for(const auto& Line:Array(Issue,TEXT("polylines_cm"))){const auto& Points=Line->AsArray();for(int32 I=1;I<Points.Num();I++){FVector A,B;if(Vector(Points[I-1],A)&&Vector(Points[I],B))DrawDebugLine(GetWorld(),A,B,String(Issue,TEXT("kind"))==TEXT("building_overlap")?FColor(235,65,92):FColor(245,161,46),false,-1,0,2);}}
+    // Diagnostic: switch to the overview after N seconds (reproduces pressing F2 from a landmark/interior view).
+    {static bool bOverviewDone=false;double OverviewAfter=0;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinOverviewAfter="),OverviewAfter);if(OverviewAfter>0&&!bOverviewDone&&Age>OverviewAfter){bOverviewDone=true;if(auto PC=Cast<AParisTwinController>(GetWorld()->GetFirstPlayerController()))PC->Overview();}}
     double CaptureAfter=8;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinCaptureAfter="),CaptureAfter);if(!FMath::IsFinite(CaptureAfter))CaptureAfter=8;
     if(!bCaptured&&Age>FMath::Clamp(CaptureAfter,1.,120.)&&FParse::Param(FCommandLine::Get(),TEXT("ParisTwinCapture"))){
         if(!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeatingView"))){bCaptured=true;Capture();}
