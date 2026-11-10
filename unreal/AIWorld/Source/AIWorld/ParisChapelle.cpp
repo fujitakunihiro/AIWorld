@@ -202,43 +202,31 @@ void BuildInterior(ChapelMesh& S,ChapelMesh& G,ChapelMesh& Vt,ChapelMesh& Bm,int
     S.Col=Gold;for(double Y:{-170.,0.,170.})S.Cone(-1572,Y,InFloor+620,InFloor+700,2,2,4);
     // Kneeling angels beneath the canopy.
     for(double Y:{-110.,110.}){S.Col=Wax;S.Cone(-1560,Y,InFloor+640,InFloor+720,22,12,8);S.Col=Skin;S.Cone(-1560,Y,InFloor+720,InFloor+745,9,8,8);S.Col=Gold;S.Box(FVector(-1560,Y+(Y>0?-30:30),InFloor+700),FVector(6,34,14));S.Box(FVector(-1560,Y+(Y>0?30:-30),InFloor+700),FVector(6,34,14));}
-    // ---- Coloured light shafts pouring through the glass, floor pools and drifting glitter motes (additive, unlit).
+    // ---- Daylight shafts: low sun from one side, all rays parallel, softly tinted by the glass they pass
+    // through, fading as they fall, with faint coloured pools on the floor (additive, unlit).
     FRandomStream Rnd(11);
-    const FLinearColor Pal[6]={FLinearColor(.25f,.38f,1.f),FLinearColor(1.f,.28f,.22f),FLinearColor(.70f,.30f,1.f),FLinearColor(1.f,.84f,.52f),FLinearColor(.20f,.72f,1.f),FLinearColor(1.f,.32f,.66f)};
-    TArray<TPair<FVector,FVector>> Shafts;
+    const FLinearColor Pal[6]={FLinearColor(.45f,.55f,1.f),FLinearColor(1.f,.55f,.45f),FLinearColor(.80f,.60f,1.f),FLinearColor(1.f,.86f,.62f),FLinearColor(.55f,.80f,1.f),FLinearColor(1.f,.62f,.78f)};
+    const FLinearColor Sun(1.f,.90f,.74f);
+    auto Tint=[&](int32 I){const FLinearColor T=Pal[I%6];return FLinearColor(FMath::Lerp(T.R,Sun.R,.6f),FMath::Lerp(T.G,Sun.G,.6f),FMath::Lerp(T.B,Sun.B,.6f));};
     auto Ribbon=[&](FVector A,FVector B,double W0,double W1,FLinearColor Col,float Gain){
         const FVector D=(B-A).GetSafeNormal();const FVector S1=FVector::CrossProduct(D,FVector::UpVector).GetSafeNormal(),S2=FVector::CrossProduct(D,S1).GetSafeNormal();
         Bm.Col=FLinearColor(Col.R,Col.G,Col.B,Gain/40.f);
         for(const FVector& Sd:{S1,S2})Bm.Face({A-Sd*(W0*.5),A+Sd*(W0*.5),B+Sd*(W1*.5),B-Sd*(W1*.5)},FVector(0,0,1),{FVector2D(0,0),FVector2D(0,1),FVector2D(1,1),FVector2D(1,0)});
-        Shafts.Add(TPair<FVector,FVector>(A,B));
-        Bm.Col=FLinearColor(Col.R,Col.G,Col.B,Gain*.9f/40.f);
-        Bm.Face({FVector(B.X-190,B.Y-150,InFloor+2),FVector(B.X+190,B.Y-150,InFloor+2),FVector(B.X+190,B.Y+150,InFloor+2),FVector(B.X-190,B.Y+150,InFloor+2)},FVector(0,0,1),{FVector2D(-1,0),FVector2D(1,0),FVector2D(1,1),FVector2D(-1,1)});
+        Bm.Col=FLinearColor(Col.R,Col.G,Col.B,Gain*1.1f/40.f);
+        const FVector H=FVector(D.X,D.Y,0).GetSafeNormal(),Hs(-H.Y,H.X,0);const FVector C(B.X,B.Y,InFloor+2);
+        Bm.Face({C-H*170-Hs*W1*.6,C+H*170-Hs*W1*.6,C+H*170+Hs*W1*.6,C-H*170+Hs*W1*.6},FVector(0,0,1),{FVector2D(-1,0),FVector2D(1,0),FVector2D(1,1),FVector2D(-1,1)});
     };
+    const FVector Ray=FVector(.30,.62,-.72).GetSafeNormal(); // sun on the -Y side, high afternoon
+    auto ToFloor=[&](const FVector& A){return A+Ray*((A.Z-InFloor-2)/-Ray.Z);};
     int32 Ci=0;
-    for(int32 Sign:{-1,1})for(int32 Bay=0;Bay<4;Bay++){
+    for(int32 Bay=0;Bay<4;Bay++){
         const double Cx=InPiers[Bay]+InBayPitch*.5;
-        for(double Off:{-140.,0.,140.}){
-            const FVector A(Cx+Off,Sign*(InWallY-8),1450+Rnd.FRandRange(-250.f,350.f));
-            const FVector B(Cx+Off+230+Rnd.FRandRange(-120.f,120.f),Sign*(InWallY-720-Rnd.FRandRange(0.f,260.f)),InFloor+2);
-            Ribbon(A,B,90,230,Pal[(Ci++)%6],30.f);
-        }
+        for(double Off:{-115.,115.}){const FVector A(Cx+Off,-(InWallY-8),1350+Rnd.FRandRange(-80.f,120.f));Ribbon(A,ToFloor(A),170,260,Tint(Ci++),19.f);}
     }
-    for(int32 B=0;B<7;B++){
-        const FVector P0=ApsePier(B),P1=ApsePier(B+1),Mid=(P0+P1)*.5;const FVector Radial=FVector(Mid.X-InApseX,Mid.Y,0).GetSafeNormal(),Tangent(-Radial.Y,Radial.X,0);
-        for(double Off:{-60.,60.}){
-            const FVector A=FVector(Mid.X,Mid.Y,1400)-Radial*8+Tangent*Off;
-            const FVector E=FVector(Mid.X,Mid.Y,InFloor+2)-Radial*(650+Rnd.FRandRange(0.f,260.f))+Tangent*(Off*2.5);
-            Ribbon(A,E,90,220,Pal[(Ci++)%6],30.f);
-        }
-    }
-    for(double Y:{-220.,-70.,80.,230.})Ribbon(FVector(InPiers[4]-8,Y*.6,1650),FVector(InPiers[4]-1000,Y*1.6,InFloor+2),130,300,Pal[(Ci++)%6],24.f);
-    // Glitter motes: tiny crossed quads scattered along the shafts that twinkle in the material.
-    Bm.Col=FLinearColor(1.f,.93f,.78f,1.f);
-    for(int32 K=0;K<420&&Shafts.Num();K++){
-        const auto& Sh=Shafts[Rnd.RandRange(0,Shafts.Num()-1)];const double T=Rnd.FRand();
-        const FVector P=FMath::Lerp(Sh.Key,Sh.Value,T)+FVector(Rnd.FRandRange(-70.f,70.f),Rnd.FRandRange(-70.f,70.f),Rnd.FRandRange(-50.f,50.f));const double Sz=7+Rnd.FRand()*8;
-        Bm.Face({P+FVector(-Sz,0,-Sz),P+FVector(Sz,0,-Sz),P+FVector(Sz,0,Sz),P+FVector(-Sz,0,Sz)},FVector(0,-1,0),{FVector2D(-1,0),FVector2D(1,0),FVector2D(1,1),FVector2D(-1,1)});
-        Bm.Face({P+FVector(0,-Sz,-Sz),P+FVector(0,Sz,-Sz),P+FVector(0,Sz,Sz),P+FVector(0,-Sz,Sz)},FVector(1,0,0),{FVector2D(-1,0),FVector2D(1,0),FVector2D(1,1),FVector2D(-1,1)});
+    // A few weaker rays from the south-east apse lancets.
+    for(int32 B=4;B<7;B++){
+        const FVector P0=ApsePier(B),P1=ApsePier(B+1),Mid=(P0+P1)*.5;const FVector Radial=FVector(Mid.X-InApseX,Mid.Y,0).GetSafeNormal();
+        const FVector A=FVector(Mid.X,Mid.Y,1350)-Radial*8;Ribbon(A,ToFloor(A),120,210,Tint(Ci++),11.f);
     }
 }
 }
@@ -276,7 +264,7 @@ void AParisChapelleDetail::Tick(float DeltaSeconds){
     // While inside, the interior look is enforced every tick: other systems (time of day, weather,
     // reference grade) may re-apply the outdoor environment at any moment and would wash out the nave.
     if(Inside){
-        for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){auto& P=It->Settings;P.bOverride_CameraISO=true;P.CameraISO=InteriorISO;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=InteriorShutter;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=0.f;P.bOverride_BloomIntensity=true;P.BloomIntensity=.9f;P.bOverride_BloomThreshold=true;P.BloomThreshold=1.f;}
+        for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){auto& P=It->Settings;P.bOverride_CameraISO=true;P.CameraISO=InteriorISO;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=InteriorShutter;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=0.f;P.bOverride_BloomIntensity=true;P.BloomIntensity=.45f;P.bOverride_BloomThreshold=true;P.BloomThreshold=1.f;}
         for(TActorIterator<ASkyLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))&&It->GetLightComponent()->Intensity!=0.f)It->GetLightComponent()->SetIntensity(0.f);
         for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))&&It->GetLightComponent()->Intensity!=0.f)It->GetLightComponent()->SetIntensity(0.f);
         for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))&&It->GetComponent()->FogDensity!=0.f)It->GetComponent()->SetFogDensity(0.f);
