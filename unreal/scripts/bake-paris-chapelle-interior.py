@@ -2,7 +2,7 @@
 import unreal
 a=unreal.EditorAssetLibrary;t=unreal.AssetToolsHelpers.get_asset_tools();l=unreal.MaterialEditingLibrary
 base='/Game/ParisPhotoreal/SainteChapelle'
-RECIPE='sainte_chapelle_interior_v5'
+RECIPE='sainte_chapelle_interior_v9'
 
 def fresh(name):
     pkg=base+'/'+name
@@ -34,7 +34,10 @@ if m:
     m.set_editor_properties(dict(two_sided=True,shading_model=unreal.MaterialShadingModel.MSM_DEFAULT_LIT,blend_mode=unreal.BlendMode.BLEND_OPAQUE))
     vc=l.create_material_expression(m,unreal.MaterialExpressionVertexColor)
     l.connect_material_property(vc,'RGB',unreal.MaterialProperty.MP_BASE_COLOR)
-    l.connect_material_property(vc,'A',unreal.MaterialProperty.MP_ROUGHNESS)
+    rough=custom(m,'return max(A,.25);',{'A':(vc,'A')},unreal.CustomMaterialOutputType.CMOT_FLOAT1)
+    l.connect_material_property(rough,'',unreal.MaterialProperty.MP_ROUGHNESS)
+    glow=custom(m,'return A<.03?V*45.:V*16.;',{'V':(vc,''),'A':(vc,'A')})
+    l.connect_material_property(glow,'',unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     finish(m,'interior')
 
 # 2. Stained glass: the existing CC0 interior photograph, emitted as a backlit window.

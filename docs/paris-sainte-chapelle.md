@@ -23,3 +23,13 @@ Run `Paris-Sainte-Chapelle.cmd`, or `unreal/scripts/Start-ParisDigitalTwin.ps1 -
 残る課題: 石・金の部分が暗く、彫刻や壁画（十二使徒像、扉口の装飾）がない。聖遺物の天蓋は簡略形で、下層礼拝堂は未作成。バラ窓は西壁のみで、本来の複雑な構成には届かない。
 
 ![内部・後陣向き](paris-chapelle-interior-2.png)
+
+## 内部の作り込み（第2弾）
+
+Wikimedia Commons の写真（CC0: "Sainte-Chapelle, Paris, upper chapel windows/rose"、CC BY-SA 4.0: Oberkirche Ost 1/2 ほか）を参照資料として確認し、次を追加した（形状は推定で、写真そのものは再配布していない）。
+
+- 使徒像（柱ごと・後陣）と尖塔付きの天蓋
+- 燭台シャンデリア（燭台の炎は発光）
+- 柱の金の装飾帯、壁下部の赤・青の菱形パネル
+- 聖遺物箱の切妻天蓋、尖塔、天使
+- 石材・金の環境光相当の発光（暗室露出で黒つぶれするため）

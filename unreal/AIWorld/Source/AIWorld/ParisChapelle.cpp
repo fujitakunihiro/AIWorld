@@ -157,6 +157,51 @@ void BuildInterior(ChapelMesh& S,ChapelMesh& G,ChapelMesh& Vt,int32& Windows){
     for(double Y:{-240.,240.})S.Tube(FVector(-1930,Y,InFloor+600),FVector(-1570,Y,InFloor+600),11,8);
     S.Cone(-1750,0,InFloor+600,InFloor+980,300,8,4);
     S.Col=Red;S.Box(FVector(-1750,0,InFloor+80),FVector(110,60,36));
+    const FLinearColor Skin(.55f,.40f,.20f,.45f),Flame(1.f,.78f,.38f,0.f),Wax(.80f,.74f,.58f,.6f);
+    // Twelve apostle statues on brackets with pointed hoods, standing against the piers (inferred from the published photographs).
+    auto Statue=[&](double X,double Y,double Z,FLinearColor Robe){
+        S.Col=Gold;S.Box(FVector(X,Y,Z-14),FVector(26,26,10));
+        S.Col=Robe;S.Cone(X,Y,Z,Z+150,24,13,10);
+        S.Col=Gold;S.Cone(X,Y,Z+110,Z+120,17,17,10);
+        S.Col=Skin;S.Cone(X,Y,Z+150,Z+176,10,9,8);
+        S.Col=Gold;S.Cone(X,Y,Z+186,Z+189,19,19,10);
+        S.Cone(X,Y,Z+250,Z+330,24,2,6);
+        S.Tube(FVector(X-20,Y,Z+250),FVector(X+20,Y,Z+250),4,6);
+    };
+    for(int32 Sign:{-1,1})for(int32 Pi=0;Pi<5;Pi++)Statue(InPiers[Pi],Sign*(InWallY-52),InFloor+300,(Pi%2)?Red:Blue);
+    for(int32 B=1;B<=6;B++){const FVector P=ApsePier(B);const FVector R=FVector(P.X-InApseX,P.Y,0).GetSafeNormal();Statue(P.X-R.X*44,P.Y-R.Y*44,InFloor+300,(B%2)?Blue:Red);}
+    // Pier diapering: gilt fleuron bands up each shaft.
+    S.Col=Gold;
+    for(int32 Sign:{-1,1})for(int32 Pi=0;Pi<5;Pi++)for(double Z=InFloor+90;Z<InSpring-40;Z+=70){if(FMath::Abs(Z-(InFloor+300))<120)continue;S.Box(FVector(InPiers[Pi],Sign*(InWallY-24),Z),FVector(9,15,7));S.Box(FVector(InPiers[Pi],Sign*(InWallY-24),Z+35),FVector(15,9,5));}
+    // Painted dado behind the blind arcade: alternating red and blue lozenge panels with gilt centres.
+    for(int32 Sign:{-1,1})for(int32 Bay=0;Bay<4;Bay++){
+        const double Cx=InPiers[Bay]+InBayPitch*.5,Y=Sign*(InWallY-8);
+        for(double Off:{-250.,0.,250.}){
+            S.Col=(((int32)(Off/250)+Bay)%2)?Blue:Red;S.Face({FVector(Cx+Off-96,Y,InFloor+12),FVector(Cx+Off+96,Y,InFloor+12),FVector(Cx+Off+96,Y,700),FVector(Cx+Off-96,Y,700)},FVector(0,-Sign,0));
+            S.Col=Gold;S.Tube(FVector(Cx+Off,Y-3,InFloor+30),FVector(Cx+Off+60,Y-3,InFloor+95),3,5);S.Tube(FVector(Cx+Off+60,Y-3,InFloor+95),FVector(Cx+Off,Y-3,InFloor+160),3,5);S.Tube(FVector(Cx+Off,Y-3,InFloor+160),FVector(Cx+Off-60,Y-3,InFloor+95),3,5);S.Tube(FVector(Cx+Off-60,Y-3,InFloor+95),FVector(Cx+Off,Y-3,InFloor+30),3,5);
+        }
+    }
+    // Candelabra chandeliers hanging on chains from the vault.
+    auto Chandelier=[&](double X,double Y,double Zc,double Rr,int32 Candles){
+        S.Col=Gold;S.Tube(FVector(X,Y,Zc+420),FVector(X,Y,Zc),2.5,5);S.Cone(X,Y,Zc-8,Zc+8,14,14,8);
+        for(int32 K=0;K<12;K++){const double A0=2*PI*K/12,A1=2*PI*(K+1)/12;S.Tube(FVector(X+Rr*FMath::Cos(A0),Y+Rr*FMath::Sin(A0),Zc),FVector(X+Rr*FMath::Cos(A1),Y+Rr*FMath::Sin(A1),Zc),3.5,5);}
+        for(int32 K=0;K<Candles;K++){const double A=2*PI*K/Candles;const double CX=X+Rr*FMath::Cos(A),CY=Y+Rr*FMath::Sin(A);
+            S.Col=Gold;S.Tube(FVector(X,Y,Zc),FVector(CX,CY,Zc+10),2.2,5);S.Tube(FVector(CX,CY,Zc),FVector(CX,CY,Zc+20),3,5);
+            S.Col=Wax;S.Tube(FVector(CX,CY,Zc+20),FVector(CX,CY,Zc+44),2.4,6);
+            S.Col=Flame;S.Cone(CX,CY,Zc+44,Zc+56,2.6,.2,6);}
+    };
+    for(int32 Sign:{-1,1}){for(double X:{-1060.,-300.,460.,1200.})Chandelier(X,Sign*330,1130,70,8);}
+    Chandelier(-1750,-330,1050,60,6);Chandelier(-1750,330,1050,60,6);
+    // Reliquary tabernacle: steep gabled canopy with crocketed pinnacles over the dais, framing the central window.
+    S.Col=Gold;
+    for(int32 K=0;K<12;K++){auto Gable=[&](double T){return FVector(-1570,-240+480*T,InFloor+600+(1-FMath::Pow(FMath::Abs(2*T-1),1.4))*340);};S.Tube(Gable(K/12.),Gable((K+1)/12.),7,6);}
+    for(double Y:{-240.,240.}){S.Cone(-1570,Y,InFloor+600,InFloor+840,18,3,6);S.Cone(-1570,Y,InFloor+840,InFloor+900,7,0.5,6);}
+    for(double Y:{-120.,0.,120.}){const double H=InFloor+600+(1-FMath::Pow(FMath::Abs(Y)/240.,1.4))*340;S.Tube(FVector(-1570,Y,InFloor+600),FVector(-1570,Y,H),4,6);for(int32 Cr=1;Cr<4;Cr++)S.Box(FVector(-1570,Y,InFloor+600+(H-InFloor-600)*Cr/4.),FVector(8,8,8));}
+    S.Cone(-1570,0,InFloor+940,InFloor+1010,8,.5,6);
+    S.Col=Blue;S.Face({FVector(-1572,-228,InFloor+604),FVector(-1572,228,InFloor+604),FVector(-1572,0,InFloor+930)},FVector(1,0,0));
+    S.Col=Gold;for(double Y:{-170.,0.,170.})S.Cone(-1572,Y,InFloor+620,InFloor+700,2,2,4);
+    // Kneeling angels beneath the canopy.
+    for(double Y:{-110.,110.}){S.Col=Wax;S.Cone(-1560,Y,InFloor+640,InFloor+720,22,12,8);S.Col=Skin;S.Cone(-1560,Y,InFloor+720,InFloor+745,9,8,8);S.Col=Gold;S.Box(FVector(-1560,Y+(Y>0?-30:30),InFloor+700),FVector(6,34,14));S.Box(FVector(-1560,Y+(Y>0?30:-30),InFloor+700),FVector(6,34,14));}
 }
 }
 AParisChapelleDetail::AParisChapelleDetail(){
