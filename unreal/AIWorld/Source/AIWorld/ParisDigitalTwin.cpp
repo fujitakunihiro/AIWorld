@@ -169,6 +169,7 @@ void AParisTwinController::SetupInputComponent() {
     {FInputKeyBinding Binding(FInputChord(EKeys::O),IE_Pressed);Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this,[this](){for(TActorIterator<AParisPalaisDetail> It(GetWorld());It;++It){if(GetViewTarget()==*It)ReturnToFree();else It->ActivateView(this);break;}});InputComponent->KeyBindings.Add(Binding);}
     {FInputKeyBinding Binding(FInputChord(EKeys::J),IE_Pressed);Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this,[this](){for(TActorIterator<AParisChapelleDetail> It(GetWorld());It;++It){if(GetViewTarget()==*It){if(!It->CycleView(this))ReturnToFree();}else It->ActivateView(this,0);break;}});InputComponent->KeyBindings.Add(Binding);}
     for(const auto Key:{EKeys::K,EKeys::L}){FInputKeyBinding Binding(FInputChord(Key),IE_Pressed);Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this,[this,Key](){for(TActorIterator<AParisMetro> It(GetWorld());It;++It){if(Key==EKeys::K)It->EnterExit(this);else It->BoardExit(this);break;}});InputComponent->KeyBindings.Add(Binding);}
+    {FInputKeyBinding Binding(FInputChord(EKeys::Enter),IE_Pressed);Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this,[this](){for(TActorIterator<AParisChapelleDetail> It(GetWorld());It;++It){It->ToggleInterior(this);break;}});InputComponent->KeyBindings.Add(Binding);}
     {FInputKeyBinding Binding(FInputChord(EKeys::U),IE_Pressed);Binding.KeyDelegate.GetDelegateForManualSet().BindWeakLambda(this,[this](){for(TActorIterator<AParisCruise> It(GetWorld());It;++It){if(GetViewTarget()==*It)ReturnToFree();else It->ActivateView(this);break;}});InputComponent->KeyBindings.Add(Binding);}
     InputComponent->BindKey(EKeys::H,IE_Pressed,this,&AParisTwinController::ToggleHelp);
     InputComponent->BindKey(EKeys::F10,IE_Pressed,this,&AParisTwinController::ToggleHUD);
@@ -746,7 +747,7 @@ void AParisTwinHUD::DrawHUD() {
         TEXT("移動 WASD:カメラ移動/歩行 | F3:地上目線の自由カメラ | F8:主人公で探索 | Shift:走る"),
         TEXT("視点 V:一人称/三人称を切替 | 矢印キー:自由カメラの向き | F2:全景へ戻る"),
         TEXT("表示 F1:再現レベル | F4:問題 | F5:輪郭 | F6:小物 | F7:画質 | M:表面 | 7:地区巡回 | 9:派手モード"),
-        TEXT("ランドマーク 1:ノートルダム | 2:サント・シャペル | 3:サン・ミシェル | J:シャペル視点 | O:旧司法宮視点"),
+        TEXT("ランドマーク 1:ノートルダム | 2:サント・シャペル | 3:サン・ミシェル | J:シャペル視点 | Enter:シャペルに入る/出る | O:旧司法宮視点"),
         TEXT("街 P:歩行者 | T:車 | C:車を確認 | B:カフェ | I:スーパー | Y:レストラン | Z:花屋 | X:パン屋 | Q:本屋"),
         TEXT("乗り物 U:クルーズ船を追従 | K:最寄り駅で乗降/地上へ | L:列車に乗る/停車後に降りる"),
         TEXT("環境 G:昼→夕→夜 | R:雨/晴れ | F11:環境音ON/OFF | F12:音を試聴 | N:歩行者ルート | 4/5/6:写真視点 | F9:画面保存"),

@@ -4,6 +4,7 @@
 #include "ParisChapelle.generated.h"
 class AParisTwinScene;
 class APlayerController;
+class AParisTwinController;
 class UCameraComponent;
 class UPointLightComponent;
 class UProceduralMeshComponent;
@@ -16,6 +17,7 @@ public:
     void Sync();
     void ActivateView(APlayerController* PC,int32 Index=0);
     bool CycleView(APlayerController* PC);
+    void ToggleInterior(AParisTwinController* PC);
     virtual void Tick(float DeltaSeconds) override;
     int32 ViewIndex=0;bool bInteriorBuilt=false;bool bWasInside=false;bool bSavedExposure=false;float SavedISO=100,SavedShutter=125;
     bool bReady=false;
@@ -33,5 +35,6 @@ private:
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> InnerSolid;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> InnerGlass;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> InnerVault;
+    UPROPERTY() TObjectPtr<UProceduralMeshComponent> InnerBeams;
     UPROPERTY() TArray<TObjectPtr<UPointLightComponent>> InnerLights;
 };

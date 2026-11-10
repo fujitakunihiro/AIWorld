@@ -127,7 +127,8 @@ private:
     TArray<TSharedPtr<FJsonObject>> SourceFeatures,Landmarks,Issues;
     TSet<FString> OverlapIDs;
     UPROPERTY() TObjectPtr<UProceduralMeshComponent> FootprintMesh;
-    void ApplyEnvironmentPreset();
+public: void ApplyEnvironmentPreset();
+private:
     void RefreshAppearance();
     UMaterialInterface* SurfaceMaterialFor(const TSharedPtr<FJsonObject>& Feature) const;
     double ReadyAt=0;

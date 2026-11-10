@@ -49,7 +49,7 @@ double VaultA(double Y){return InSpring+(InCrown-InSpring)*(1-FMath::Pow(FMath::
 double VaultB(double X,double Cx){return InSpring+(InCrown-InSpring)*(1-FMath::Pow(FMath::Min(FMath::Abs(X-Cx)/(InBayPitch*.5),1.),1.7));}
 double Formeret(double U){return InSpring+(InCrown-InSpring)*(1-FMath::Pow(FMath::Abs(2*U-1),1.7));}
 FVector2D RoseUV(double A){return FVector2D(.53+.12*(.5+.5*FMath::Cos(A)),.29+.20*(.5-.5*FMath::Sin(A)));}
-void BuildInterior(ChapelMesh& S,ChapelMesh& G,ChapelMesh& Vt,int32& Windows){
+void BuildInterior(ChapelMesh& S,ChapelMesh& G,ChapelMesh& Vt,ChapelMesh& Bm,int32& Windows){
     const FLinearColor Stone(.40f,.33f,.22f,.85f),Gold(.60f,.38f,.07f,.38f),Red(.30f,.025f,.025f,.5f),Blue(.015f,.03f,.22f,.5f),Dark(.04f,.025f,.02f,.7f);
     auto ApsePier=[](int32 B){const double A=PI*.5+PI*B/7.;return FVector(InApseX+InApseR*FMath::Cos(A),InApseR*FMath::Sin(A),0);};
     // Floor: alternating tiles, polished stone.
@@ -202,6 +202,44 @@ void BuildInterior(ChapelMesh& S,ChapelMesh& G,ChapelMesh& Vt,int32& Windows){
     S.Col=Gold;for(double Y:{-170.,0.,170.})S.Cone(-1572,Y,InFloor+620,InFloor+700,2,2,4);
     // Kneeling angels beneath the canopy.
     for(double Y:{-110.,110.}){S.Col=Wax;S.Cone(-1560,Y,InFloor+640,InFloor+720,22,12,8);S.Col=Skin;S.Cone(-1560,Y,InFloor+720,InFloor+745,9,8,8);S.Col=Gold;S.Box(FVector(-1560,Y+(Y>0?-30:30),InFloor+700),FVector(6,34,14));S.Box(FVector(-1560,Y+(Y>0?30:-30),InFloor+700),FVector(6,34,14));}
+    // ---- Coloured light shafts pouring through the glass, floor pools and drifting glitter motes (additive, unlit).
+    FRandomStream Rnd(11);
+    const FLinearColor Pal[6]={FLinearColor(.25f,.38f,1.f),FLinearColor(1.f,.28f,.22f),FLinearColor(.70f,.30f,1.f),FLinearColor(1.f,.84f,.52f),FLinearColor(.20f,.72f,1.f),FLinearColor(1.f,.32f,.66f)};
+    TArray<TPair<FVector,FVector>> Shafts;
+    auto Ribbon=[&](FVector A,FVector B,double W0,double W1,FLinearColor Col,float Gain){
+        const FVector D=(B-A).GetSafeNormal();const FVector S1=FVector::CrossProduct(D,FVector::UpVector).GetSafeNormal(),S2=FVector::CrossProduct(D,S1).GetSafeNormal();
+        Bm.Col=FLinearColor(Col.R,Col.G,Col.B,Gain/40.f);
+        for(const FVector& Sd:{S1,S2})Bm.Face({A-Sd*(W0*.5),A+Sd*(W0*.5),B+Sd*(W1*.5),B-Sd*(W1*.5)},FVector(0,0,1),{FVector2D(0,0),FVector2D(0,1),FVector2D(1,1),FVector2D(1,0)});
+        Shafts.Add(TPair<FVector,FVector>(A,B));
+        Bm.Col=FLinearColor(Col.R,Col.G,Col.B,Gain*.9f/40.f);
+        Bm.Face({FVector(B.X-190,B.Y-150,InFloor+2),FVector(B.X+190,B.Y-150,InFloor+2),FVector(B.X+190,B.Y+150,InFloor+2),FVector(B.X-190,B.Y+150,InFloor+2)},FVector(0,0,1),{FVector2D(-1,0),FVector2D(1,0),FVector2D(1,1),FVector2D(-1,1)});
+    };
+    int32 Ci=0;
+    for(int32 Sign:{-1,1})for(int32 Bay=0;Bay<4;Bay++){
+        const double Cx=InPiers[Bay]+InBayPitch*.5;
+        for(double Off:{-140.,0.,140.}){
+            const FVector A(Cx+Off,Sign*(InWallY-8),1450+Rnd.FRandRange(-250.f,350.f));
+            const FVector B(Cx+Off+230+Rnd.FRandRange(-120.f,120.f),Sign*(InWallY-720-Rnd.FRandRange(0.f,260.f)),InFloor+2);
+            Ribbon(A,B,90,230,Pal[(Ci++)%6],30.f);
+        }
+    }
+    for(int32 B=0;B<7;B++){
+        const FVector P0=ApsePier(B),P1=ApsePier(B+1),Mid=(P0+P1)*.5;const FVector Radial=FVector(Mid.X-InApseX,Mid.Y,0).GetSafeNormal(),Tangent(-Radial.Y,Radial.X,0);
+        for(double Off:{-60.,60.}){
+            const FVector A=FVector(Mid.X,Mid.Y,1400)-Radial*8+Tangent*Off;
+            const FVector E=FVector(Mid.X,Mid.Y,InFloor+2)-Radial*(650+Rnd.FRandRange(0.f,260.f))+Tangent*(Off*2.5);
+            Ribbon(A,E,90,220,Pal[(Ci++)%6],30.f);
+        }
+    }
+    for(double Y:{-220.,-70.,80.,230.})Ribbon(FVector(InPiers[4]-8,Y*.6,1650),FVector(InPiers[4]-1000,Y*1.6,InFloor+2),130,300,Pal[(Ci++)%6],24.f);
+    // Glitter motes: tiny crossed quads scattered along the shafts that twinkle in the material.
+    Bm.Col=FLinearColor(1.f,.93f,.78f,1.f);
+    for(int32 K=0;K<420&&Shafts.Num();K++){
+        const auto& Sh=Shafts[Rnd.RandRange(0,Shafts.Num()-1)];const double T=Rnd.FRand();
+        const FVector P=FMath::Lerp(Sh.Key,Sh.Value,T)+FVector(Rnd.FRandRange(-70.f,70.f),Rnd.FRandRange(-70.f,70.f),Rnd.FRandRange(-50.f,50.f));const double Sz=7+Rnd.FRand()*8;
+        Bm.Face({P+FVector(-Sz,0,-Sz),P+FVector(Sz,0,-Sz),P+FVector(Sz,0,Sz),P+FVector(-Sz,0,Sz)},FVector(0,-1,0),{FVector2D(-1,0),FVector2D(1,0),FVector2D(1,1),FVector2D(-1,1)});
+        Bm.Face({P+FVector(0,-Sz,-Sz),P+FVector(0,Sz,-Sz),P+FVector(0,Sz,Sz),P+FVector(0,-Sz,Sz)},FVector(1,0,0),{FVector2D(-1,0),FVector2D(1,0),FVector2D(1,1),FVector2D(-1,1)});
+    }
 }
 }
 AParisChapelleDetail::AParisChapelleDetail(){
@@ -213,6 +251,7 @@ AParisChapelleDetail::AParisChapelleDetail(){
     PrimaryActorTick.bCanEverTick=true;PrimaryActorTick.TickInterval=.2f;
     InnerSolid=CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ChapelleInnerSolid"));InnerSolid->SetupAttachment(RootComponent);InnerSolid->SetVisibility(false);
     InnerGlass=CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ChapelleInnerGlass"));InnerGlass->SetupAttachment(RootComponent);InnerGlass->SetCastShadow(false);InnerGlass->SetVisibility(false);
+    InnerBeams=CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ChapelleInnerBeams"));InnerBeams->SetupAttachment(RootComponent);InnerBeams->SetCastShadow(false);InnerBeams->SetVisibility(false);
     InnerVault=CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ChapelleInnerVault"));InnerVault->SetupAttachment(RootComponent);InnerVault->SetVisibility(false);
     auto MakeCamera=[this](const TCHAR* Name,FVector From,FVector To,float Fov){auto C=CreateDefaultSubobject<UCameraComponent>(Name);C->SetupAttachment(RootComponent);C->SetRelativeLocation(From);C->SetRelativeRotation((To-From).Rotation());C->FieldOfView=Fov;C->SetAutoActivate(false);return C;};
     WestCamera=MakeCamera(TEXT("ChapelleWestCamera"),FVector(-1250,0,700),FVector(1580,0,1350),76);
@@ -226,22 +265,31 @@ AParisChapelleDetail::AParisChapelleDetail(){
 void AParisChapelleDetail::Tick(float DeltaSeconds){
     Super::Tick(DeltaSeconds);if(!bInteriorBuilt)return;
     // Interior meshes and lights are drawn only while the viewer is inside, so the exterior view pays nothing.
-    auto PC=GetWorld()?GetWorld()->GetFirstPlayerController():nullptr;const bool Inside=PC&&PC->GetViewTarget()==this&&ViewIndex>0;
-    InnerSolid->SetVisibility(Inside);InnerGlass->SetVisibility(Inside);InnerVault->SetVisibility(Inside);for(auto L:InnerLights)L->SetVisibility(Inside);
-    // The scene uses fixed daylight camera exposure (ISO100, 1/125s); the nave is
-    // a candle-and-glass interior, so switch to a dark-adapted exposure while inside.
+    // "Inside" is decided by where the camera actually is, so flying or walking in works as well as the fixed views.
+    auto PC=GetWorld()?GetWorld()->GetFirstPlayerController():nullptr;bool Inside=false;
+    if(PC&&PC->PlayerCameraManager){const FVector L=GetActorTransform().InverseTransformPosition(PC->PlayerCameraManager->GetCameraLocation());Inside=L.X>-2200&&L.X<1700&&FMath::Abs(L.Y)<660&&L.Z>InFloor-40&&L.Z<InCrown;}
+    SetActorTickInterval(Inside?0.f:.2f);
+    InnerSolid->SetVisibility(Inside);InnerGlass->SetVisibility(Inside);InnerVault->SetVisibility(Inside);InnerBeams->SetVisibility(Inside);for(auto L:InnerLights)L->SetVisibility(Inside);
+    // Keep a free-flying camera within the nave (there is no collision on the procedural shell).
+    if(Inside&&PC){if(auto Cam=Cast<AParisTwinCamera>(PC->GetPawn()))if(Cam->bEye&&PC->GetViewTarget()==Cam){
+        FVector L=GetActorTransform().InverseTransformPosition(Cam->Target);L.X=FMath::Clamp(L.X,-2000.,1560.);L.Y=FMath::Clamp(L.Y,-540.,540.);L.Z=FMath::Clamp(L.Z,InFloor+60.,InCrown-200.);Cam->Target=GetActorTransform().TransformPosition(L);}}
     if(Inside!=bWasInside){
         bWasInside=Inside;
-        for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){
-            auto& P=It->Settings;
-            if(Inside){if(!bSavedExposure){SavedISO=P.CameraISO;SavedShutter=P.CameraShutterSpeed;bSavedExposure=true;}P.bOverride_CameraISO=true;P.CameraISO=400.f;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=30.f;}
-            else if(bSavedExposure){P.CameraISO=SavedISO;P.CameraShutterSpeed=SavedShutter;bSavedExposure=false;}
-        }
-        // Outdoor sun, sky and haze would leak through the shell mesh and wash out the nave.
-        for(TActorIterator<ASkyLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetLightComponent()->SetVisibility(!Inside);
-        for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetLightComponent()->SetVisibility(!Inside);
-        for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetComponent()->SetVisibility(!Inside);
+        if(Inside){
+            // The scene uses fixed daylight camera exposure; the nave is a candle-and-glass interior, so use a
+            // dark-adapted exposure and silence the outdoor sun, sky and haze (they would leak through the shell mesh).
+            for(TActorIterator<APostProcessVolume> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment"))){auto& P=It->Settings;P.bOverride_CameraISO=true;P.CameraISO=400.f;P.bOverride_CameraShutterSpeed=true;P.CameraShutterSpeed=30.f;P.bOverride_AutoExposureBias=true;P.AutoExposureBias=0.f;P.bOverride_BloomIntensity=true;P.BloomIntensity=1.6f;P.bOverride_BloomThreshold=true;P.BloomThreshold=.7f;}
+            for(TActorIterator<ASkyLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetLightComponent()->SetIntensity(0.f);
+            for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetLightComponent()->SetIntensity(0.f);
+            for(TActorIterator<AExponentialHeightFog> It(GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotoEnvironment")))It->GetComponent()->SetFogDensity(0.f);
+        }else if(Scene)Scene->ApplyEnvironmentPreset(); // rebuilds sun, sky, fog and exposure for the current time of day
     }
+}
+void AParisChapelleDetail::ToggleInterior(AParisTwinController* PC){
+    if(!PC||!bInteriorBuilt)return;
+    if(bWasInside){ActivateView(PC,0);return;}
+    PC->ReturnToFree();auto Cam=Cast<AParisTwinCamera>(PC->GetPawn());if(!Cam)return;
+    Cam->bEye=true;Cam->Target=GetActorTransform().TransformPosition(FVector(1350,0,InFloor+170));Cam->Yaw=GetActorRotation().Yaw+180.;Cam->Pitch=4;PC->SetViewTarget(Cam);
 }
 bool AParisChapelleDetail::Initialize(AParisTwinScene* InScene){
     Scene=InScene;if(!Scene)return false;auto Feature=Scene->SourceFeatureByID(TEXT("osm/relation/3344870"));if(!Feature)return false;
@@ -315,7 +363,8 @@ bool AParisChapelleDetail::Initialize(AParisTwinScene* InScene){
         auto InMat=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ParisPhotoreal/SainteChapelle/M_SainteChapelleInterior.M_SainteChapelleInterior"));
         auto InGlass=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ParisPhotoreal/SainteChapelle/M_SainteChapelleInnerGlass.M_SainteChapelleInnerGlass"));
         auto InVault=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ParisPhotoreal/SainteChapelle/M_SainteChapelleVault.M_SainteChapelleVault"));
-        if(InMat&&InGlass&&InVault){ChapelMesh IS,IG,IV;int32 InnerWindows=0;BuildInterior(IS,IG,IV,InnerWindows);IS.Apply(InnerSolid,InMat);IG.Apply(InnerGlass,InGlass);IV.Apply(InnerVault,InVault);bInteriorBuilt=true;UE_LOG(LogTemp,Display,TEXT("PARIS_CHAPELLE_INTERIOR_READY windows=%d solid_tris=%d vault_tris=%d"),InnerWindows,IS.I.Num()/3,IV.I.Num()/3);}
+        UMaterialInterface* InBeam=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ParisPhotoreal/SainteChapelle/M_SainteChapelleBeam.M_SainteChapelleBeam"));
+        if(InMat&&InGlass&&InVault){ChapelMesh IS,IG,IV,IB;int32 InnerWindows=0;BuildInterior(IS,IG,IV,IB,InnerWindows);if(InBeam)IB.Apply(InnerBeams,InBeam);IS.Apply(InnerSolid,InMat);IG.Apply(InnerGlass,InGlass);IV.Apply(InnerVault,InVault);bInteriorBuilt=true;UE_LOG(LogTemp,Display,TEXT("PARIS_CHAPELLE_INTERIOR_READY windows=%d solid_tris=%d vault_tris=%d beam_tris=%d beam_material=%d"),InnerWindows,IS.I.Num()/3,IV.I.Num()/3,IB.I.Num()/3,InBeam?1:0);}
         else UE_LOG(LogTemp,Warning,TEXT("PARIS_CHAPELLE_INTERIOR_MATERIALS_MISSING run Build-ParisChapelle.ps1"));
     }
     bReady=true;Sync();return true;
