@@ -13,7 +13,7 @@ class UMaterialInterface;
 // (references/ile-de-la-cite): long cafe awnings over rows of bistro tables and rattan chairs,
 // souvenir postcard spinners, scarf racks and chalkboard menus, plus seated customers.
 // Positions reuse the inferred storefront frames; real layouts and occupancy are unverified.
-struct FParisTourist{FVector A,B;double Yaw=0,Speed=110,Phase=0;int32 Variant=0;bool Walk=false;};
+struct FParisTourist{FVector A,B;double Yaw=0,Speed=110,Phase=0;int32 Variant=0;bool Walk=false;bool bSnapped=false;bool bInvalid=false;bool Parvis=false;};
 UCLASS()
 class AParisStreetLife : public AActor {
     GENERATED_BODY()
@@ -25,6 +25,7 @@ public:
 private:
     UHierarchicalInstancedStaticMeshComponent* AddPrototype(const FName& Key,UStaticMesh* Mesh,double CullCm);
     void UpdateSeated();
+    bool SnapToGround(FVector& P,double Up,double Down) const;
     void UpdateTourists(bool Reassign);
     void AddTourist(const FVector& A,const FVector& B,double Yaw,uint32 Seed,bool Walk);
     UPROPERTY() TObjectPtr<AParisTwinScene> Scene;
@@ -35,7 +36,8 @@ private:
     TArray<int32> SeatVariant;     // avatar index per seat
     TArray<int32> SlotSeat;        // seat shown by each pooled mesh
     TArray<int32> SlotVariant;
-    double Remaining=0,Clock=0;
+    TSet<int32> SeatSnapped;
+    double Remaining=0,Clock=0;bool bPropsSnapped=false;
     TArray<FParisTourist> Tourists;
     UPROPERTY() TArray<TObjectPtr<USkeletalMeshComponent>> Walkers;
     TArray<int32> WalkerTourist,WalkerVariant;

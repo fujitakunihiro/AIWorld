@@ -5,6 +5,7 @@
 #include "WorldProtocol.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Animation/AnimSequence.h"
 #include "Engine/SkeletalMesh.h"
 #include "Engine/StaticMesh.h"
@@ -88,6 +89,14 @@ bool IsSouvenir(const FString& C){return C==TEXT("gift")||C==TEXT("souvenir")||C
 uint32 Hash(const FString& S){return GetTypeHash(S);}
 }
 
+// Snap to the walkable GIS ground with the same query the pedestrian crowd uses (ECC_Pawn, upward-facing hit).
+bool AParisStreetLife::SnapToGround(FVector& P,double Up,double Down) const {
+    if(!GetWorld())return false;FHitResult Hit;FCollisionQueryParams Params;Params.AddIgnoredActor(this);
+    // Ignore capsule obstacles (urns, bollards): only real ground and steps carry people and furniture.
+    if(GetWorld()->LineTraceSingleByChannel(Hit,P+FVector(0,0,Up),P-FVector(0,0,Down),ECC_Pawn,Params)&&Hit.GetComponent()&&!Hit.GetComponent()->IsA<UCapsuleComponent>()&&Hit.Normal.Z>.7){P.Z=Hit.ImpactPoint.Z;return true;}
+    if(Hit.GetComponent()&&Hit.GetComponent()->IsA<UCapsuleComponent>()){Params.AddIgnoredComponent(Hit.GetComponent());if(GetWorld()->LineTraceSingleByChannel(Hit,P+FVector(0,0,Up),P-FVector(0,0,Down),ECC_Pawn,Params)&&Hit.Normal.Z>.7&&!(Hit.GetComponent()&&Hit.GetComponent()->IsA<UCapsuleComponent>())){P.Z=Hit.ImpactPoint.Z;return true;}}
+    return false;
+}
 AParisStreetLife::AParisStreetLife(){
     RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("StreetLifeRoot"));
     PrimaryActorTick.bCanEverTick=true;PrimaryActorTick.TickInterval=0.f;
@@ -114,7 +123,7 @@ bool AParisStreetLife::Initialize(AParisTwinScene* InScene,const TSharedPtr<FJso
         auto F=V->AsObject();if(!F.IsValid()||String(F,TEXT("kind"))!=TEXT("business"))continue;const FString ID=String(F,TEXT("id"));const FTransform* Front=Fronts.Find(ID);if(!Front)continue;
         const auto P=Object(F,TEXT("properties"));const FString Cat=String(P,TEXT("category"));const bool Terrace=String(P,TEXT("outdoor_seating_tag"))==TEXT("yes");const uint32 H=Hash(ID);
         const FRotator Yaw=Front->Rotator();const FVector Along=Yaw.RotateVector(FVector(1,0,0)),Out=Yaw.RotateVector(FVector(0,1,0)),O=Front->GetLocation();
-        auto At=[&](double X,double Y,double YawExtra=0,FVector Scale=FVector(1)){return FTransform(Yaw+FRotator(0,YawExtra,0),O+Along*X+Out*Y,Scale);};
+        auto At=[&](double X,double Y,double YawExtra=0,FVector Scale=FVector(1)){FVector P=O+Along*X+Out*Y;if(X!=0||Y!=0)SnapToGround(P,40,250);return FTransform(Yaw+FRotator(0,YawExtra,0),P,Scale);};
         if(Terrace&&IsFood(Cat)){
             TerraceCount++;TerraceFronts.Add(*Front);const int32 Ac=H%4;Awnings[Ac].Add(At(0,0,0,FVector(6.,1.,1.)));for(double X:{-290.,0.,290.})Arms.Add(At(X,0));
             for(int32 Row=0;Row<2;Row++)for(int32 K=-2;K<=2;K++){
@@ -141,9 +150,9 @@ bool AParisStreetLife::Initialize(AParisTwinScene* InScene,const TSharedPtr<FJso
      FRandomStream R(2026);int32 Placed=0;ParvisCount=0;
      for(int32 K=0;K<700&&Placed<260;K++){const double D=R.FRandRange(500.f,12000.f),L=R.FRandRange(-3200.f,3200.f);FVector P=West-Ax*D+Lat*L;FHitResult Hit;
         // Parvis ground is ~+50 cm (the front photo camera stands there); a hit far above means a roof or tree.
-        P.Z=50;if(GetWorld()->LineTraceSingleByChannel(Hit,P+FVector(0,0,3000),P-FVector(0,0,3000),ECC_WorldStatic)){if(Hit.ImpactPoint.Z>West.Z+500)continue;if(Hit.ImpactPoint.Z>West.Z-500)P.Z=Hit.ImpactPoint.Z;}
-        const bool Walk=R.FRand()<.45;FVector B=P;if(Walk){const FVector Dir=FRotator(0,R.FRandRange(0.f,360.f),0).Vector();B=P+Dir*R.FRandRange(600.f,1600.f);FHitResult H2;B.Z=P.Z;if(GetWorld()->LineTraceSingleByChannel(H2,B+FVector(0,0,3000),B-FVector(0,0,3000),ECC_WorldStatic)&&FMath::Abs(H2.ImpactPoint.Z-P.Z)>120)B=P;}
-        const double Face=(Ax.Rotation().Yaw)+R.FRandRange(-35.f,35.f);AddTourist(P,B,Face,R.GetUnsignedInt(),Walk&&B!=P);Placed++;ParvisCount++;}}
+        P.Z=50; // square level; the real ground is traced when the tourist is first shown (collision streams in later)
+        const bool Walk=R.FRand()<.45;FVector B=P;if(Walk){const FVector Dir=FRotator(0,R.FRandRange(0.f,360.f),0).Vector();B=P+Dir*R.FRandRange(600.f,1600.f);}
+        const double Face=(Ax.Rotation().Yaw)+R.FRandRange(-35.f,35.f);AddTourist(P,B,Face,R.GetUnsignedInt(),Walk&&B!=P);Tourists.Last().Parvis=true;Placed++;ParvisCount++;}}
     // Seated customers: a pool of skinned Rocketbox avatars (MIT) moved to the nearest occupied chairs.
     {FString Text;TSharedPtr<FJsonObject> People;
      if(FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoPeople"))&&FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("Data/paris-people.json")))&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),People)&&People.IsValid()){
@@ -185,7 +194,12 @@ void AParisStreetLife::AddTourist(const FVector& A,const FVector& B,double Yaw,u
     FParisTourist T;T.A=A;T.B=B;T.Yaw=Yaw;T.Walk=Walk&&FVector::Dist2D(A,B)>100;T.Variant=int32(Seed%997);T.Speed=95+double(Seed%40);T.Phase=double(Seed%1000)/1000.;Tourists.Add(T);
 }
 void AParisStreetLife::Tick(float DeltaSeconds){
-    Super::Tick(DeltaSeconds);Clock+=DeltaSeconds;Remaining-=DeltaSeconds;if(Remaining<=0){Remaining=.5;UpdateSeated();UpdateTourists(true);}
+    Super::Tick(DeltaSeconds);Clock+=DeltaSeconds;
+    if(!bPropsSnapped&&Clock>3){bPropsSnapped=true;int32 Moved=0;
+        for(auto& Pair:Parts){if(Pair.Key.ToString().StartsWith(TEXT("terrace_awning")))continue;auto C=Pair.Value;TArray<FTransform> Ts;Ts.SetNum(C->GetInstanceCount());
+            for(int32 I=0;I<Ts.Num();I++){C->GetInstanceTransform(I,Ts[I],true);FVector P=Ts[I].GetLocation();if(SnapToGround(P,40,250)&&FMath::Abs(P.Z-Ts[I].GetLocation().Z)>1){Ts[I].SetLocation(P);Moved++;}}
+            if(Ts.Num())C->BatchUpdateInstancesTransforms(0,Ts,true,true,true);}
+        UE_LOG(LogTemp,Display,TEXT("PARIS_STREET_LIFE_GROUNDED moved=%d"),Moved);}Remaining-=DeltaSeconds;if(Remaining<=0){Remaining=.5;UpdateSeated();UpdateTourists(true);}
     UpdateTourists(false);
 }
 void AParisStreetLife::UpdateTourists(bool Reassign){
@@ -199,10 +213,10 @@ void AParisStreetLife::UpdateTourists(bool Reassign){
     if(Reassign){
         auto PC=GetWorld()?GetWorld()->GetFirstPlayerController():nullptr;if(!PC||!PC->PlayerCameraManager)return;const FVector Eye=PC->PlayerCameraManager->GetCameraLocation();
         const bool Show=!IsHidden()&&(!Scene||Scene->DetailQuality>0);
-        TArray<int32> Near;for(int32 T=0;T<Tourists.Num();T++)if(FVector::DistSquared(Tourists[T].A,Eye)<9000.*9000.)Near.Add(T);
+        TArray<int32> Near;for(int32 T=0;T<Tourists.Num();T++)if(!Tourists[T].bInvalid&&FVector::DistSquared(Tourists[T].A,Eye)<9000.*9000.)Near.Add(T);
         Near.Sort([&](int32 A,int32 B){return FVector::DistSquared(Tourists[A].A,Eye)<FVector::DistSquared(Tourists[B].A,Eye);});
         TArray<bool> Taken;Taken.Init(false,Walkers.Num());
-        for(int32 T:Near){for(int32 I=0;I<Walkers.Num();I++)if(!Taken[I]&&WalkerVariant[I]==Tourists[T].Variant){Taken[I]=true;WalkerTourist[I]=T;break;}}
+        for(int32 T:Near){for(int32 I=0;I<Walkers.Num();I++)if(!Taken[I]&&WalkerVariant[I]==Tourists[T].Variant){Taken[I]=true;WalkerTourist[I]=T;if(!Tourists[T].bSnapped){auto& Tt=Tourists[T];Tt.bSnapped=true;const double Z0=Tt.A.Z;if(!SnapToGround(Tt.A,Tt.Parvis?300.:40.,900)||FMath::Abs(Tt.A.Z-Z0)>600){Tt.bInvalid=true;Taken[I]=false;WalkerTourist[I]=INDEX_NONE;break;}if(Tt.Walk&&(!SnapToGround(Tt.B,Tt.Parvis?300.:40.,900)||FMath::Abs(Tt.B.Z-Tt.A.Z)>60)){Tt.B=Tt.A;Tt.Walk=false;}else if(!Tt.Walk)Tt.B=Tt.A;}break;}}
         for(int32 I=0;I<Walkers.Num();I++){const bool On=Show&&Taken[I];if(!On)WalkerTourist[I]=INDEX_NONE;Walkers[I]->SetVisibility(On);Walkers[I]->SetComponentTickEnabled(On);}
     }
     for(int32 I=0;I<Walkers.Num();I++){const int32 T=WalkerTourist[I];if(T==INDEX_NONE)continue;FVector P;double Yaw,Speed;Pose(Tourists[T],P,Yaw,Speed);
@@ -215,6 +229,6 @@ void AParisStreetLife::UpdateSeated(){
     TArray<int32> Near;for(int32 S=0;S<Seats.Num();S++)if(FVector::DistSquared(Seats[S].GetLocation(),Eye)<5500.*5500.)Near.Add(S);
     Near.Sort([&](int32 A,int32 B){return FVector::DistSquared(Seats[A].GetLocation(),Eye)<FVector::DistSquared(Seats[B].GetLocation(),Eye);});
     TSet<int32> Wanted;TArray<bool> Taken;Taken.Init(false,Seated.Num());
-    for(int32 S:Near){for(int32 I=0;I<Seated.Num();I++)if(!Taken[I]&&SlotVariant[I]==SeatVariant[S]){Taken[I]=true;Wanted.Add(S);if(SlotSeat[I]!=S){SlotSeat[I]=S;Seated[I]->SetWorldTransform(Seats[S]);}break;}}
+    for(int32 S:Near){for(int32 I=0;I<Seated.Num();I++)if(!Taken[I]&&SlotVariant[I]==SeatVariant[S]){Taken[I]=true;Wanted.Add(S);if(SlotSeat[I]!=S){SlotSeat[I]=S;if(!SeatSnapped.Contains(S)){FVector P=Seats[S].GetLocation();if(SnapToGround(P,40,250))Seats[S].SetLocation(P);SeatSnapped.Add(S);}Seated[I]->SetWorldTransform(Seats[S]);}break;}}
     SeatedVisible=0;for(int32 I=0;I<Seated.Num();I++){const bool On=Show&&Taken[I];if(!On)SlotSeat[I]=INDEX_NONE;Seated[I]->SetVisibility(On);Seated[I]->SetComponentTickEnabled(On);SeatedVisible+=On;}
 }
