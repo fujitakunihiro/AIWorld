@@ -7,6 +7,7 @@ import unreal
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'unreal/assets/paris-people'
+SCALED = SOURCE / 'Scaled'  # 1024 px copies made by scale_paris_people.py
 DEST = '/Game/ParisPhotoreal/People'
 assets = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
@@ -97,14 +98,15 @@ runtime = dict(schema_version=1, license='MIT', source_commit=manifest['commit']
                source_url=manifest['repository'], inferred_population=True, avatars=[])
 for avatar in manifest['avatars']:
     name, prefix, sex = (avatar[k] for k in ['name', 'texture_prefix', 'animation_prefix'])
-    source = SOURCE / 'Raw/Assets/Avatars/Adults' / name
+    source = SOURCE / 'Raw/Assets/Avatars' / avatar.get('group', 'Adults') / name
     textures, mats = {}, {}
     for part in ['head', 'body', 'opacity']:
         textures[part] = {}
         for channel in (['color'] if part == 'opacity' else ['color', 'normal', 'specular']):
             key = prefix + '_' + part + '_' + channel
-            tex = imported(source / 'Textures' / (key + '.tga'), DEST + '/Textures', 'T_' + key)
-            tex.set_editor_property('max_texture_size', 2048)
+            scaled = SCALED / (source / 'Textures' / (key + '.tga')).relative_to(SOURCE / 'Raw')
+            tex = imported(scaled if scaled.exists() else source / 'Textures' / (key + '.tga'), DEST + '/Textures', 'T_' + key)
+            tex.set_editor_property('max_texture_size', 1024)  # keeps the committed content small for 14 avatars
             tex.set_editor_property('srgb', channel == 'color')
             if channel == 'normal':
                 tex.set_editor_property('compression_settings', unreal.TextureCompressionSettings.TC_NORMALMAP)

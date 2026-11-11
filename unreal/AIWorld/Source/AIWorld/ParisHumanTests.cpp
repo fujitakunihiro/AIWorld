@@ -1,4 +1,4 @@
-#include "ParisDigitalTwin.h"
+﻿#include "ParisDigitalTwin.h"
 #include "ParisPedestrians.h"
 #include "ParisHumanAnimation.h"
 #include "Misc/AutomationTest.h"
@@ -37,13 +37,13 @@ public:
         if(!Crowd.IsValid())return false;
         if(Phase==0){
             const bool Expected=FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSimplePeople"));
-            Test->TestEqual(TEXT("Optional MIT human assets load only in requested photoreal mode"),Crowd->HumanVisualVariants(),Expected?2:0);
+            Test->TestTrue(TEXT("Optional MIT human assets load only in requested photoreal mode"),Expected?Crowd->HumanVisualVariants()>=2:Crowd->HumanVisualVariants()==0);
             if(!Expected)return true;
             auto World=Crowd->GetWorld();auto PC=Cast<AParisTwinController>(World->GetFirstPlayerController());
             if(!PC||!PC->FreeCamera)return true;
             PC->ReturnToFree();PC->FreeCamera->Eye(Crowd->People()[0].Position);PC->FreeCamera->Tick(0);PC->PlayerCameraManager->UpdateCamera(0);
             Crowd->SetDisplay(true,2);Crowd->UpdateInstances(true);
-            Test->TestTrue(TEXT("Near skeletal characters use the bounded pool"),Crowd->SkeletalRenderedCount>0&&Crowd->SkeletalRenderedCount<=16);
+            Test->TestTrue(TEXT("Near skeletal characters use the bounded pool"),Crowd->SkeletalRenderedCount>0&&Crowd->SkeletalRenderedCount<=AParisPedestrianCrowd::MaxHumanVisualBudget);
             Test->TestEqual(TEXT("Crowd counts account for both skeletal and instanced people"),Crowd->RenderedCount,Crowd->SkeletalRenderedCount+Crowd->NearRenderedCount+Crowd->FarRenderedCount);
             TArray<UCapsuleComponent*> Pickers;Crowd->GetComponents(Pickers);TSet<FString> IDs;
             for(auto Picker:Pickers)if(Picker->GetCollisionEnabled()!=ECollisionEnabled::NoCollision){auto ID=Crowd->PersonID(Picker,INDEX_NONE);Test->TestFalse(TEXT("Human capsule selects the actual live pedestrian"),ID.IsEmpty());IDs.Add(ID);}

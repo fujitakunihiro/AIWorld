@@ -68,6 +68,390 @@
         1637,
         931
       ]
+    },
+    {
+      "name": "Female_Adult_02",
+      "mesh": "/Game/ParisPhotoreal/People/Female_Adult_02/SK_Female_Adult_02.SK_Female_Adult_02",
+      "skeleton": "/Game/ParisPhotoreal/People/Female_Adult_02/SK_Female_Adult_02_Skeleton.SK_Female_Adult_02_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Female_Adult_02/A_Female_Adult_02_walk.A_Female_Adult_02_walk",
+        "run": "/Game/ParisPhotoreal/People/Female_Adult_02/A_Female_Adult_02_run.A_Female_Adult_02_run",
+        "idle": "/Game/ParisPhotoreal/People/Female_Adult_02/A_Female_Adult_02_idle.A_Female_Adult_02_idle",
+        "sit": "/Game/ParisPhotoreal/People/Female_Adult_02/A_Female_Adult_02_sit.A_Female_Adult_02_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f002_body",
+          "surface": "body"
+        },
+        {
+          "name": "f002_head",
+          "surface": "head"
+        },
+        {
+          "name": "f002_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 173.51622772216797,
+      "lod_vertices": [
+        5570,
+        1726,
+        975
+      ]
+    },
+    {
+      "name": "Female_Adult_03",
+      "mesh": "/Game/ParisPhotoreal/People/Female_Adult_03/SK_Female_Adult_03.SK_Female_Adult_03",
+      "skeleton": "/Game/ParisPhotoreal/People/Female_Adult_03/SK_Female_Adult_03_Skeleton.SK_Female_Adult_03_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Female_Adult_03/A_Female_Adult_03_walk.A_Female_Adult_03_walk",
+        "run": "/Game/ParisPhotoreal/People/Female_Adult_03/A_Female_Adult_03_run.A_Female_Adult_03_run",
+        "idle": "/Game/ParisPhotoreal/People/Female_Adult_03/A_Female_Adult_03_idle.A_Female_Adult_03_idle",
+        "sit": "/Game/ParisPhotoreal/People/Female_Adult_03/A_Female_Adult_03_sit.A_Female_Adult_03_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f003_body",
+          "surface": "body"
+        },
+        {
+          "name": "f003_head",
+          "surface": "head"
+        },
+        {
+          "name": "f003_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 173.88935297727585,
+      "lod_vertices": [
+        6116,
+        1965,
+        1157
+      ]
+    },
+    {
+      "name": "Female_Adult_04",
+      "mesh": "/Game/ParisPhotoreal/People/Female_Adult_04/SK_Female_Adult_04.SK_Female_Adult_04",
+      "skeleton": "/Game/ParisPhotoreal/People/Female_Adult_04/SK_Female_Adult_04_Skeleton.SK_Female_Adult_04_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Female_Adult_04/A_Female_Adult_04_walk.A_Female_Adult_04_walk",
+        "run": "/Game/ParisPhotoreal/People/Female_Adult_04/A_Female_Adult_04_run.A_Female_Adult_04_run",
+        "idle": "/Game/ParisPhotoreal/People/Female_Adult_04/A_Female_Adult_04_idle.A_Female_Adult_04_idle",
+        "sit": "/Game/ParisPhotoreal/People/Female_Adult_04/A_Female_Adult_04_sit.A_Female_Adult_04_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f004_body",
+          "surface": "body"
+        },
+        {
+          "name": "f004_head",
+          "surface": "head"
+        },
+        {
+          "name": "f004_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 176.59247788786888,
+      "lod_vertices": [
+        5955,
+        1836,
+        1050
+      ]
+    },
+    {
+      "name": "Female_Adult_05",
+      "mesh": "/Game/ParisPhotoreal/People/Female_Adult_05/SK_Female_Adult_05.SK_Female_Adult_05",
+      "skeleton": "/Game/ParisPhotoreal/People/Female_Adult_05/SK_Female_Adult_05_Skeleton.SK_Female_Adult_05_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Female_Adult_05/A_Female_Adult_05_walk.A_Female_Adult_05_walk",
+        "run": "/Game/ParisPhotoreal/People/Female_Adult_05/A_Female_Adult_05_run.A_Female_Adult_05_run",
+        "idle": "/Game/ParisPhotoreal/People/Female_Adult_05/A_Female_Adult_05_idle.A_Female_Adult_05_idle",
+        "sit": "/Game/ParisPhotoreal/People/Female_Adult_05/A_Female_Adult_05_sit.A_Female_Adult_05_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f005_body",
+          "surface": "body"
+        },
+        {
+          "name": "f005_head",
+          "surface": "head"
+        },
+        {
+          "name": "f005_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 173.6178607866168,
+      "lod_vertices": [
+        5390,
+        1703,
+        992
+      ]
+    },
+    {
+      "name": "Female_Adult_07",
+      "mesh": "/Game/ParisPhotoreal/People/Female_Adult_07/SK_Female_Adult_07.SK_Female_Adult_07",
+      "skeleton": "/Game/ParisPhotoreal/People/Female_Adult_07/SK_Female_Adult_07_Skeleton.SK_Female_Adult_07_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Female_Adult_07/A_Female_Adult_07_walk.A_Female_Adult_07_walk",
+        "run": "/Game/ParisPhotoreal/People/Female_Adult_07/A_Female_Adult_07_run.A_Female_Adult_07_run",
+        "idle": "/Game/ParisPhotoreal/People/Female_Adult_07/A_Female_Adult_07_idle.A_Female_Adult_07_idle",
+        "sit": "/Game/ParisPhotoreal/People/Female_Adult_07/A_Female_Adult_07_sit.A_Female_Adult_07_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f007_body",
+          "surface": "body"
+        },
+        {
+          "name": "f007_head",
+          "surface": "head"
+        },
+        {
+          "name": "f007_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 172.257155418396,
+      "lod_vertices": [
+        5096,
+        1552,
+        886
+      ]
+    },
+    {
+      "name": "Female_Adult_08",
+      "mesh": "/Game/ParisPhotoreal/People/Female_Adult_08/SK_Female_Adult_08.SK_Female_Adult_08",
+      "skeleton": "/Game/ParisPhotoreal/People/Female_Adult_08/SK_Female_Adult_08_Skeleton.SK_Female_Adult_08_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Female_Adult_08/A_Female_Adult_08_walk.A_Female_Adult_08_walk",
+        "run": "/Game/ParisPhotoreal/People/Female_Adult_08/A_Female_Adult_08_run.A_Female_Adult_08_run",
+        "idle": "/Game/ParisPhotoreal/People/Female_Adult_08/A_Female_Adult_08_idle.A_Female_Adult_08_idle",
+        "sit": "/Game/ParisPhotoreal/People/Female_Adult_08/A_Female_Adult_08_sit.A_Female_Adult_08_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f008_body",
+          "surface": "body"
+        },
+        {
+          "name": "f008_head",
+          "surface": "head"
+        },
+        {
+          "name": "f008_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 173.49159812927246,
+      "lod_vertices": [
+        5307,
+        1606,
+        918
+      ]
+    },
+    {
+      "name": "Male_Adult_02",
+      "mesh": "/Game/ParisPhotoreal/People/Male_Adult_02/SK_Male_Adult_02.SK_Male_Adult_02",
+      "skeleton": "/Game/ParisPhotoreal/People/Male_Adult_02/SK_Male_Adult_02_Skeleton.SK_Male_Adult_02_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Male_Adult_02/A_Male_Adult_02_walk.A_Male_Adult_02_walk",
+        "run": "/Game/ParisPhotoreal/People/Male_Adult_02/A_Male_Adult_02_run.A_Male_Adult_02_run",
+        "idle": "/Game/ParisPhotoreal/People/Male_Adult_02/A_Male_Adult_02_idle.A_Male_Adult_02_idle",
+        "sit": "/Game/ParisPhotoreal/People/Male_Adult_02/A_Male_Adult_02_sit.A_Male_Adult_02_sit"
+      },
+      "material_slots": [
+        {
+          "name": "m003_body",
+          "surface": "body"
+        },
+        {
+          "name": "m003_head",
+          "surface": "head"
+        },
+        {
+          "name": "m003_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 182.2745304107666,
+      "lod_vertices": [
+        4547,
+        1382,
+        811
+      ]
+    },
+    {
+      "name": "Male_Adult_03",
+      "mesh": "/Game/ParisPhotoreal/People/Male_Adult_03/SK_Male_Adult_03.SK_Male_Adult_03",
+      "skeleton": "/Game/ParisPhotoreal/People/Male_Adult_03/SK_Male_Adult_03_Skeleton.SK_Male_Adult_03_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Male_Adult_03/A_Male_Adult_03_walk.A_Male_Adult_03_walk",
+        "run": "/Game/ParisPhotoreal/People/Male_Adult_03/A_Male_Adult_03_run.A_Male_Adult_03_run",
+        "idle": "/Game/ParisPhotoreal/People/Male_Adult_03/A_Male_Adult_03_idle.A_Male_Adult_03_idle",
+        "sit": "/Game/ParisPhotoreal/People/Male_Adult_03/A_Male_Adult_03_sit.A_Male_Adult_03_sit"
+      },
+      "material_slots": [
+        {
+          "name": "m004_body",
+          "surface": "body"
+        },
+        {
+          "name": "m004_head",
+          "surface": "head"
+        },
+        {
+          "name": "m004_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 180.72469520568848,
+      "lod_vertices": [
+        4358,
+        1370,
+        786
+      ]
+    },
+    {
+      "name": "Male_Adult_04",
+      "mesh": "/Game/ParisPhotoreal/People/Male_Adult_04/SK_Male_Adult_04.SK_Male_Adult_04",
+      "skeleton": "/Game/ParisPhotoreal/People/Male_Adult_04/SK_Male_Adult_04_Skeleton.SK_Male_Adult_04_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Male_Adult_04/A_Male_Adult_04_walk.A_Male_Adult_04_walk",
+        "run": "/Game/ParisPhotoreal/People/Male_Adult_04/A_Male_Adult_04_run.A_Male_Adult_04_run",
+        "idle": "/Game/ParisPhotoreal/People/Male_Adult_04/A_Male_Adult_04_idle.A_Male_Adult_04_idle",
+        "sit": "/Game/ParisPhotoreal/People/Male_Adult_04/A_Male_Adult_04_sit.A_Male_Adult_04_sit"
+      },
+      "material_slots": [
+        {
+          "name": "m006_body",
+          "surface": "body"
+        },
+        {
+          "name": "m006_head",
+          "surface": "head"
+        },
+        {
+          "name": "m006_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 186.85752296447754,
+      "lod_vertices": [
+        5559,
+        1793,
+        1031
+      ]
+    },
+    {
+      "name": "Male_Adult_05",
+      "mesh": "/Game/ParisPhotoreal/People/Male_Adult_05/SK_Male_Adult_05.SK_Male_Adult_05",
+      "skeleton": "/Game/ParisPhotoreal/People/Male_Adult_05/SK_Male_Adult_05_Skeleton.SK_Male_Adult_05_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Male_Adult_05/A_Male_Adult_05_walk.A_Male_Adult_05_walk",
+        "run": "/Game/ParisPhotoreal/People/Male_Adult_05/A_Male_Adult_05_run.A_Male_Adult_05_run",
+        "idle": "/Game/ParisPhotoreal/People/Male_Adult_05/A_Male_Adult_05_idle.A_Male_Adult_05_idle",
+        "sit": "/Game/ParisPhotoreal/People/Male_Adult_05/A_Male_Adult_05_sit.A_Male_Adult_05_sit"
+      },
+      "material_slots": [
+        {
+          "name": "m009_body",
+          "surface": "body"
+        },
+        {
+          "name": "m009_head",
+          "surface": "head"
+        },
+        {
+          "name": "m009_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 181.24372293055058,
+      "lod_vertices": [
+        4920,
+        1551,
+        890
+      ]
+    },
+    {
+      "name": "Business_Female_01",
+      "mesh": "/Game/ParisPhotoreal/People/Business_Female_01/SK_Business_Female_01.SK_Business_Female_01",
+      "skeleton": "/Game/ParisPhotoreal/People/Business_Female_01/SK_Business_Female_01_Skeleton.SK_Business_Female_01_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Business_Female_01/A_Business_Female_01_walk.A_Business_Female_01_walk",
+        "run": "/Game/ParisPhotoreal/People/Business_Female_01/A_Business_Female_01_run.A_Business_Female_01_run",
+        "idle": "/Game/ParisPhotoreal/People/Business_Female_01/A_Business_Female_01_idle.A_Business_Female_01_idle",
+        "sit": "/Game/ParisPhotoreal/People/Business_Female_01/A_Business_Female_01_sit.A_Business_Female_01_sit"
+      },
+      "material_slots": [
+        {
+          "name": "f014_body",
+          "surface": "body"
+        },
+        {
+          "name": "f014_head",
+          "surface": "head"
+        },
+        {
+          "name": "f014_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 174.03594970703125,
+      "lod_vertices": [
+        5944,
+        1896,
+        1113
+      ]
+    },
+    {
+      "name": "Business_Male_01",
+      "mesh": "/Game/ParisPhotoreal/People/Business_Male_01/SK_Business_Male_01.SK_Business_Male_01",
+      "skeleton": "/Game/ParisPhotoreal/People/Business_Male_01/SK_Business_Male_01_Skeleton.SK_Business_Male_01_Skeleton",
+      "animations": {
+        "walk": "/Game/ParisPhotoreal/People/Business_Male_01/A_Business_Male_01_walk.A_Business_Male_01_walk",
+        "run": "/Game/ParisPhotoreal/People/Business_Male_01/A_Business_Male_01_run.A_Business_Male_01_run",
+        "idle": "/Game/ParisPhotoreal/People/Business_Male_01/A_Business_Male_01_idle.A_Business_Male_01_idle",
+        "sit": "/Game/ParisPhotoreal/People/Business_Male_01/A_Business_Male_01_sit.A_Business_Male_01_sit"
+      },
+      "material_slots": [
+        {
+          "name": "m005_body",
+          "surface": "body"
+        },
+        {
+          "name": "m005_head",
+          "surface": "head"
+        },
+        {
+          "name": "m005_opacity",
+          "surface": "opacity"
+        }
+      ],
+      "yaw_offset_degrees": 0.0,
+      "height_cm": 180.6453037261963,
+      "lod_vertices": [
+        4658,
+        1507,
+        879
+      ]
     }
   ]
 }

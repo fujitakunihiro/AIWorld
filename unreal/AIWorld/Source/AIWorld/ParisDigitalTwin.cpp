@@ -8,6 +8,7 @@
 #include "ParisMetro.h"
 #include "ParisChapelle.h"
 #include "ParisNotreDame.h"
+#include "ParisStreetLife.h"
 #include "ParisPalaisDetail.h"
 #include "ParisRuntimeMesh.h"
 #include "ParisRenderCache.h"
@@ -492,6 +493,7 @@ void AParisTwinScene::BeginPlay() {
     CreateParisWeathering(this,Data);
     CreateParisMorris(this,Data);
     CreateParisLuxury(this,Data);
+    if(FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoStreetLife"))){auto Life=GetWorld()->SpawnActor<AParisStreetLife>();if(Life&&!Life->Initialize(this,Data))Life->Destroy();}
     CreateParisReference(this,Data);
     InitializeParisMinimap(this,Data);
     AParisPalaisDetail* Palais=nullptr;if(FParse::Param(FCommandLine::Get(),TEXT("ParisPhotoreal"))){Palais=GetWorld()->SpawnActor<AParisPalaisDetail>();if(Palais&&!Palais->Initialize(this,Data)){Palais->Destroy();Palais=nullptr;}}

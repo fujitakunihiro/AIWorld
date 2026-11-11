@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Dom/JsonObject.h"
@@ -92,8 +92,10 @@ public:
     bool bEnabled=true,bReady=false;
     int32 SkeletalRenderedCount=0;
     int32 HumanVisualVariants() const { return HumanVisuals.Num(); }
-    int32 HumanVisualBudget() const { return DetailQuality==2?16:DetailQuality==1?8:0; }
-    double HumanVisualRangeCm() const { return DetailQuality==2?9000.:DetailQuality==1?6000.:0.; }
+    // Fully skinned, animated people near the camera (the rest use the instanced low-poly crowd).
+    static constexpr int32 MaxHumanVisualBudget=40;
+    int32 HumanVisualBudget() const { return DetailQuality==2?MaxHumanVisualBudget:DetailQuality==1?24:0; }
+    double HumanVisualRangeCm() const { return DetailQuality==2?14000.:DetailQuality==1?9000.:0.; }
 private:
     void InitializeHumanVisuals();
     bool RenderHuman(int32 Agent,const TSet<int32>& Wanted,TSet<int32>& Used,double Delta);

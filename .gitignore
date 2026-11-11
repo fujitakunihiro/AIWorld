@@ -70,3 +70,9 @@ unreal/assets/paris-reference-nature/*.gltf
 unreal/assets/paris-reference-nature/textures/
 unreal/assets/paris-florist/Generated/
 unreal/assets/paris-florist/Raw/
+
+# Downloaded reference photos (licences in references/ile-de-la-cite/manifest.json)
+references/ile-de-la-cite/*.jpg
+references/ile-de-la-cite/*.jpeg
+references/ile-de-la-cite/*.png
+unreal/assets/paris-people/Scaled/

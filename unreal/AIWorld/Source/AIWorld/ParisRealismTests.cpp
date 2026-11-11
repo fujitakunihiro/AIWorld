@@ -1,4 +1,4 @@
-#include "ParisDigitalTwin.h"
+﻿#include "ParisDigitalTwin.h"
 #include "ParisPedestrians.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -33,9 +33,9 @@ bool FParisRealismWait::Update(){
         Scene->CycleTimeOfDay();Test->TestEqual(TEXT("Day retains its original HDR panorama"),Mesh->GetMaterial(0)->GetMaterial()->GetName(),FString(TEXT("M_ParisPhotographicSky")));
         if(Scene->Crowd){
             auto Crowd=Scene->Crowd;const bool Enabled=Crowd->bEnabled;const int32 Quality=Scene->DetailQuality;
-            Crowd->SetDisplay(true,1);Test->TestEqual(TEXT("Medium human range covers street-level views"),Crowd->HumanVisualRangeCm(),6000.);Test->TestEqual(TEXT("Medium skeletal budget stays bounded"),Crowd->HumanVisualBudget(),8);
+            Crowd->SetDisplay(true,1);Test->TestEqual(TEXT("Medium human range covers street-level views"),Crowd->HumanVisualRangeCm(),9000.);Test->TestEqual(TEXT("Medium skeletal budget stays bounded"),Crowd->HumanVisualBudget(),24);
             Crowd->SetDisplay(true,0);Test->TestEqual(TEXT("Low quality uses cheap crowd visuals"),Crowd->HumanVisualRangeCm(),0.);
-            Crowd->SetDisplay(true,2);Test->TestEqual(TEXT("High human pool remains bounded"),Crowd->HumanVisualBudget(),16);Crowd->SetDisplay(Enabled,Quality);
+            Crowd->SetDisplay(true,2);Test->TestEqual(TEXT("High human pool remains bounded"),Crowd->HumanVisualBudget(),AParisPedestrianCrowd::MaxHumanVisualBudget);Crowd->SetDisplay(Enabled,Quality);
         }
         while(Scene->TimeOfDayPreset!=Time)Scene->CycleTimeOfDay();if(Rain)Scene->ToggleWeather();return true;
     }return false;

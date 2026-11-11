@@ -1,4 +1,4 @@
-#include "ParisPedestrians.h"
+﻿#include "ParisPedestrians.h"
 #include "ParisStreetMeshes.h"
 #include "ParisWalker.h"
 #include "ParisBridgeDetail.h"
@@ -112,9 +112,11 @@ void AParisPedestrianCrowd::InitializeHumanVisuals(){
         Visual.NominalSpeed=Speed>40&&Speed<220?Speed:120;
         Loaded.Add(Visual);
     }
-    if(Loaded.Num()!=2)return;
+    if(Loaded.Num()<2)return;
     HumanVisuals=MoveTemp(Loaded);
-    for(int32 I=0;I<16;I++){
+    // One pooled skeletal mesh per slot; slots are grouped by avatar so every avatar can appear.
+    const int32 SlotsPerVisual=FMath::DivideAndRoundUp(MaxHumanVisualBudget,HumanVisuals.Num())+1;
+    for(int32 I=0;I<SlotsPerVisual*HumanVisuals.Num();I++){
         const auto& Visual=HumanVisuals[I%HumanVisuals.Num()];
         auto Mesh=NewObject<USkeletalMeshComponent>(this);AddInstanceComponent(Mesh);Mesh->SetupAttachment(RootComponent);
         Mesh->SetSkeletalMeshAsset(Visual.Mesh);Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);Mesh->SetCanEverAffectNavigation(false);
@@ -216,14 +218,14 @@ void AParisPedestrianCrowd::UpdateInstances(bool TraceGround){
     const bool FullPeople=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinFullPeople"));
     TSet<int32> WantedHumans,UsedHumanSlots;HumanAgentByComponent.Empty();
     if(!HumanVisuals.IsEmpty()){
-        int32 ByType[2]={0,0};const int32 PerType=HumanVisualBudget()/2;const double RangeCm=HumanVisualRangeCm();TArray<int32> Candidates;
+        TArray<int32> ByType;ByType.Init(0,HumanVisuals.Num());const int32 Budget=HumanVisualBudget(),PerType=HumanMeshes.Num()/HumanVisuals.Num();const double RangeCm=HumanVisualRangeCm();TArray<int32> Candidates;
         for(int32 I:Visible)if(FVector::DistSquared(Agents[I].Position+FVector(0,0,90),View)<RangeCm*RangeCm)Candidates.Add(I);
         Candidates.Sort([&](int32 A,int32 B){
             const FVector DA=Agents[A].Position+FVector(0,0,90)-View,DB=Agents[B].Position+FVector(0,0,90)-View;
             const bool FrontA=FVector::DotProduct(DA.GetSafeNormal(),Forward)>.2,FrontB=FVector::DotProduct(DB.GetSafeNormal(),Forward)>.2;
             if(FrontA!=FrontB)return FrontA;const double A2=DA.SizeSquared(),B2=DB.SizeSquared();return A2==B2?A<B:A2<B2;
         });
-        for(int32 I:Candidates)if(ByType[I%2]<PerType){WantedHumans.Add(I);ByType[I%2]++;}
+        for(int32 I:Candidates){if(WantedHumans.Num()>=Budget)break;const int32 T=I%HumanVisuals.Num();if(ByType[T]<PerType){WantedHumans.Add(I);ByType[T]++;}}
     }
     for(int32 I:Visible){auto& A=Agents[I];if(A.VisitStage==3)StandingVisitorsRendered++;
         const bool Seated=A.SeatBlend>.001;const auto* Stop=Visits.IsValidIndex(A.Visit)?&Visits[A.Visit]:nullptr;

@@ -5,15 +5,19 @@ $python=Join-Path $repo 'gis\.venv\Scripts\python.exe'
 $options=@(); if($Offline){$options+='--offline'}
 & $python (Join-Path $PSScriptRoot 'fetch_paris_people.py') @options
 if($LASTEXITCODE -ne 0){throw 'Pedestrian source verification failed'}
+& py -3 (Join-Path $PSScriptRoot 'scale_paris_people.py')
+if($LASTEXITCODE -ne 0){throw 'Pedestrian texture downscale failed (needs Pillow)'}
 $project=& (Join-Path $PSScriptRoot 'Get-AIWorldProject.ps1')
-foreach($folder in @('Textures','Materials','Male_Adult_01','Female_Adult_01')){
+$sources=Get-Content -LiteralPath (Join-Path $repo 'unreal\assets\paris-people\sources.json') -Raw | ConvertFrom-Json
+$expected=@($sources.avatars).Count
+foreach($folder in @('Textures','Materials')+@($sources.avatars | ForEach-Object {$_.name})){
     New-Item -ItemType Directory -Path (Join-Path $repo ('unreal\AIWorld\Content\ParisPhotoreal\People\'+$folder)) -Force | Out-Null
 }
 $editor=Join-Path $EngineRoot 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe'
 $script=Join-Path $PSScriptRoot 'bake-paris-people.py'
 $log=Join-Path (Split-Path $project) 'Saved\paris-people-bake.log'
 & $editor $project '-run=pythonscript' "-script=$script" '-unattended' '-nullrhi' '-nosplash' '-stdout' '-UTF8Output' "-abslog=$log"
-if($LASTEXITCODE -ne 0 -or -not(Select-String -LiteralPath $log -Pattern 'PARIS_PEOPLE_READY 2' -Quiet)){
+if($LASTEXITCODE -ne 0 -or -not(Select-String -LiteralPath $log -Pattern ("PARIS_PEOPLE_READY $expected") -Quiet)){
     throw 'Pedestrian skeletal import failed; see Saved/paris-people-bake.log'
 }
 $packet=Get-Content -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-people.json') -Raw | ConvertFrom-Json
