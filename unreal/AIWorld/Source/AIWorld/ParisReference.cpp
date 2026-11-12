@@ -1,4 +1,4 @@
-#include "ParisReference.h"
+﻿#include "ParisReference.h"
 #include "ParisDigitalTwin.h"
 #include "WorldProtocol.h"
 #include "Camera/CameraActor.h"
@@ -27,7 +27,9 @@ using namespace AIWorld;
 bool IsParisLaneLook(){return FParse::Param(FCommandLine::Get(),TEXT("ParisTwinLane"));}
 static bool LaneBaseline(){return FParse::Param(FCommandLine::Get(),TEXT("ParisTwinLaneBaseline"));}
 bool IsParisLaneDressed(){return IsParisLaneLook()&&!LaneBaseline();}
-bool IsParisSeineLook(){return FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeine"));}
+// -ParisTwinPhotoLook applies the photographic Seine dressing (warm limestone, zinc roofs, quays, grade)
+// everywhere without the Seine camera; -ParisTwinSeine additionally frames the Seine reference view.
+bool IsParisSeineLook(){return FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeine"))||FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPhotoLook"));}
 bool IsParisSeineDressed(){return IsParisSeineLook()&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeineBaseline"));}
 bool IsParisReferenceLook(){return FParse::Param(FCommandLine::Get(),TEXT("ParisTwinReferenceLook"))||IsParisLaneLook()||IsParisSeineDressed();}
 static TSharedPtr<FJsonObject> ReferenceData(){
@@ -47,13 +49,15 @@ static bool RefVector(const TSharedPtr<FJsonObject>& J,const TCHAR* Key,FVector&
     if(!A[0]->TryGetNumber(X)||!A[1]->TryGetNumber(Y)||!A[2]->TryGetNumber(Z)||!FMath::IsFinite(X)||!FMath::IsFinite(Y)||!FMath::IsFinite(Z))return false;V=FVector(X,Y,Z);return true;
 }
 FVector ParisReferenceDetailCentre(const FVector& Fallback){
+    if(FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPhotoLook"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeine")))return Fallback; // look only: keep the district detail centre
     if(IsParisReferenceLook()||IsParisSeineLook())if(auto D=ReferenceData()){FVector Eye;if(RefVector(Object(D,TEXT("camera")),TEXT("eye_cm"),Eye))return Eye;}return Fallback;
 }
 void CreateParisReference(AParisTwinScene* Scene,const TSharedPtr<FJsonObject>& Source){
     if(!Scene||(!IsParisReferenceLook()&&!IsParisSeineLook()&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinReferenceBaseline"))))return;
     auto Data=ReferenceData();if(!Data||String(Data,TEXT("format"))!=TEXT("paris_reference_v1")||String(Data,TEXT("source_scene_sha256"))!=String(Source,TEXT("source_scene_sha256"))){UE_LOG(LogTemp,Error,TEXT("PARIS_REFERENCE_INVALID_SOURCE"));return;}
     FVector Eye,Target;auto Camera=Object(Data,TEXT("camera"));
-    if(RefVector(Camera,TEXT("eye_cm"),Eye)&&RefVector(Camera,TEXT("target_cm"),Target))for(TActorIterator<ACameraActor> It(Scene->GetWorld());It;++It)if(It->GetFName()==FName(TEXT("Camera_Paris_Street"))){It->SetActorLocationAndRotation(Eye,(Target-Eye).Rotation());It->GetCameraComponent()->SetFieldOfView(FMath::RadiansToDegrees(2.f*FMath::Atan(36.f/(2.f*Number(Camera,TEXT("focal_length_mm"),35)))));}
+    const bool LookOnly=FParse::Param(FCommandLine::Get(),TEXT("ParisTwinPhotoLook"))&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinSeine"));
+    if(!LookOnly&&RefVector(Camera,TEXT("eye_cm"),Eye)&&RefVector(Camera,TEXT("target_cm"),Target))for(TActorIterator<ACameraActor> It(Scene->GetWorld());It;++It)if(It->GetFName()==FName(TEXT("Camera_Paris_Street"))){It->SetActorLocationAndRotation(Eye,(Target-Eye).Rotation());It->GetCameraComponent()->SetFieldOfView(FMath::RadiansToDegrees(2.f*FMath::Atan(36.f/(2.f*Number(Camera,TEXT("focal_length_mm"),35)))));}
     if(!IsParisReferenceLook())return;
     TMap<FString,UStaticMesh*> Meshes;
     for(const auto& V:Array(Data,TEXT("objects"))){auto J=V->AsObject();const FString Path=String(J,TEXT("asset")),ID=String(J,TEXT("id"));
