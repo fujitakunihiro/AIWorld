@@ -1,8 +1,10 @@
 """Private Seine materials and reusable GIS-attached architecture."""
-import json,os,runpy
+import json,os,runpy,sys
 from pathlib import Path
 import unreal
 ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from paris_surface_realism import limestone, glazing, RECIPE as SURFACE_RECIPE
 os.environ['PARIS_REFERENCE_SOURCE']=str(ROOT/'unreal/assets/paris-seine/Generated/seine.json')
 os.environ['PARIS_REFERENCE_RUNTIME']=str(ROOT/'unreal/AIWorld/Content/Data/paris-seine.json')
 runpy.run_path(str(ROOT/'unreal/scripts/bake-paris-reference.py'),run_name='__main__')
@@ -52,8 +54,9 @@ def water(mat):
     if edits!={'ripples','color','roughness'}:raise RuntimeError('Unexpected source water graph '+str(edits))
 
 def stone(mat):
+    limestone(mat)
     base=lib.get_material_property_input_node(mat,unreal.MaterialProperty.MP_BASE_COLOR);pin=lib.get_material_property_input_node_output_name(mat,unreal.MaterialProperty.MP_BASE_COLOR)
-    n=lib.create_material_expression(mat,unreal.MaterialExpressionCustom);n.set_editor_properties(dict(code='float g=dot(C.rgb,float3(.2126,.7152,.0722));return lerp(C.rgb,g.xxx,.08)*float3(1.12,1.03,.86);',output_type=unreal.CustomMaterialOutputType.CMOT_FLOAT3));inp=unreal.CustomInput();inp.set_editor_property('input_name','C');n.set_editor_property('inputs',[inp])
+    n=lib.create_material_expression(mat,unreal.MaterialExpressionCustom);n.set_editor_properties(dict(code='float g=dot(C.rgb,float3(.2126,.7152,.0722));float3 cream=float3(.84,.71,.52);float3 t=lerp(C.rgb,cream*(g/.40),.62);return saturate(t*.94);',output_type=unreal.CustomMaterialOutputType.CMOT_FLOAT3));inp=unreal.CustomInput();inp.set_editor_property('input_name','C');n.set_editor_property('inputs',[inp])
     if not lib.connect_material_expressions(base,pin,n,'C') or not lib.connect_material_property(n,'',unreal.MaterialProperty.MP_BASE_COLOR):raise RuntimeError('Seine stone graph')
 
 def zinc_grade(mat):
@@ -141,8 +144,9 @@ def quay():
 
 quay()
 copy_material('/Game/Materials/M_SeineRiver','M_ParisSeineWater','murky_mirror_river_v3',night_water)
-copy_material('/Game/Materials/M_ParisReferenceStone','M_ParisSeineStone','warm_paris_limestone_v2',stone)
+copy_material('/Game/Materials/M_ParisReferenceStone','M_ParisSeineStone',SURFACE_RECIPE+'_cream2',stone)
 copy_material('/Game/Materials/M_Paris_Roof_Zinc','M_ParisSeineZinc','grey_zinc_v1',zinc_grade)
 copy_material('/Game/Materials/M_Paris_Roof_Slate','M_ParisSeineSlate','grey_zinc_v1',zinc_grade)
 copy_material('/Game/Materials/M_ParisEveningSky','M_ParisSeineTwilight','photographic_blue_hour_v2',twilight)
+glazing()
 unreal.log_warning('PARIS_SEINE_ASSETS_READY')

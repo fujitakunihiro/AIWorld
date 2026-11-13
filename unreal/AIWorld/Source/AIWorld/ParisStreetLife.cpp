@@ -83,7 +83,85 @@ FLifeMesh ABoard(FLinearColor FrameCol){
         M.Col=Chalk;for(int32 L=0;L<5;L++){const double T=.22+L*.13;const FVector P0=FMath::Lerp(B0,T0,T)+FVector(10,0,0)+In*2,P1=FMath::Lerp(B1,T1,T)-FVector(L%2?18:10,0,0)+In*2;Quad2(M,P0,P1,P1+FVector(0,0,1.6),P0+FVector(0,0,1.6));}}
     return M;
 }
-FLifeMesh Planter(){FLifeMesh M;M.Col=FLinearColor(.16f,.15f,.14f);M.Box(FVector(0,0,30),FVector(55,20,30));M.Col=FLinearColor(.20f,.34f,.12f);M.Box(FVector(0,0,70),FVector(52,18,12));FRandomStream R(5);for(int32 K=0;K<9;K++){M.Col=FLinearColor(R.FRandRange(.14f,.26f),R.FRandRange(.30f,.45f),R.FRandRange(.08f,.16f));M.Cone(-44+K*11,R.FRandRange(-6.f,6.f),76,R.FRandRange(98.f,112.f),R.FRandRange(10.f,14.f),3,7);}return M;}
+// Two folded halves give a broad leaf a bright ridge and a darker underside.
+void PlanterLeaf(FLifeMesh& Mesh, const FVector& Base, double Angle, double Length,
+    double Width, double Rise, const FLinearColor& Color){
+    const FVector Forward(FMath::Cos(Angle),FMath::Sin(Angle),0);
+    const FVector Across(-Forward.Y,Forward.X,0);
+    const FVector Tip=Base+Forward*Length+FVector(0,0,Rise-3.0);
+    const FVector Shoulder=Base+Forward*(Length*.47)+FVector(0,0,Rise*.72);
+    const FVector Rib=Shoulder+FVector(0,0,1.25);
+    for(int32 Sign : {-1,1}){
+        const FVector Edge=Shoulder+Across*(Sign*Width*.5);
+        for(const FVector& End : {Base,Tip}){
+            FVector Normal=FVector::CrossProduct(Rib-End,Edge-End).GetSafeNormal();
+            if(Normal.Z<0)Normal=-Normal;
+            Mesh.Col=Color*(Sign<0?.93f:1.f);
+            Mesh.Face({End,Rib,Edge},Normal);
+            Mesh.Col=Color*.70f;
+            Mesh.Face({End,Rib,Edge},-Normal);
+        }
+    }
+}
+
+FLifeMesh Planter(){
+    FLifeMesh Mesh;
+    FRandomStream WoodRandom(24031);
+    const FLinearColor Oak(.46f,.34f,.23f), Edge(.34f,.25f,.17f), Iron(.23f,.21f,.18f);
+    Mesh.Col=FLinearColor(.13f,.10f,.074f);
+    for(double X : {-48.,48.})for(double Y : {-14.,14.}){
+        Mesh.Box(FVector(X,Y,1.5),FVector(3.2,3.2,1.5));
+    }
+    Mesh.Box(FVector(0,0,28),FVector(52.5,17.5,25));
+    Mesh.Col=FLinearColor(.21f,.17f,.12f);
+    Mesh.Box(FVector(0,0,53),FVector(51.5,17,2.2));
+
+    for(double Side : {-1.,1.}){
+        for(int32 Slat=0;Slat<16;++Slat){
+            const float Grain=WoodRandom.FRandRange(.77f,1.14f);
+            Mesh.Col=Oak*Grain;
+            Mesh.Box(FVector(-50.+Slat*(100./15.),Side*18.6,30),FVector(3.17,1.15,27));
+        }
+        for(int32 Slat=0;Slat<5;++Slat){
+            Mesh.Col=Oak*WoodRandom.FRandRange(.79f,1.12f);
+            Mesh.Box(FVector(Side*53.2,-14.4+Slat*7.2,30),FVector(1.25,3.42,27));
+        }
+        Mesh.Col=Edge;
+        Mesh.Box(FVector(0,Side*18.2,57.8),FVector(55,1.8,2.2));
+        Mesh.Box(FVector(Side*53.2,0,57.8),FVector(1.8,16.4,2.2));
+        Mesh.Box(FVector(0,Side*17.9,4.4),FVector(54,1.9,1.5));
+        Mesh.Col=Iron;
+        for(double X : {-48.7,48.7}){
+            Mesh.Box(FVector(X,Side*19.85,30),FVector(.74,.15,23));
+            for(double Z : {11.,48.})Mesh.Box(FVector(X,Side*20.02,Z),FVector(1.12,.32,1.12));
+        }
+    }
+
+    FRandomStream PlantRandom(5831);
+    const FLinearColor Mature(.24f,.36f,.145f), NewGrowth(.43f,.53f,.23f);
+    for(int32 Stem=0;Stem<7;++Stem){
+        const FVector Root(-39.+Stem*13.,PlantRandom.FRandRange(-4.f,4.f),54.5);
+        const FVector Crown=Root+FVector(PlantRandom.FRandRange(-1.7f,1.7f),
+            PlantRandom.FRandRange(-1.7f,1.7f),PlantRandom.FRandRange(24.f,44.f));
+        Mesh.Col=FLinearColor(.28f,.27f,.125f);
+        Mesh.Tube(Root,Crown,.55,5);
+        const double StartAngle=PlantRandom.FRandRange(0.f,2.f*PI);
+        for(int32 Leaf=0;Leaf<16;++Leaf){
+            const double Height=PlantRandom.FRandRange(.30f,1.f);
+            const double Angle=StartAngle+Leaf*2.399963;
+            const FVector At=FMath::Lerp(Root,Crown,Height);
+            const FVector Base=At+FVector(FMath::Cos(Angle)*2.8,FMath::Sin(Angle)*2.8,2.);
+            const FLinearColor Color=FMath::Lerp(Mature,NewGrowth,PlantRandom.FRandRange(0.f,.78f));
+            Mesh.Col=Color*.72f;
+            Mesh.Tube(At,Base,.28,4);
+            const double Length=PlantRandom.FRandRange(6.5f,11.f);
+            const double Width=PlantRandom.FRandRange(3.9f,6.2f);
+            const double Rise=PlantRandom.FRandRange(-2.f,11.f);
+            PlanterLeaf(Mesh,Base,Angle,Length,Width,Rise,Color);
+        }
+    }
+    return Mesh;
+}
 bool IsFood(const FString& C){return C==TEXT("cafe")||C==TEXT("restaurant")||C==TEXT("bar")||C==TEXT("pub")||C==TEXT("fast_food")||C==TEXT("ice_cream")||C==TEXT("bakery")||C==TEXT("pastry")||C==TEXT("biergarten")||C==TEXT("confectionery");}
 bool IsSouvenir(const FString& C){return C==TEXT("gift")||C==TEXT("souvenir")||C==TEXT("clothes")||C==TEXT("books")||C==TEXT("art")||C==TEXT("newsagent")||C==TEXT("variety_store")||C==TEXT("toys")||C==TEXT("bag")||C==TEXT("jewelry")||C==TEXT("shoes")||C==TEXT("tobacco")||C==TEXT("kiosk");}
 uint32 Hash(const FString& S){return GetTypeHash(S);}
@@ -132,7 +210,7 @@ bool AParisStreetLife::Initialize(AParisTwinScene* InScene,const TSharedPtr<FJso
                     const uint32 Seat=HashCombine(H,GetTypeHash(Row*31+K*7+S));if(Seat%100u<(Row?30u:42u)){Seats.Add(FTransform(Yaw+FRotator(0,90,0),Chair.GetLocation()));SeatVariant.Add(Seat/100);}}
             }
             for(int32 K=0;K<3;K++){const double Y=330+K*55;AddTourist(O+Along*(-700+K*90)+Out*Y,O+Along*(700-K*80)+Out*Y,0,H+11*K,true);}
-            Planters.Add(At(-370,140,90));Planters.Add(At(370,140,90));((H>>3)&1?BoardsW:BoardsR).Add(At(420,250,20));
+            Planters.Add(At(-370,140,90));Planters.Add(At(370,140,-90));((H>>3)&1?BoardsW:BoardsR).Add(At(420,250,20));
         }
         else if(IsFood(Cat)){((H>>3)&1?BoardsW:BoardsR).Add(At(-170+(H%60),125,(H%2)?15.:-15.));ShopDisplayCount++;}
         else if(IsSouvenir(Cat)){ShopFronts.Add(*Front);for(int32 K=0;K<2+int32(H%2);K++){const double X=-140+K*120+double(H%40);AddTourist(O+Along*X+Out*(105+(K%2)*45),O+Along*X+Out*(105+(K%2)*45),FRotator(0,Yaw.Yaw-90+(K%2?25:-20),0).Yaw,H+K,false);}Spinners.Add(At(115,62,double(H%90)));if(Cat!=TEXT("books")&&Cat!=TEXT("newsagent"))Racks.Add(At(-118,52));if(H%3==0)BoardsR.Add(At(0,150,10));ShopDisplayCount++;}
@@ -141,7 +219,13 @@ bool AParisStreetLife::Initialize(AParisTwinScene* InScene,const TSharedPtr<FJso
     auto Fill=[&](const FName& Key,const FLifeMesh& M,const TArray<FTransform>& T,double Cull){if(T.IsEmpty())return;if(auto C=AddPrototype(Key,BuildStatic(this,M,Cloth),Cull))C->AddInstances(T,false,false,false);};
     Fill(TEXT("bistro_table"),BistroTable(),Tables,9000);Fill(TEXT("bistro_chair_a"),BistroChair(FLinearColor(.40f,.27f,.12f)),ChairsA,7000);Fill(TEXT("bistro_chair_b"),BistroChair(FLinearColor(.58f,.46f,.28f)),ChairsB,7000);
     for(int32 K=0;K<4;K++)Fill(FName(*FString::Printf(TEXT("terrace_awning_%d"),K)),Awning(AwningColors[K]),Awnings[K],20000);
-    Fill(TEXT("terrace_awning_arm"),AwningArm(),Arms,9000);Fill(TEXT("terrace_planter"),Planter(),Planters,9000);
+    Fill(TEXT("terrace_awning_arm"),AwningArm(),Arms,9000);
+    const FLifeMesh PlanterModel=Planter();
+    Fill(TEXT("terrace_planter"),PlanterModel,Planters,9000);
+    if(const auto PlanterPart=Parts.Find(TEXT("terrace_planter"))){
+        UE_LOG(LogTemp,Display,TEXT("PARIS_TERRACE_PLANTERS_READY instances=%d triangles_per_model=%d"),
+            (*PlanterPart)->GetInstanceCount(),PlanterModel.I.Num()/3);
+    }
     Fill(TEXT("postcard_spinner"),PostcardSpinner(),Spinners,8000);Fill(TEXT("scarf_rack"),ScarfRack(),Racks,8000);
     Fill(TEXT("aboard_wood"),ABoard(FLinearColor(.22f,.12f,.05f)),BoardsW,7000);Fill(TEXT("aboard_red"),ABoard(FLinearColor(.55f,.03f,.03f)),BoardsR,7000);
     // Parvis Notre-Dame: tourists looking up at the west front and strolling across the square

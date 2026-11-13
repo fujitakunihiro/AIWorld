@@ -1,4 +1,6 @@
 #include "ParisPhotoFrontages.h"
+#include "ParisReference.h"
+#include "Materials/MaterialInterface.h"
 #include "ParisDigitalTwin.h"
 #include "WorldProtocol.h"
 #include "Components/StaticMeshComponent.h"
@@ -64,6 +66,7 @@ void CreateParisPhotoFrontages(AParisTwinScene* Scene,const TSharedPtr<FJsonObje
         auto Part=NewObject<UStaticMeshComponent>(Scene);Scene->AddInstanceComponent(Part);Part->SetupAttachment(Scene->GetRootComponent());
         Part->SetCollisionProfileName(TEXT("NoCollision"));Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);Part->SetGenerateOverlapEvents(false);Part->SetCanEverAffectNavigation(false);
         Part->SetStaticMesh(Models[Index]);Part->ComponentTags.Add(TEXT("ParisPhotoFrontage"));Part->ComponentTags.Add(FName(*(TEXT("ParisFrontage_")+Kind)));
+        if(IsParisSeineDressed()&&Kind==TEXT("glass"))if(auto Glass=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/MI_ParisSeineCoreWindow")))Part->SetMaterial(0,Glass);
         Part->ComponentTags.Add(FName(*FString::Printf(TEXT("ParisWindowCount_%d"),int32(Number(Data,TEXT("window_count"))))));
         Part->ComponentTags.Add(FName(*FString::Printf(TEXT("ParisEntranceCount_%d"),int32(Number(Data,TEXT("entrance_count"))))));
         Part->ComponentTags.Add(FName(*FString::Printf(TEXT("ParisCorniceCount_%d"),int32(Number(Data,TEXT("cornice_count"))))));

@@ -76,6 +76,10 @@ void CreateParisLuxury(AParisTwinScene* Scene,const TSharedPtr<FJsonObject>& Sou
     }
     for(const auto& Pair:Meshes){
         auto C=NewObject<UHierarchicalInstancedStaticMeshComponent>(Scene);Scene->AddInstanceComponent(C);C->SetupAttachment(Scene->GetRootComponent());C->SetStaticMesh(Pair.Value);
+        if(IsParisSeineDressed()&&Pair.Key==TEXT("relief_glass")){
+            if(auto Glass=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisSeineWindow")))C->SetMaterial(0,Glass);
+            C->InstancingRandomSeed=73129;
+        }
         C->ComponentTags.Add(TEXT("ParisLuxury"));C->ComponentTags.Add(FName(*Pair.Key));C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->SetGenerateOverlapEvents(false);C->SetCanEverAffectNavigation(false);
         C->SetCastShadow(!Pair.Key.Contains(TEXT("nature"))&&!Pair.Key.Contains(TEXT("flowers"))&&!Pair.Key.StartsWith(TEXT("festoon_"))&&!Pair.Key.StartsWith(TEXT("window_"))&&!Pair.Key.StartsWith(TEXT("night_window_"))&&!Pair.Key.StartsWith(TEXT("proxy_"))&&!Pair.Key.EndsWith(TEXT("bulbs"))&&Pair.Key!=TEXT("relief_glass")&&Pair.Key!=TEXT("street_festoon_wire")&&Pair.Key!=TEXT("facade_lantern")&&!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShadows")));C->RegisterComponent();
         if(Pair.Key.StartsWith(TEXT("proxy_")))C->CreateDynamicMaterialInstance(0);

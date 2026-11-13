@@ -20,6 +20,13 @@ bool FParisReferenceWait::Update(){
             int32 Water=0;TArray<UPrimitiveComponent*> Visuals;S->GetComponents(Visuals);
             for(auto C:Visuals)if(C->GetMaterial(0)&&C->GetMaterial(0)->GetName()==TEXT("M_ParisSeineWater")){Water++;Test->TestTrue(TEXT("Calm water is bound to actual visible geometry"),C->IsVisible());}
             Test->TestEqual(TEXT("One Seine visual uses private calm water"),Water,1);
+            int32 CoreGlass=0,ReliefGlass=0;
+            for(auto C:Visuals){
+                if(C->ComponentHasTag(TEXT("ParisFrontage_glass"))){CoreGlass++;Test->TestEqual(TEXT("Core glazing keeps its separate night-emission instance"),C->GetMaterial(0)->GetName(),FString(TEXT("MI_ParisSeineCoreWindow")));}
+                if(C->ComponentHasTag(TEXT("relief_glass"))){ReliefGlass++;Test->TestEqual(TEXT("District glazing uses the new room material"),C->GetMaterial(0)->GetName(),FString(TEXT("M_ParisSeineWindow")));}
+            }
+            Test->TestEqual(TEXT("One source-aligned core glass component"),CoreGlass,1);
+            Test->TestEqual(TEXT("One instanced district glass component"),ReliefGlass,1);
         }
         TArray<UStaticMeshComponent*> GroundParts;S->GetComponents(GroundParts);for(auto C:GroundParts)if(C->ComponentHasTag(TEXT("ParisGroundDisplay")))Test->TestEqual(TEXT("Physical ground continues outside the old cathedral photo zone"),C->GetMaterial(0)->GetName(),FString(TEXT("M_ParisRoadPaving")));
         const bool Old=S->bStreetDetails;if(!Old)S->ToggleStreetDetails();TArray<UHierarchicalInstancedStaticMeshComponent*> Parts;S->GetComponents(Parts);

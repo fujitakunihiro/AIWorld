@@ -268,7 +268,7 @@ if($Lane){
     }
     if(-not $laneReady){& (Join-Path $PSScriptRoot 'Build-ParisLane.ps1') -EngineRoot $EngineRoot}
 }
-if($Seine){
+if($Seine -or ($Photoreal -and -not $NoPhotoLook)){
     $seineReady=$true
     $seinePath=Join-Path (Split-Path $project) 'Content\Data\paris-seine.json'
     if(-not(Test-Path -LiteralPath $seinePath)){$seineReady=$false}else{
@@ -276,7 +276,7 @@ if($Seine){
         if($seinePacket.recipe -ne 'paris_seine_vista_v1' -or $seinePacket.source_scene_sha256 -ne $packet.source_scene_sha256){$seineReady=$false}
         foreach($part in $seinePacket.objects){foreach($asset in @($part.asset,$part.material)){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\'+$asset.Substring(6)+'.uasset')))){$seineReady=$false}}}
     }
-    foreach($name in @('M_ParisSeineWater','M_ParisSeineStone','M_ParisSeineTwilight')){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Materials\'+$name+'.uasset')))){$seineReady=$false}}
+    foreach($name in @('M_ParisSeineWater','M_ParisSeineStone','M_ParisSeineTwilight','M_ParisSeineWindow','MI_ParisSeineCoreWindow')){if(-not(Test-Path -LiteralPath (Join-Path (Split-Path $project) ('Content\Materials\'+$name+'.uasset')))){$seineReady=$false}}
     if(-not $seineReady){& (Join-Path $PSScriptRoot 'Build-ParisSeine.ps1') -EngineRoot $EngineRoot}
 }
 $soundReady=Test-Path -LiteralPath (Join-Path (Split-Path $project) 'Content\Data\paris-soundscape.json')

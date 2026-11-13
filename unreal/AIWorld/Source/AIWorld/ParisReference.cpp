@@ -94,7 +94,15 @@ static void ApplySeineEnvironment(AParisTwinScene* Scene){
         // Mild photographic grade: tamed HDR sky saturation, warm highlights, soft lens vignette.
         const bool Grade=!Night&&!Wet;P.bOverride_ColorSaturation=Grade;P.ColorSaturation=FVector4(.86,.86,.86,1);P.bOverride_ColorContrast=Grade;P.ColorContrast=FVector4(1.06,1.06,1.06,1);
         P.bOverride_ColorGainHighlights=Grade;P.ColorGainHighlights=Evening?FVector4(1.06,.99,.90,1):FVector4(1.04,1.,.93,1);P.bOverride_ColorGainShadows=Grade;P.ColorGainShadows=FVector4(.96,.99,1.03,1);
-        P.bOverride_VignetteIntensity=true;P.VignetteIntensity=Grade?.38f:.2f;}
+        P.bOverride_VignetteIntensity=true;P.VignetteIntensity=Grade?.38f:.2f;
+        // Console-game finish: local exposure compresses sky/shadow contrast like a modern camera pipeline,
+        // with a faint lens fringe and fine grain so flat CG surfaces read as photographed.
+        P.bOverride_LocalExposureHighlightContrastScale=true;P.LocalExposureHighlightContrastScale=Night?.85f:.72f;
+        P.bOverride_LocalExposureShadowContrastScale=true;P.LocalExposureShadowContrastScale=Night?.9f:.78f;
+        P.bOverride_LocalExposureDetailStrength=true;P.LocalExposureDetailStrength=1.15f;
+        P.bOverride_SceneFringeIntensity=true;P.SceneFringeIntensity=.35f;
+        P.bOverride_FilmGrainIntensity=true;P.FilmGrainIntensity=.12f;
+        P.bOverride_BloomIntensity=true;P.BloomIntensity=Night?.30f:.22f;}
     if(Night&&!Wet)for(TActorIterator<AStaticMeshActor> It(Scene->GetWorld());It;++It)if(It->ActorHasTag(TEXT("ParisPhotographicSky")))if(auto M=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/Materials/M_ParisSeineTwilight")))It->GetStaticMeshComponent()->SetMaterial(0,M);
 }
 void SyncParisReference(AParisTwinScene* Scene){

@@ -1,0 +1,49 @@
+{
+  "created_utc": "2026-11-12T22:51:02.996343+00:00",
+  "baseline_commit": "3b80988313564a2643f51178abb2ee043c74d72a",
+  "backup": "D:\\work\\develop\\21_マインクラフト風AI街\\backups\\paris-surface-realism-20261112-222243",
+  "source_data_unchanged": true,
+  "build_succeeded": true,
+  "asset_bake_errors": 0,
+  "native_tests": [
+    "RainLifecycleAndShelter",
+    "ReferenceArchitectureAndRestoration"
+  ],
+  "native_note": "Material bindings and state transitions tested before final shader-only seed stabilization; final shaders verified in DX12 captures.",
+  "captures": {
+    "windows-day": {
+      "image": "paris-surface-after-windows-day.png",
+      "fps": 21.803127883948488,
+      "frame_p95_ms": 52.07959935069084,
+      "captured_at": "2026-11-12T13:49:02.079898+00:00"
+    },
+    "street-day": {
+      "image": "paris-surface-after-street-day.png",
+      "fps": 22.87997564465428,
+      "frame_p95_ms": 50.20369961857796,
+      "captured_at": "2026-11-12T13:50:24.719750+00:00"
+    },
+    "windows-night": {
+      "image": "paris-surface-after-windows-night.png",
+      "fps": 20.50840708108481,
+      "frame_p95_ms": 57.19269812107086,
+      "captured_at": "2026-11-12T13:47:12.408595+00:00"
+    },
+    "street-rain": {
+      "image": "paris-surface-after-street-rain.png",
+      "fps": 21.968543178929014,
+      "frame_p95_ms": 52.28240042924881,
+      "captured_at": "2026-11-12T13:51:50.155434+00:00"
+    }
+  },
+  "assets": {
+    "unreal\\AIWorld\\Content\\Materials\\M_ParisSeineStone.uasset": "8a2a7bc796736c846c40b065e1665d9d9aeee5a243ccb0d785eaafd92385bede",
+    "unreal\\AIWorld\\Content\\Materials\\M_ParisSeineWindow.uasset": "b57e38bff57aa8a184d9aec0b4f43966dc9c79d95baa619d7c758b8527a27ec7",
+    "unreal\\AIWorld\\Content\\Materials\\MI_ParisSeineCoreWindow.uasset": "2cb73efb3762c6fa20ee1d1f3df8ebddea2cc2b9ffb268a9f002541058e85b66"
+  },
+  "source_recipe_sha256": "e6c8b9d80d06861db718e361f95ebfed025444790950905d1ad99c556ae064a0",
+  "geometry_added": false,
+  "surveyed_interiors": false,
+  "reference_photo_parity_achieved": false,
+  "target_60fps_achieved": false
+}
