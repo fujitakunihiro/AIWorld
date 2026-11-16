@@ -15,6 +15,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "MeshDescription.h"
 #include "StaticMeshAttributes.h"
 #include "Misc/CommandLine.h"
@@ -162,6 +163,25 @@ FLifeMesh Planter(){
     }
     return Mesh;
 }
+// Parisian applied shopfront (devanture en applique), 330 x 290 cm, origin at the facade foot, +Y to the street:
+// painted timber pilasters, stall risers, a glazed door with transom and a fascia; glazing is a separate mesh.
+FLifeMesh ShopFrame(FLinearColor Paint){
+    FLifeMesh M;const FLinearColor Trim=Paint*1.35f+FLinearColor(.03f,.03f,.03f),Brass(.62f,.46f,.16f);
+    M.Col=Paint;for(double X:{-158.,158.}){M.Box(FVector(X,8,138),FVector(9,8,138));M.Box(FVector(X,9,12),FVector(11,9,12));M.Box(FVector(X,9,268),FVector(11,9,8));}
+    M.Box(FVector(0,8,276),FVector(165,8,12));M.Col=Trim;M.Box(FVector(0,11,290),FVector(169,11,2.5));M.Box(FVector(0,9,262),FVector(165,9,2));
+    M.Col=Paint;for(double X:{-101.,101.}){M.Box(FVector(X,7,27),FVector(49,6,27));M.Col=Trim;M.Box(FVector(X,13.2,27),FVector(40,.6,18));M.Col=Paint;M.Box(FVector(X,13.6,27),FVector(36,.6,14));
+        M.Box(FVector(X,7,216),FVector(49,4,2));M.Box(FVector(X,7,251),FVector(49,5,5));}
+    for(double X:{-50.,50.})M.Box(FVector(X,7,128),FVector(3.5,6,128));M.Box(FVector(0,7,251),FVector(47,5,5));M.Box(FVector(0,7,214),FVector(47,4,2.5));
+    for(double X:{-43.,43.})M.Box(FVector(X,6,108),FVector(3.5,3.5,106));M.Box(FVector(0,6,19),FVector(40,3.5,17));M.Box(FVector(0,6,209),FVector(40,3.5,3));
+    M.Col=Brass;M.Tube(FVector(33,11,95),FVector(33,11,125),1.4,6);M.Box(FVector(0,10.2,6),FVector(34,.4,3));
+    return M;
+}
+// Panes for ShopFrame: UV runs 0..1 over each pane (required by M_ParisShopWindow's interior mapping).
+FLifeMesh ShopGlass(){
+    FLifeMesh M;auto Pane=[&](double X0,double X1,double Z0,double Z1,double Y){M.Face({FVector(X0,Y,Z0),FVector(X1,Y,Z0),FVector(X1,Y,Z1),FVector(X0,Y,Z1)},FVector(0,1,0),{FVector2D(0,1),FVector2D(1,1),FVector2D(1,0),FVector2D(0,0)});};
+    Pane(-150,-52,54,214,7);Pane(52,150,54,214,7);Pane(-150,-52,218,246,7);Pane(52,150,218,246,7);Pane(-39.5,39.5,36,206,6);Pane(-47,47,217,246,7);
+    return M;
+}
 bool IsFood(const FString& C){return C==TEXT("cafe")||C==TEXT("restaurant")||C==TEXT("bar")||C==TEXT("pub")||C==TEXT("fast_food")||C==TEXT("ice_cream")||C==TEXT("bakery")||C==TEXT("pastry")||C==TEXT("biergarten")||C==TEXT("confectionery");}
 bool IsSouvenir(const FString& C){return C==TEXT("gift")||C==TEXT("souvenir")||C==TEXT("clothes")||C==TEXT("books")||C==TEXT("art")||C==TEXT("newsagent")||C==TEXT("variety_store")||C==TEXT("toys")||C==TEXT("bag")||C==TEXT("jewelry")||C==TEXT("shoes")||C==TEXT("tobacco")||C==TEXT("kiosk");}
 uint32 Hash(const FString& S){return GetTypeHash(S);}
@@ -196,12 +216,15 @@ bool AParisStreetLife::Initialize(AParisTwinScene* InScene,const TSharedPtr<FJso
             Fronts.Add(String(J,TEXT("source_id")),FTransform(FRotator(0,Number(J,TEXT("yaw_degrees")),0),FVector(P[0]->AsNumber(),P[1]->AsNumber(),P[2]->AsNumber())));}}
     if(Fronts.IsEmpty())return false;
     const FLinearColor AwningColors[4]={FLinearColor(.50f,.04f,.03f),FLinearColor(.04f,.20f,.10f),FLinearColor(.03f,.06f,.22f),FLinearColor(.30f,.03f,.07f)};
-    TArray<FTransform> Tables,ChairsA,ChairsB,Awnings[4],Arms,Spinners,Racks,BoardsW,BoardsR,Planters;
+    // The inferred storefront proxies stand proud of the GIS wall; the applied shopfront sits just in front of them.
+    double ShopfrontOut=34;FParse::Value(FCommandLine::Get(),TEXT("ParisTwinShopfrontOut="),ShopfrontOut);
+    TArray<FTransform> Tables,ChairsA,ChairsB,Awnings[4],Arms,Spinners,Racks,BoardsW,BoardsR,Planters,ShopFrames[5],ShopPanes;
     for(const auto& V:Array(Data,TEXT("pick_features"))){
         auto F=V->AsObject();if(!F.IsValid()||String(F,TEXT("kind"))!=TEXT("business"))continue;const FString ID=String(F,TEXT("id"));const FTransform* Front=Fronts.Find(ID);if(!Front)continue;
         const auto P=Object(F,TEXT("properties"));const FString Cat=String(P,TEXT("category"));const bool Terrace=String(P,TEXT("outdoor_seating_tag"))==TEXT("yes");const uint32 H=Hash(ID);
         const FRotator Yaw=Front->Rotator();const FVector Along=Yaw.RotateVector(FVector(1,0,0)),Out=Yaw.RotateVector(FVector(0,1,0)),O=Front->GetLocation();
         auto At=[&](double X,double Y,double YawExtra=0,FVector Scale=FVector(1)){FVector P=O+Along*X+Out*Y;if(X!=0||Y!=0)SnapToGround(P,40,250);return FTransform(Yaw+FRotator(0,YawExtra,0),P,Scale);};
+        if(!FParse::Param(FCommandLine::Get(),TEXT("ParisTwinNoShopfronts"))){const FTransform ShopUnit(Yaw,O+Out*ShopfrontOut);ShopFrames[(H>>5)%5].Add(ShopUnit);ShopPanes.Add(ShopUnit);}
         if(Terrace&&IsFood(Cat)){
             TerraceCount++;TerraceFronts.Add(*Front);const int32 Ac=H%4;Awnings[Ac].Add(At(0,0,0,FVector(6.,1.,1.)));for(double X:{-290.,0.,290.})Arms.Add(At(X,0));
             for(int32 Row=0;Row<2;Row++)for(int32 K=-2;K<=2;K++){
@@ -217,6 +240,12 @@ bool AParisStreetLife::Initialize(AParisTwinScene* InScene,const TSharedPtr<FJso
         else if(H%5<2){BoardsW.Add(At(-150,120,(H%2)?12.:-12.));ShopDisplayCount++;}
     }
     auto Fill=[&](const FName& Key,const FLifeMesh& M,const TArray<FTransform>& T,double Cull){if(T.IsEmpty())return;if(auto C=AddPrototype(Key,BuildStatic(this,M,Cloth),Cull))C->AddInstances(T,false,false,false);};
+    // Shopfront joinery in five traditional paint colours; glazing shares one interior-mapped material.
+    {const FLinearColor Paints[5]={FLinearColor(.035f,.11f,.07f),FLinearColor(.19f,.03f,.045f),FLinearColor(.03f,.055f,.14f),FLinearColor(.035f,.035f,.04f),FLinearColor(.36f,.30f,.20f)};
+     for(int32 K=0;K<5;K++)Fill(FName(*FString::Printf(TEXT("shopfront_frame_%d"),K)),ShopFrame(Paints[K]),ShopFrames[K],14000);
+     auto Pane=LoadObject<UMaterialInterface>(nullptr,TEXT("/Game/ParisPhotoreal/Street/M_ParisShopWindow.M_ParisShopWindow"));
+     if(Pane&&ShopPanes.Num()){if(auto C=AddPrototype(TEXT("shopfront_glass"),BuildStatic(this,ShopGlass(),Pane),14000)){C->SetCastShadow(false);C->AddInstances(ShopPanes,false,false,false);ShopGlassMID=C->CreateDynamicMaterialInstance(0);}}
+     else if(!Pane)UE_LOG(LogTemp,Warning,TEXT("PARIS_SHOPFRONT_MATERIAL_MISSING run bake-paris-shopfront.py"));}
     Fill(TEXT("bistro_table"),BistroTable(),Tables,9000);Fill(TEXT("bistro_chair_a"),BistroChair(FLinearColor(.40f,.27f,.12f)),ChairsA,7000);Fill(TEXT("bistro_chair_b"),BistroChair(FLinearColor(.58f,.46f,.28f)),ChairsB,7000);
     for(int32 K=0;K<4;K++)Fill(FName(*FString::Printf(TEXT("terrace_awning_%d"),K)),Awning(AwningColors[K]),Awnings[K],20000);
     Fill(TEXT("terrace_awning_arm"),AwningArm(),Arms,9000);
@@ -280,10 +309,10 @@ void AParisStreetLife::AddTourist(const FVector& A,const FVector& B,double Yaw,u
 void AParisStreetLife::Tick(float DeltaSeconds){
     Super::Tick(DeltaSeconds);Clock+=DeltaSeconds;
     if(!bPropsSnapped&&Clock>3){bPropsSnapped=true;int32 Moved=0;
-        for(auto& Pair:Parts){if(Pair.Key.ToString().StartsWith(TEXT("terrace_awning")))continue;auto C=Pair.Value;TArray<FTransform> Ts;Ts.SetNum(C->GetInstanceCount());
+        for(auto& Pair:Parts){if(Pair.Key.ToString().StartsWith(TEXT("terrace_awning"))||Pair.Key.ToString().StartsWith(TEXT("shopfront_")))continue;auto C=Pair.Value;TArray<FTransform> Ts;Ts.SetNum(C->GetInstanceCount());
             for(int32 I=0;I<Ts.Num();I++){C->GetInstanceTransform(I,Ts[I],true);FVector P=Ts[I].GetLocation();if(SnapToGround(P,40,250)&&FMath::Abs(P.Z-Ts[I].GetLocation().Z)>1){Ts[I].SetLocation(P);Moved++;}}
             if(Ts.Num())C->BatchUpdateInstancesTransforms(0,Ts,true,true,true);}
-        UE_LOG(LogTemp,Display,TEXT("PARIS_STREET_LIFE_GROUNDED moved=%d"),Moved);}Remaining-=DeltaSeconds;if(Remaining<=0){Remaining=.5;UpdateSeated();UpdateTourists(true);}
+        UE_LOG(LogTemp,Display,TEXT("PARIS_STREET_LIFE_GROUNDED moved=%d"),Moved);}Remaining-=DeltaSeconds;if(Remaining<=0){Remaining=.5;if(ShopGlassMID&&Scene&&Scene->TimeOfDayPreset!=ShopLitPreset){ShopLitPreset=Scene->TimeOfDayPreset;ShopGlassMID->SetScalarParameterValue(TEXT("InteriorNits"),ShopLitPreset==2?10.f:ShopLitPreset==1?110.f:300.f);}UpdateSeated();UpdateTourists(true);}
     UpdateTourists(false);
 }
 void AParisStreetLife::UpdateTourists(bool Reassign){

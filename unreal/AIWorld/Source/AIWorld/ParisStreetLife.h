@@ -31,6 +31,8 @@ private:
     UPROPERTY() TObjectPtr<AParisTwinScene> Scene;
     UPROPERTY() TMap<FName,TObjectPtr<UHierarchicalInstancedStaticMeshComponent>> Parts;
     UPROPERTY() TArray<TObjectPtr<USkeletalMeshComponent>> Seated;
+    UPROPERTY() TObjectPtr<class UMaterialInstanceDynamic> ShopGlassMID;
+    int32 ShopLitPreset=-1;
     TArray<FTransform> TerraceFronts,ShopFronts;
     TArray<FTransform> Seats;      // occupied chairs (world), facing the street
     TArray<int32> SeatVariant;     // avatar index per seat
